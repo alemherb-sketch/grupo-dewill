@@ -624,17 +624,63 @@ function addToQuoteFromModal() {
 
 // ========== UTILS ==========
 function showToast(message, type = 'success') {
-    // Basic implementation of a toast if needed, or just console for now
-    console.log(`[${type}] ${message}`);
-    // You could implement a small div toast here
+    // Remove existing toast if any
+    const existing = document.querySelector('.toast-notification');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.className = `toast-notification toast-${type}`;
+    toast.innerHTML = `
+        <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-info-circle'}"></i>
+        <span>${message}</span>
+    `;
+    document.body.appendChild(toast);
+
+    // Trigger animation
+    setTimeout(() => toast.classList.add('show'), 10);
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 2500);
 }
 
 function initHeroAnimations() {
-    // Particles or simple intersection observers
-    const options = {
-        threshold: 0.1
-    };
+    // Counter animation for hero stats
+    const counters = document.querySelectorAll('.stat-number[data-target]');
+    if (counters.length > 0) {
+        const animateCounter = (el) => {
+            const target = parseInt(el.getAttribute('data-target'));
+            const duration = 2000;
+            const start = performance.now();
 
+            const step = (timestamp) => {
+                const progress = Math.min((timestamp - start) / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+                el.innerText = Math.floor(eased * target);
+                if (progress < 1) {
+                    requestAnimationFrame(step);
+                } else {
+                    el.innerText = target;
+                }
+            };
+            requestAnimationFrame(step);
+        };
+
+        // Use IntersectionObserver to trigger counters when visible
+        const counterObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    animateCounter(entry.target);
+                    counterObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        counters.forEach(c => counterObserver.observe(c));
+    }
+
+    // Scroll-triggered fade-in animations
+    const options = { threshold: 0.1 };
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {

@@ -1072,7 +1072,272 @@ img {
     font-size: 1.1rem;
 }
 
+/* ========== TOAST NOTIFICATIONS ========== */
+.toast-notification {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--bg-surface);
+    border: 1px solid var(--primary);
+    color: var(--text-main);
+    padding: 1rem 2rem;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    z-index: 3000;
+    box-shadow: var(--shadow-glow);
+    opacity: 0;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.toast-notification.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+.toast-notification i {
+    color: var(--primary);
+    font-size: 1.2rem;
+}
+
+.toast-info i {
+    color: var(--primary);
+}
+
+/* ========== SCROLL INDICATOR ========== */
+.hero-scroll-indicator {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.scroll-mouse {
+    width: 24px;
+    height: 38px;
+    border: 2px solid var(--text-muted);
+    border-radius: 12px;
+    position: relative;
+}
+
+.scroll-wheel {
+    width: 4px;
+    height: 8px;
+    background: var(--primary);
+    border-radius: 2px;
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: scrollWheel 1.5s ease-in-out infinite;
+}
+
+@keyframes scrollWheel {
+    0% { transform: translateX(-50%) translateY(0); opacity: 1; }
+    100% { transform: translateX(-50%) translateY(12px); opacity: 0; }
+}
+
+/* ========== STAT DIVIDER ========== */
+.stat-divider {
+    width: 1px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* ========== QUOTE EMPTY STATE ========== */
+.quote-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.quote-empty i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.3;
+}
+
+.quote-empty p {
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 0.5rem;
+}
+
+/* ========== QUOTE TOTAL ========== */
+.quote-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* ========== BTN OUTLINE DANGER ========== */
+.btn-outline-danger {
+    background: transparent;
+    border: 1px solid var(--danger);
+    color: var(--danger);
+}
+
+.btn-outline-danger:hover {
+    background: var(--danger);
+    color: white;
+}
+
+/* ========== CONTACT GRID ========== */
+.contact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+}
+
+.contact-icon {
+    font-size: 2.5rem;
+    color: var(--primary);
+    margin-bottom: 1.5rem;
+}
+
+.btn-whatsapp-sm, .btn-outline-sm {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    margin-top: 1rem;
+    transition: var(--transition);
+    font-size: 0.9rem;
+}
+
+.btn-whatsapp-sm {
+    background: #25d366;
+    color: white;
+}
+
+.btn-whatsapp-sm:hover {
+    background: #128c7e;
+    transform: translateY(-2px);
+}
+
+.btn-outline-sm {
+    border: 1px solid var(--primary);
+    color: var(--primary);
+}
+
+.btn-outline-sm:hover {
+    background: var(--primary);
+    color: var(--text-on-primary);
+}
+
+/* ========== MODAL EXTRA STYLES ========== */
+.modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(0,0,0,0.5);
+    border: none;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 10;
+    font-size: 1.2rem;
+    transition: var(--transition);
+}
+
+.modal-close:hover {
+    background: var(--danger);
+}
+
+.modal-category {
+    display: inline-block;
+    background: rgba(0, 210, 255, 0.1);
+    color: var(--primary);
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.modal-title {
+    font-size: 1.75rem;
+    margin-bottom: 1rem;
+}
+
+.modal-description {
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+}
+
+.modal-specs ul {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+}
+
+.modal-specs ul li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.modal-specs h4, .modal-documents h4 {
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.modal-info-section {
+    overflow-y: auto;
+}
+
+/* ========== HAMBURGER ========== */
+.hamburger {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.hamburger span {
+    width: 25px;
+    height: 2px;
+    background: var(--text-main);
+    transition: var(--transition);
+}
+
+@media (max-width: 992px) {
+    .hamburger { display: flex; }
+    .cart-label { display: none; }
+}
+
 /* ========== RESPONSIVE ========== */
+
 @media (max-width: 992px) {
     .nav-links { display: none; }
     .footer-content { grid-template-columns: 1fr; gap: 2rem; }
