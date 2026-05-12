@@ -16,16 +16,16 @@
     <!-- ========== NAVBAR ========== -->
     <nav class="navbar" id="navbar">
         <div class="nav-container">
-            <a href="#inicio" class="nav-logo">
+            <a href="index.html" class="nav-logo">
                 <div class="logo-icon">
                     <i class="fas fa-industry"></i>
                 </div>
                 <span class="logo-text">GRUPO <span class="logo-accent">DEWILL</span></span>
             </a>
             <ul class="nav-links" id="navLinks">
-                <li><a href="#inicio" class="nav-link active">Inicio</a></li>
+                <li><a href="index.html" class="nav-link active">Inicio</a></li>
                 <li><a href="#nosotros" class="nav-link">Nosotros</a></li>
-                <li><a href="#productos" class="nav-link">Productos</a></li>
+                <li><a href="productos.html" class="nav-link">Productos</a></li>
                 <li><a href="#por-que" class="nav-link">¿Por Qué Elegirnos?</a></li>
                 <li><a href="#contacto" class="nav-link">Contacto</a></li>
             </ul>
@@ -63,7 +63,7 @@
                 potenciar tus proyectos. Más de <strong>36+ productos</strong> disponibles.
             </p>
             <div class="hero-cta animate-fade-up delay-3">
-                <a href="#productos" class="btn btn-primary btn-glow">
+                <a href="productos.html" class="btn btn-primary btn-glow">
                     <i class="fas fa-boxes-stacked"></i>
                     Ver Catálogo
                 </a>
@@ -131,44 +131,6 @@
         </div>
     </section>
 
-    <!-- ========== PRODUCTS SECTION ========== -->
-    <section class="section products-section" id="productos">
-        <div class="container">
-            <div class="section-header">
-                <span class="section-tag"><i class="fas fa-boxes-stacked"></i> Catálogo</span>
-                <h2 class="section-title">Nuestros <span class="gradient-text">Productos</span></h2>
-                <p class="section-subtitle">Selecciona los productos que necesitas y envía tu lista de cotización directamente por WhatsApp.</p>
-            </div>
-
-            <!-- Category Filter -->
-            <div class="category-filter" id="categoryFilter">
-                <button class="filter-btn active" data-category="all" onclick="filterProducts('all', this)">
-                    <i class="fas fa-th-large"></i> Todos
-                </button>
-                <button class="filter-btn" data-category="pinturas" onclick="filterProducts('pinturas', this)">
-                    <i class="fas fa-fill-drip"></i> Pinturas
-                </button>
-                <button class="filter-btn" data-category="epoxicos" onclick="filterProducts('epoxicos', this)">
-                    <i class="fas fa-shield-halved"></i> Epóxicos
-                </button>
-                <button class="filter-btn" data-category="solventes" onclick="filterProducts('solventes', this)">
-                    <i class="fas fa-flask"></i> Solventes
-                </button>
-                <button class="filter-btn" data-category="trafico" onclick="filterProducts('trafico', this)">
-                    <i class="fas fa-road"></i> Tráfico
-                </button>
-                <button class="filter-btn" data-category="accesorios" onclick="filterProducts('accesorios', this)">
-                    <i class="fas fa-paint-roller"></i> Accesorios
-                </button>
-            </div>
-
-
-            <!-- Products Grid -->
-            <div class="products-grid" id="productsGrid">
-                <!-- Products will be injected by JS -->
-            </div>
-        </div>
-    </section>
 
     <!-- ========== WHY US SECTION ========== -->
     <section class="section why-section" id="por-que">
@@ -271,18 +233,18 @@
                 </div>
                 <div class="footer-links-group">
                     <h4>Enlaces Rápidos</h4>
-                    <a href="#inicio">Inicio</a>
-                    <a href="#nosotros">Nosotros</a>
-                    <a href="#productos">Productos</a>
-                    <a href="#contacto">Contacto</a>
+                    <a href="index.html">Inicio</a>
+                    <a href="index.html#nosotros">Nosotros</a>
+                    <a href="productos.html">Productos</a>
+                    <a href="index.html#contacto">Contacto</a>
                 </div>
                 <div class="footer-links-group">
                     <h4>Categorías</h4>
-                    <a href="#productos" onclick="filterProducts('pinturas')">Pinturas</a>
-                    <a href="#productos" onclick="filterProducts('epoxicos')">Epóxicos</a>
-                    <a href="#productos" onclick="filterProducts('solventes')">Solventes</a>
-                    <a href="#productos" onclick="filterProducts('trafico')">Tráfico</a>
-                    <a href="#productos" onclick="filterProducts('accesorios')">Accesorios</a>
+                    <a href="productos.html?cat=pinturas">Pinturas</a>
+                    <a href="productos.html?cat=epoxicos">Epóxicos</a>
+                    <a href="productos.html?cat=solventes">Solventes</a>
+                    <a href="productos.html?cat=trafico">Tráfico</a>
+                    <a href="productos.html?cat=accesorios">Accesorios</a>
                 </div>
             </div>
             <div class="footer-bottom">

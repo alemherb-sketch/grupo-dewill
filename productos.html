@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Catálogo completo de Grupo Dewill - Pinturas, epóxicos, solventes, pintura de tráfico y accesorios. Cotiza al instante por WhatsApp.">
+    <meta name="keywords" content="pinturas, epóxicos, solventes, thinner, accesorios pintura, rodillos, brochas, pintura tráfico, Grupo Dewill, Perú">
+    <title>Productos | Grupo Dewill</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- ========== NAVBAR ========== -->
+    <nav class="navbar scrolled" id="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">
+                <div class="logo-icon">
+                    <i class="fas fa-industry"></i>
+                </div>
+                <span class="logo-text">GRUPO <span class="logo-accent">DEWILL</span></span>
+            </a>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="index.html" class="nav-link">Inicio</a></li>
+                <li><a href="index.html#nosotros" class="nav-link">Nosotros</a></li>
+                <li><a href="productos.html" class="nav-link active">Productos</a></li>
+                <li><a href="index.html#por-que" class="nav-link">¿Por Qué Elegirnos?</a></li>
+                <li><a href="index.html#contacto" class="nav-link">Contacto</a></li>
+            </ul>
+            <div class="nav-actions">
+                <button class="btn-cart" id="btnCart" onclick="toggleQuotePanel()">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span class="cart-badge" id="cartBadge">0</span>
+                    <span class="cart-label">Mi Cotización</span>
+                </button>
+                <button class="hamburger" id="hamburger" onclick="toggleMobileMenu()">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ========== PAGE HERO BANNER ========== -->
+    <section class="page-hero">
+        <div class="page-hero-bg">
+            <img src="assets/hero_bg.png" alt="Productos Grupo Dewill" class="hero-bg-img">
+            <div class="hero-overlay"></div>
+        </div>
+        <div class="page-hero-content">
+            <div class="hero-badge animate-fade-up">
+                <i class="fas fa-boxes-stacked"></i>
+                Catálogo Completo
+            </div>
+            <h1 class="page-hero-title animate-fade-up delay-1">
+                Nuestros <span class="gradient-text">Productos</span>
+            </h1>
+            <p class="page-hero-subtitle animate-fade-up delay-2">
+                Explora nuestro catálogo completo de pinturas, recubrimientos y accesorios. Arma tu cotización y envíala por WhatsApp.
+            </p>
+        </div>
+    </section>
+
+    <!-- ========== PRODUCTS SECTION ========== -->
+    <section class="section products-section" id="productos">
+        <div class="container">
+            <!-- Search Bar -->
+            <div class="product-search-bar animate-fade-up">
+                <i class="fas fa-search"></i>
+                <input type="text" id="productSearch" placeholder="Buscar productos..." oninput="searchProducts(this.value)">
+            </div>
+
+            <!-- Category Filter -->
+            <div class="category-filter" id="categoryFilter">
+                <button class="filter-btn active" data-category="all" onclick="filterProducts('all', this)">
+                    <i class="fas fa-th-large"></i> Todos
+                </button>
+                <button class="filter-btn" data-category="pinturas" onclick="filterProducts('pinturas', this)">
+                    <i class="fas fa-fill-drip"></i> Pinturas
+                </button>
+                <button class="filter-btn" data-category="epoxicos" onclick="filterProducts('epoxicos', this)">
+                    <i class="fas fa-shield-halved"></i> Epóxicos
+                </button>
+                <button class="filter-btn" data-category="solventes" onclick="filterProducts('solventes', this)">
+                    <i class="fas fa-flask"></i> Solventes
+                </button>
+                <button class="filter-btn" data-category="trafico" onclick="filterProducts('trafico', this)">
+                    <i class="fas fa-road"></i> Tráfico
+                </button>
+                <button class="filter-btn" data-category="accesorios" onclick="filterProducts('accesorios', this)">
+                    <i class="fas fa-paint-roller"></i> Accesorios
+                </button>
+            </div>
+
+            <!-- Products Count -->
+            <div class="products-count" id="productsCount">
+                <span>Mostrando <strong id="countNumber">36</strong> productos</span>
+            </div>
+
+            <!-- Products Grid -->
+            <div class="products-grid" id="productsGrid">
+                <!-- Products will be injected by JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== CTA SECTION ========== -->
+    <section class="section cta-section">
+        <div class="container">
+            <div class="cta-box glass-card">
+                <div class="cta-content">
+                    <h2>¿No encuentras lo que buscas?</h2>
+                    <p>Contáctanos por WhatsApp y te ayudamos a encontrar el producto ideal para tu proyecto.</p>
+                </div>
+                <a href="https://wa.me/51977585654?text=Hola%20Grupo%20Dewill%2C%20busco%20un%20producto%20que%20no%20encuentro%20en%20su%20cat%C3%A1logo" target="_blank" class="btn btn-whatsapp btn-lg">
+                    <i class="fab fa-whatsapp"></i>
+                    Escríbenos Ahora
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== FOOTER ========== -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <i class="fas fa-industry"></i>
+                        <span>GRUPO <span class="logo-accent">DEWILL</span></span>
+                    </div>
+                    <p>Tu aliado estratégico en suministros industriales. Calidad, confianza y servicio al mejor precio.</p>
+                    <div class="footer-social">
+                        <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+                        <a href="https://wa.me/51977585654" target="_blank" class="social-link"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+                <div class="footer-links-group">
+                    <h4>Enlaces Rápidos</h4>
+                    <a href="index.html">Inicio</a>
+                    <a href="index.html#nosotros">Nosotros</a>
+                    <a href="productos.html">Productos</a>
+                    <a href="index.html#contacto">Contacto</a>
+                </div>
+                <div class="footer-links-group">
+                    <h4>Categorías</h4>
+                    <a href="productos.html?cat=pinturas">Pinturas</a>
+                    <a href="productos.html?cat=epoxicos">Epóxicos</a>
+                    <a href="productos.html?cat=solventes">Solventes</a>
+                    <a href="productos.html?cat=trafico">Tráfico</a>
+                    <a href="productos.html?cat=accesorios">Accesorios</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Grupo Dewill. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ========== QUOTE PANEL (Sidebar) ========== -->
+    <div class="quote-overlay" id="quoteOverlay" onclick="toggleQuotePanel()"></div>
+    <div class="quote-panel" id="quotePanel">
+        <div class="quote-header">
+            <h3><i class="fas fa-clipboard-list"></i> Mi Lista de Cotización</h3>
+            <button class="quote-close" onclick="toggleQuotePanel()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="quote-body" id="quoteBody">
+            <div class="quote-empty" id="quoteEmpty">
+                <i class="fas fa-clipboard"></i>
+                <p>Tu lista está vacía</p>
+                <span>Agrega productos desde el catálogo</span>
+            </div>
+            <div class="quote-items" id="quoteItems">
+                <!-- Items added dynamically -->
+            </div>
+        </div>
+        <div class="quote-footer" id="quoteFooter" style="display:none;">
+            <div class="quote-total">
+                <span>Productos seleccionados:</span>
+                <strong id="quoteTotalCount">0</strong>
+            </div>
+            <button class="btn btn-whatsapp btn-full" onclick="sendQuoteToWhatsApp()">
+                <i class="fab fa-whatsapp"></i>
+                Enviar Cotización por WhatsApp
+            </button>
+            <button class="btn btn-outline-danger btn-full" onclick="clearQuote()">
+                <i class="fas fa-trash-alt"></i>
+                Limpiar Lista
+            </button>
+        </div>
+    </div>
+
+    <!-- ========== PRODUCT DETAIL MODAL ========== -->
+    <div class="modal-overlay" id="productModal">
+        <div class="modal-container">
+            <button class="modal-close" onclick="closeProductModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-content">
+                <div class="modal-image-section">
+                    <img id="modalProductImage" src="" alt="Producto">
+                </div>
+                <div class="modal-info-section">
+                    <span class="modal-category" id="modalCategory"></span>
+                    <h2 class="modal-title" id="modalTitle"></h2>
+                    <p class="modal-description" id="modalDescription"></p>
+                    
+                    <div class="modal-specs" id="modalSpecs">
+                        <!-- Specifications injected dynamically -->
+                    </div>
+
+                    <div class="modal-documents">
+                        <h4><i class="fas fa-file-pdf"></i> Documentos Adjuntos</h4>
+                        <div class="documents-list" id="modalDocuments">
+                            <!-- Documents injected dynamically -->
+                        </div>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button class="btn btn-primary" onclick="addToQuoteFromModal()">
+                            <i class="fas fa-clipboard-list"></i>
+                            Agregar a Cotización
+                        </button>
+                        <a href="#" id="modalWhatsAppLink" target="_blank" class="btn btn-whatsapp">
+                            <i class="fab fa-whatsapp"></i>
+                            Consultar por WhatsApp
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== FLOATING WHATSAPP BUTTON ========== -->
+    <a href="https://wa.me/51977585654?text=Hola%20Grupo%20Dewill%2C%20necesito%20información%20sobre%20sus%20productos" 
+       target="_blank" class="whatsapp-float" id="whatsappFloat">
+        <i class="fab fa-whatsapp"></i>
+        <span class="whatsapp-tooltip">¿Necesitas ayuda?</span>
+    </a>
+
+    <script src="app.js"></script>
+</body>
+</html>

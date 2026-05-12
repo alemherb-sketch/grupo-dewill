@@ -342,9 +342,25 @@ const products = [
 // ========== STATE MANAGEMENT ==========
 let quoteList = JSON.parse(localStorage.getItem('dewill_quote')) || [];
 let currentFilter = 'all';
+let searchQuery = '';
 
 // ========== INITIALIZATION ==========
 document.addEventListener('DOMContentLoaded', () => {
+    // Check URL params for category filter (e.g., productos.html?cat=pinturas)
+    const params = new URLSearchParams(window.location.search);
+    const catParam = params.get('cat');
+    if (catParam && ['pinturas', 'epoxicos', 'solventes', 'trafico', 'accesorios'].includes(catParam)) {
+        currentFilter = catParam;
+        // Activate the right filter button
+        setTimeout(() => {
+            const btns = document.querySelectorAll('.filter-btn');
+            btns.forEach(b => {
+                b.classList.remove('active');
+                if (b.dataset.category === catParam) b.classList.add('active');
+            });
+        }, 100);
+    }
+
     renderProducts();
     updateQuoteUI();
     setupEventListeners();
@@ -355,12 +371,19 @@ function setupEventListeners() {
     // Scroll event for navbar
     window.addEventListener('scroll', () => {
         const navbar = document.getElementById('navbar');
+        if (!navbar) return;
         if (window.scrollY > 50) {
             navbar.classList.add('scrolled');
         } else {
             navbar.classList.remove('scrolled');
         }
     });
+}
+
+// ========== SEARCH ==========
+function searchProducts(query) {
+    searchQuery = query.toLowerCase().trim();
+    renderProducts();
 }
 
 // ========== PRODUCT RENDERING ==========
@@ -370,9 +393,22 @@ function renderProducts() {
 
     grid.innerHTML = '';
     
-    const filteredProducts = currentFilter === 'all' 
+    let filteredProducts = currentFilter === 'all' 
         ? products 
         : products.filter(p => p.category === currentFilter);
+
+    // Apply search filter
+    if (searchQuery) {
+        filteredProducts = filteredProducts.filter(p =>
+            p.name.toLowerCase().includes(searchQuery) ||
+            p.description.toLowerCase().includes(searchQuery) ||
+            p.category.toLowerCase().includes(searchQuery)
+        );
+    }
+
+    // Update count display
+    const countEl = document.getElementById('countNumber');
+    if (countEl) countEl.innerText = filteredProducts.length;
 
     filteredProducts.forEach(product => {
         const card = document.createElement('div');
