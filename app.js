@@ -161,14 +161,29 @@ function addToQuote(productId) {
 
     const exists = quoteList.find(item => item.id === productId);
     if (exists) {
-        showToast('Producto ya está en la lista', 'info');
+        exists.quantity = (exists.quantity || 1) + 1;
+        saveQuote();
+        updateQuoteUI();
+        showToast(`Cantidad aumentada: ${exists.quantity}`, 'success');
         return;
     }
 
-    quoteList.push(product);
+    const newItem = { ...product, quantity: 1 };
+    quoteList.push(newItem);
     saveQuote();
     updateQuoteUI();
     showToast('Agregado a la lista de cotización', 'success');
+}
+
+function updateQuantity(productId, delta) {
+    const item = quoteList.find(p => p.id === productId);
+    if (!item) return;
+
+    item.quantity = (item.quantity || 1) + delta;
+    if (item.quantity < 1) item.quantity = 1;
+    
+    saveQuote();
+    updateQuoteUI();
 }
 
 function removeFromQuote(productId) {
@@ -216,11 +231,17 @@ function updateQuoteUI() {
                 <img src="${item.image}" class="quote-item-img">
                 <div class="quote-item-info">
                     <h4>${item.name}</h4>
-                    <span>Categoría: ${item.category}</span>
+                    <div class="quote-item-controls">
+                        <div class="quantity-selector">
+                            <button class="qty-btn" onclick="updateQuantity(${item.id}, -1)">-</button>
+                            <span class="qty-val">${item.quantity || 1}</span>
+                            <button class="qty-btn" onclick="updateQuantity(${item.id}, 1)">+</button>
+                        </div>
+                        <button class="btn-remove" onclick="removeFromQuote(${item.id})" title="Eliminar">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
                 </div>
-                <button class="btn-icon" onclick="removeFromQuote(${item.id})">
-                    <i class="fas fa-trash-alt" style="color:var(--danger)"></i>
-                </button>
             `;
             quoteItems.appendChild(div);
         });
@@ -239,7 +260,7 @@ function sendQuoteToWhatsApp() {
 
     let message = "Hola Grupo Dewill, me gustaría solicitar una cotización para los siguientes productos:\n\n";
     quoteList.forEach((item, index) => {
-        message += `${index + 1}. ${item.name} (Cat: ${item.category})\n`;
+        message += `${index + 1}. [Cant: ${item.quantity || 1}] ${item.name}\n`;
     });
     message += "\nPor favor, envíenme los precios y tiempos de entrega. ¡Gracias!";
 

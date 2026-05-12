@@ -692,12 +692,61 @@ img {
 
 .quote-item-info h4 {
     font-size: 0.95rem;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
 }
 
-.quote-item-info span {
-    font-size: 0.8rem;
-    color: var(--text-muted);
+.quote-item-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.quantity-selector {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.qty-btn {
+    background: none;
+    border: none;
+    color: var(--primary);
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    font-weight: 700;
+    transition: var(--transition);
+}
+
+.qty-btn:hover {
+    background: var(--primary);
+    color: var(--text-on-primary);
+}
+
+.qty-val {
+    padding: 0 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    min-width: 30px;
+    text-align: center;
+}
+
+.btn-remove {
+    background: none;
+    border: none;
+    color: var(--danger);
+    opacity: 0.6;
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 1rem;
+}
+
+.btn-remove:hover {
+    opacity: 1;
+    transform: scale(1.1);
 }
 
 .quote-footer {
