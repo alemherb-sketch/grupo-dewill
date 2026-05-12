@@ -2,81 +2,342 @@
  * GRUPO DEWILL - WEB APP LOGIC
  */
 
-// ========== PRODUCT DATA ==========
 const products = [
+    // ===== PINTURAS DECORATIVAS =====
     {
         id: 1,
-        name: "Casco de Seguridad MSA V-Gard",
-        category: "seguridad",
-        description: "Casco de ala frontal con suspensión de trinquete. Alta resistencia a impactos y diseño ergonómico.",
-        image: "assets/product_safety.png",
-        specs: ["Material: Polietileno de alta densidad", "Norma: ANSI Z89.1", "Talla: Ajustable"],
+        name: "Sellador CPP",
+        category: "pinturas",
+        description: "Sellador acrílico para interiores y exteriores. Base ideal para acabados de calidad.",
+        image: "assets/product_paint.png",
+        specs: ["Tipo: Sellador Acrílico", "Aplicación: Interior/Exterior", "Rendimiento: 40-50 m²/gal"],
         docs: [{ name: "Ficha Técnica.pdf", link: "#" }]
     },
     {
         id: 2,
-        name: "Botas de Seguridad Dielectricas",
-        category: "seguridad",
-        description: "Botas de cuero con puntera de composite. Resistentes a descargas eléctricas y aceites.",
-        image: "assets/product_safety.png",
-        specs: ["Puntera: Composite", "Suela: Antideslizante", "Protección: 18kV"],
-        docs: [{ name: "Certificación.pdf", link: "#" }]
+        name: "Temple Fino Sinolit CPP",
+        category: "pinturas",
+        description: "Temple fino de alta calidad para acabados interiores lisos y uniformes.",
+        image: "assets/product_paint.png",
+        specs: ["Tipo: Temple Fino", "Aplicación: Interior", "Acabado: Mate"],
+        docs: [{ name: "Ficha Técnica.pdf", link: "#" }]
     },
     {
         id: 3,
-        name: "Juego de Llaves Mixtas Stanley",
-        category: "herramientas",
-        description: "Set de 12 piezas de llaves combinadas (milimétricas). Acero cromo vanadio de alta calidad.",
-        image: "assets/product_tools.png",
-        specs: ["Piezas: 12", "Acabado: Cromo mate", "Medidas: 8-24mm"],
-        docs: [{ name: "Manual de Uso.pdf", link: "#" }]
+        name: "Temple Majestad",
+        category: "pinturas",
+        description: "Temple económico de buena cobertura para proyectos de gran escala.",
+        image: "assets/product_paint.png",
+        specs: ["Tipo: Temple Estándar", "Aplicación: Interior", "Presentación: 25 kg"],
+        docs: [{ name: "Ficha Técnica.pdf", link: "#" }]
     },
     {
         id: 4,
-        name: "Taladro Percutor Bosch Professional",
-        category: "herramientas",
-        description: "Potente taladro para perforación en concreto, metal y madera. Motor de alto rendimiento.",
-        image: "assets/product_tools.png",
-        specs: ["Potencia: 750W", "Velocidad: Variable", "Peso: 1.8kg"],
+        name: "Satinado CPP",
+        category: "pinturas",
+        description: "Pintura látex satinada lavable de excelente resistencia al frote húmedo.",
+        image: "assets/product_paint.png",
+        specs: ["Tipo: Látex Satinado", "Acabado: Satinado", "Resistencia: Alta al lavado"],
         docs: [{ name: "Ficha Técnica.pdf", link: "#" }]
     },
     {
         id: 5,
-        name: "Limpiador Desengrasante Industrial",
-        category: "limpieza",
-        description: "Solución concentrada para remover grasas pesadas en maquinaria y pisos industriales.",
-        image: "assets/product_cleaning.png",
-        specs: ["Presentación: Galón/Bidón", "pH: Alcalino", "Biodegradable: Sí"],
-        docs: [{ name: "Hoja de Seguridad.pdf", link: "#" }]
+        name: "Duralatex CPP",
+        category: "pinturas",
+        description: "Látex acrílico de alta durabilidad para interiores y exteriores. Gran cubrimiento.",
+        image: "assets/product_paint.png",
+        specs: ["Tipo: Látex Acrílico", "Aplicación: Interior/Exterior", "Rendimiento: 45-55 m²/gal"],
+        docs: [{ name: "Ficha Técnica.pdf", link: "#" }]
     },
     {
         id: 6,
-        name: "Kit de Absorción de Derrames",
-        category: "limpieza",
-        description: "Kit completo para control de derrames de hidrocarburos y químicos en planta.",
-        image: "assets/product_cleaning.png",
-        specs: ["Capacidad: 20 Galones", "Incluye: Paños, Cordones, EPP"],
-        docs: [{ name: "Guía de Respuesta.pdf", link: "#" }]
+        name: "Latex Pato CPP",
+        category: "pinturas",
+        description: "Pintura látex económica de buena calidad. Ideal para proyectos con presupuesto ajustado.",
+        image: "assets/product_paint.png",
+        specs: ["Tipo: Látex Económico", "Aplicación: Interior/Exterior", "Acabado: Mate"],
+        docs: [{ name: "Ficha Técnica.pdf", link: "#" }]
     },
     {
         id: 7,
-        name: "Cable Eléctrico Indeco NMT",
-        category: "electrico",
-        description: "Cable para instalaciones eléctricas industriales y domésticas. Alta conductividad.",
-        image: "assets/product_electrical.png",
-        specs: ["Calibre: 12 AWG", "Tensión: 600V", "Colores: Rojo, Negro, Verde"],
-        docs: [{ name: "Especificaciones.pdf", link: "#" }]
+        name: "Supermate Vencedor",
+        category: "pinturas",
+        description: "Pintura mate premium de máxima cobertura y excelente rendimiento por galón.",
+        image: "assets/product_paint.png",
+        specs: ["Tipo: Látex Mate", "Acabado: Mate Premium", "Rendimiento: 50-60 m²/gal"],
+        docs: [{ name: "Ficha Técnica.pdf", link: "#" }]
     },
     {
         id: 8,
-        name: "Tablero Eléctrico IP65",
-        category: "electrico",
-        description: "Caja de distribución metálica con protección contra polvo y agua. Ideal para exteriores.",
-        image: "assets/product_electrical.png",
-        specs: ["Material: Acero Inoxidable", "Grado: IP65", "Medidas: 400x300x200mm"],
-        docs: [{ name: "Plano.pdf", link: "#" }]
+        name: "Masterlast Anypsa",
+        category: "pinturas",
+        description: "Pintura acrílica de alto rendimiento con tecnología anti-hongos y bacterias.",
+        image: "assets/product_paint.png",
+        specs: ["Tipo: Acrílico Anti-hongos", "Aplicación: Interior/Exterior", "Tecnología: Antibacterial"],
+        docs: [{ name: "Ficha Técnica.pdf", link: "#" }]
+    },
+    {
+        id: 9,
+        name: "X3 Gloss Anypsa (Esmalte)",
+        category: "pinturas",
+        description: "Esmalte sintético de alto brillo para superficies metálicas y de madera.",
+        image: "assets/product_paint.png",
+        specs: ["Tipo: Esmalte Sintético", "Acabado: Alto Brillo", "Superficies: Metal/Madera"],
+        docs: [{ name: "Ficha Técnica.pdf", link: "#" }]
+    },
+    {
+        id: 10,
+        name: "Pintura para Pizarra Anypsa",
+        category: "pinturas",
+        description: "Pintura especial que convierte cualquier superficie en pizarra acrílica reutilizable.",
+        image: "assets/product_paint.png",
+        specs: ["Tipo: Pintura Especial", "Uso: Pizarras", "Colores: Negro/Verde"],
+        docs: [{ name: "Ficha Técnica.pdf", link: "#" }]
+    },
+    {
+        id: 11,
+        name: "Pintura Fluorescente Anypsa",
+        category: "pinturas",
+        description: "Pintura de alta visibilidad con pigmentos fluorescentes para señalización y decoración.",
+        image: "assets/product_paint.png",
+        specs: ["Tipo: Fluorescente", "Uso: Señalización/Decoración", "Visibilidad: Alta"],
+        docs: [{ name: "Ficha Técnica.pdf", link: "#" }]
+    },
+
+    // ===== PINTURAS DE TRÁFICO =====
+    {
+        id: 12,
+        name: "Pintura para Tráfico Maestro",
+        category: "trafico",
+        description: "Pintura acrílica para demarcación vial de alta resistencia al desgaste vehicular.",
+        image: "assets/product_traffic.png",
+        specs: ["Tipo: Acrílica de Tráfico", "Colores: Amarillo/Blanco", "Norma: MTC"],
+        docs: [{ name: "Ficha Técnica.pdf", link: "#" }]
+    },
+    {
+        id: 13,
+        name: "Pintura para Tráfico Tamsa",
+        category: "trafico",
+        description: "Pintura de señalización vial de secado rápido para carreteras y estacionamientos.",
+        image: "assets/product_traffic.png",
+        specs: ["Tipo: Tráfico Rápido Secado", "Aplicación: Vial", "Durabilidad: Alta"],
+        docs: [{ name: "Ficha Técnica.pdf", link: "#" }]
+    },
+
+    // ===== EPÓXICOS =====
+    {
+        id: 14,
+        name: "Juego Epóxico Bonn Zincromato",
+        category: "epoxicos",
+        description: "Sistema epóxico anticorrosivo de dos componentes para protección de estructuras metálicas.",
+        image: "assets/product_epoxy.png",
+        specs: ["Tipo: Epóxico 2 Componentes", "Uso: Anticorrosivo", "Base: Zincromato"],
+        docs: [{ name: "Ficha Técnica.pdf", link: "#" }]
+    },
+    {
+        id: 15,
+        name: "Juego Epóxico JET POX 2000",
+        category: "epoxicos",
+        description: "Recubrimiento epóxico de alto espesor para ambientes industriales severos y marinos.",
+        image: "assets/product_epoxy.png",
+        specs: ["Tipo: Epóxico Alto Espesor", "Uso: Industrial/Marino", "Resistencia: Química"],
+        docs: [{ name: "Ficha Técnica.pdf", link: "#" }]
+    },
+    {
+        id: 16,
+        name: "Juego Epóxico JET 70 MP",
+        category: "epoxicos",
+        description: "Epóxico multipropósito de alta performance para pisos industriales y estructuras.",
+        image: "assets/product_epoxy.png",
+        specs: ["Tipo: Epóxico Multipropósito", "Uso: Pisos/Estructuras", "Acabado: Semi-brillante"],
+        docs: [{ name: "Ficha Técnica.pdf", link: "#" }]
+    },
+    {
+        id: 17,
+        name: "Juego Epóxico Anticorrosivo JET 62 ZP",
+        category: "epoxicos",
+        description: "Primer epóxico rico en zinc para máxima protección anticorrosiva en acero.",
+        image: "assets/product_epoxy.png",
+        specs: ["Tipo: Primer Epóxico", "Base: Rico en Zinc", "Protección: Catódica"],
+        docs: [{ name: "Ficha Técnica.pdf", link: "#" }]
+    },
+    {
+        id: 18,
+        name: "Juego Epóxico Poliuretano JETHANE 500",
+        category: "epoxicos",
+        description: "Acabado poliuretano de alto brillo y excelente retención de color. Resistente a UV.",
+        image: "assets/product_epoxy.png",
+        specs: ["Tipo: Poliuretano", "Acabado: Alto Brillo", "Resistencia: UV"],
+        docs: [{ name: "Ficha Técnica.pdf", link: "#" }]
+    },
+    {
+        id: 19,
+        name: "Juego Epóxico Poliuretano JETHANE 650 HS",
+        category: "epoxicos",
+        description: "Poliuretano de altos sólidos para acabados de máxima durabilidad industrial.",
+        image: "assets/product_epoxy.png",
+        specs: ["Tipo: Poliuretano HS", "Sólidos: Alto contenido", "Uso: Industrial pesado"],
+        docs: [{ name: "Ficha Técnica.pdf", link: "#" }]
+    },
+    {
+        id: 20,
+        name: "Barniz Epóxico Alta Duración Anypsa",
+        category: "epoxicos",
+        description: "Barniz epóxico transparente de dos componentes. Ideal para pisos y superficies de concreto.",
+        image: "assets/product_epoxy.png",
+        specs: ["Tipo: Barniz Epóxico", "Acabado: Transparente", "Uso: Pisos de concreto"],
+        docs: [{ name: "Ficha Técnica.pdf", link: "#" }]
+    },
+
+    // ===== SOLVENTES =====
+    {
+        id: 21,
+        name: "Thinner Automotriz A3m",
+        category: "solventes",
+        description: "Thinner de alta pureza para dilución de pinturas automotrices y lacas.",
+        image: "assets/product_thinner.png",
+        specs: ["Tipo: Automotriz", "Pureza: Alta", "Uso: Pinturas automotrices"],
+        docs: [{ name: "Hoja de Seguridad.pdf", link: "#" }]
+    },
+    {
+        id: 22,
+        name: "Thinner Estándar Expert",
+        category: "solventes",
+        description: "Solvente de uso general para dilución de esmaltes y pinturas sintéticas.",
+        image: "assets/product_thinner.png",
+        specs: ["Tipo: Estándar", "Uso: General", "Compatibilidad: Esmaltes/Sintéticos"],
+        docs: [{ name: "Hoja de Seguridad.pdf", link: "#" }]
+    },
+    {
+        id: 23,
+        name: "Thinner Acrílico Expert",
+        category: "solventes",
+        description: "Diluyente especializado para pinturas acrílicas automotrices y de uso industrial.",
+        image: "assets/product_thinner.png",
+        specs: ["Tipo: Acrílico", "Uso: Automotriz/Industrial", "Evaporación: Media"],
+        docs: [{ name: "Hoja de Seguridad.pdf", link: "#" }]
+    },
+    {
+        id: 24,
+        name: "Thinner Acrílico MS1 CMC",
+        category: "solventes",
+        description: "Thinner acrílico de secado medio para sistemas de pintura base-barniz.",
+        image: "assets/product_thinner.png",
+        specs: ["Tipo: Acrílico MS1", "Secado: Medio", "Sistema: Base-Barniz"],
+        docs: [{ name: "Hoja de Seguridad.pdf", link: "#" }]
+    },
+    {
+        id: 25,
+        name: "Thinner Acrílico Premium CPP",
+        category: "solventes",
+        description: "Solvente acrílico premium de alta calidad con excelente poder de dilución.",
+        image: "assets/product_thinner.png",
+        specs: ["Tipo: Acrílico Premium", "Calidad: Premium", "Poder Solvente: Alto"],
+        docs: [{ name: "Hoja de Seguridad.pdf", link: "#" }]
+    },
+    {
+        id: 26,
+        name: "Maestrazo Thinner Acrílico",
+        category: "solventes",
+        description: "Thinner acrílico económico de buen rendimiento para proyectos de gran volumen.",
+        image: "assets/product_thinner.png",
+        specs: ["Tipo: Acrílico Económico", "Uso: Alto Volumen", "Presentación: Galón/Cilindro"],
+        docs: [{ name: "Hoja de Seguridad.pdf", link: "#" }]
+    },
+
+    // ===== ACCESORIOS =====
+    {
+        id: 27,
+        name: "Rodillo Peluche Blanco Toretto",
+        category: "accesorios",
+        description: "Rodillo de peluche blanco profesional para acabados finos en interiores.",
+        image: "assets/product_accessories.png",
+        specs: ["Tipo: Peluche Blanco", "Uso: Interiores", "Acabado: Fino"],
+        docs: [{ name: "Ficha Técnica.pdf", link: "#" }]
+    },
+    {
+        id: 28,
+        name: "Rodillo Antigoteo B y P Soprin",
+        category: "accesorios",
+        description: "Rodillo con tecnología anti-goteo para trabajo limpio y eficiente.",
+        image: "assets/product_accessories.png",
+        specs: ["Tipo: Antigoteo", "Tecnología: Anti-salpicaduras", "Marca: Soprin"],
+        docs: [{ name: "Ficha Técnica.pdf", link: "#" }]
+    },
+    {
+        id: 29,
+        name: "Rodillo Peluche Carnero Toretto",
+        category: "accesorios",
+        description: "Rodillo de fibra de carnero para superficies rugosas y texturadas.",
+        image: "assets/product_accessories.png",
+        specs: ["Tipo: Peluche Carnero", "Uso: Superficies rugosas", "Durabilidad: Alta"],
+        docs: [{ name: "Ficha Técnica.pdf", link: "#" }]
+    },
+    {
+        id: 30,
+        name: "Rodillo Espuma Profesional Goya",
+        category: "accesorios",
+        description: "Rodillo de espuma de alta densidad para acabados ultralisos en esmaltes.",
+        image: "assets/product_accessories.png",
+        specs: ["Tipo: Espuma HD", "Acabado: Ultra liso", "Uso: Esmaltes"],
+        docs: [{ name: "Ficha Técnica.pdf", link: "#" }]
+    },
+    {
+        id: 31,
+        name: "Espátula Multiusos ATLAS 4\"",
+        category: "accesorios",
+        description: "Espátula profesional de acero inoxidable para empaste, rasqueteo y resane.",
+        image: "assets/product_accessories.png",
+        specs: ["Tipo: Multiusos", "Material: Acero Inoxidable", "Tamaño: 4 pulgadas"],
+        docs: [{ name: "Ficha Técnica.pdf", link: "#" }]
+    },
+    {
+        id: 32,
+        name: "Espátula Atlas Angular",
+        category: "accesorios",
+        description: "Espátula angular de precisión para acabados en esquinas y bordes.",
+        image: "assets/product_accessories.png",
+        specs: ["Tipo: Angular", "Uso: Esquinas y bordes", "Material: Acero"],
+        docs: [{ name: "Ficha Técnica.pdf", link: "#" }]
+    },
+    {
+        id: 33,
+        name: "Brocha Tumi Nylon",
+        category: "accesorios",
+        description: "Brocha profesional de filamentos de nylon para todo tipo de pinturas.",
+        image: "assets/product_accessories.png",
+        specs: ["Tipo: Brocha Profesional", "Filamento: Nylon", "Uso: Universal"],
+        docs: [{ name: "Ficha Técnica.pdf", link: "#" }]
+    },
+    {
+        id: 34,
+        name: "Spray ABRO Colores Metálicos Premium",
+        category: "accesorios",
+        description: "Pintura en spray con acabado metálico premium para decoración y retoques.",
+        image: "assets/product_accessories.png",
+        specs: ["Tipo: Spray Metálico", "Acabado: Premium", "Marca: ABRO"],
+        docs: [{ name: "Ficha Técnica.pdf", link: "#" }]
+    },
+    {
+        id: 35,
+        name: "Spray ABRO Colores Fluorescentes",
+        category: "accesorios",
+        description: "Spray de alta visibilidad con colores fluorescentes para señalización rápida.",
+        image: "assets/product_accessories.png",
+        specs: ["Tipo: Spray Fluorescente", "Uso: Señalización", "Marca: ABRO"],
+        docs: [{ name: "Ficha Técnica.pdf", link: "#" }]
+    },
+    {
+        id: 36,
+        name: "Spray C&A Colores",
+        category: "accesorios",
+        description: "Spray multicolor de secado rápido para proyectos de pintura y decoración.",
+        image: "assets/product_accessories.png",
+        specs: ["Tipo: Spray Multicolor", "Secado: Rápido", "Uso: Pintura/Decoración"],
+        docs: [{ name: "Ficha Técnica.pdf", link: "#" }]
     }
 ];
+
 
 // ========== STATE MANAGEMENT ==========
 let quoteList = JSON.parse(localStorage.getItem('dewill_quote')) || [];
