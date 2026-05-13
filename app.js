@@ -511,14 +511,17 @@ function updateQuoteUI() {
     badge.innerText = quoteList.length;
     totalCount.innerText = quoteList.length;
 
+    const infoForm = document.getElementById('clientInfoForm');
     if (quoteList.length === 0) {
         quoteEmpty.style.display = 'block';
         quoteItems.style.display = 'none';
         quoteFooter.style.display = 'none';
+        if (infoForm) infoForm.style.display = 'none';
     } else {
         quoteEmpty.style.display = 'none';
         quoteItems.style.display = 'block';
         quoteFooter.style.display = 'flex';
+        if (infoForm) infoForm.style.display = 'block';
 
         quoteItems.innerHTML = '';
         quoteList.forEach(item => {
@@ -552,13 +555,78 @@ function toggleQuotePanel() {
     overlay.classList.toggle('open');
 }
 
+function generateQuoteXML(list) {
+    const clientName = document.getElementById('clientName')?.value || 'No especificado';
+    const clientCompany = document.getElementById('clientCompany')?.value || 'No especificado';
+    const clientEmail = document.getElementById('clientEmail')?.value || 'No especificado';
+
+    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+    xml += '<cotizacion>\n';
+    xml += `  <fecha>${new Date().toISOString().split('T')[0]}</fecha>\n`;
+    xml += '  <cliente>\n';
+    xml += `    <nombre>${clientName}</nombre>\n`;
+    xml += `    <empresa>${clientCompany}</empresa>\n`;
+    xml += `    <contacto>${clientEmail}</contacto>\n`;
+    xml += '  </cliente>\n';
+    xml += '  <productos>\n';
+    list.forEach(item => {
+        xml += '    <producto>\n';
+        xml += `      <id>${item.id}</id>\n`;
+        xml += `      <nombre>${item.name}</nombre>\n`;
+        xml += `      <cantidad>${item.quantity || 1}</cantidad>\n`;
+        xml += `      <categoria>${item.category}</categoria>\n`;
+        xml += '    </producto>\n';
+    });
+    xml += '  </productos>\n';
+    xml += '</cotizacion>';
+    return xml;
+}
+
+function downloadQuoteXML() {
+    if (quoteList.length === 0) return;
+    
+    const xmlContent = generateQuoteXML(quoteList);
+    const blob = new Blob([xmlContent], { type: 'text/xml' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `cotizacion_dewill_${new Date().getTime()}.xml`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+    
+    showToast('XML descargado para uso administrativo', 'success');
+}
+
 function sendQuoteToWhatsApp() {
     if (quoteList.length === 0) return;
 
-    let message = "Hola Grupo Dewill, me gustaría solicitar una cotización para los siguientes productos:\n\n";
+    const clientName = document.getElementById('clientName')?.value;
+    const clientCompany = document.getElementById('clientCompany')?.value;
+    const clientEmail = document.getElementById('clientEmail')?.value;
+
+    let message = "Hola Grupo Dewill, solicito una cotización para los siguientes productos:\n\n";
+    
+    if (clientName || clientCompany) {
+        message += "*DATOS DEL CLIENTE:*\n";
+        if (clientName) message += `- Nombre: ${clientName}\n`;
+        if (clientCompany) message += `- Empresa: ${clientCompany}\n`;
+        if (clientEmail) message += `- Contacto: ${clientEmail}\n`;
+        message += "\n";
+    }
+
+    message += "*LISTA DE PRODUCTOS:*\n";
     quoteList.forEach((item, index) => {
         message += `${index + 1}. [Cant: ${item.quantity || 1}] ${item.name}\n`;
     });
+
+    // Añadir bloque XML
+    message += "\n--- FORMATO XML ---\n";
+    message += "```xml\n";
+    message += generateQuoteXML(quoteList);
+    message += "\n```\n";
+
     message += "\nPor favor, envíenme los precios y tiempos de entrega. ¡Gracias!";
 
     const encodedMessage = encodeURIComponent(message);

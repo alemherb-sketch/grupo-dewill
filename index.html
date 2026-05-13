@@ -271,6 +271,19 @@
             <div class="quote-items" id="quoteItems">
                 <!-- Items added dynamically -->
             </div>
+            
+            <div class="client-info-form" id="clientInfoForm" style="display:none;">
+                <h4><i class="fas fa-user-edit"></i> Mis Datos (Opcional)</h4>
+                <div class="form-group">
+                    <input type="text" id="clientName" class="form-input" placeholder="Nombre completo">
+                </div>
+                <div class="form-group">
+                    <input type="text" id="clientCompany" class="form-input" placeholder="Empresa">
+                </div>
+                <div class="form-group">
+                    <input type="email" id="clientEmail" class="form-input" placeholder="Correo o WhatsApp">
+                </div>
+            </div>
         </div>
         <div class="quote-footer" id="quoteFooter" style="display:none;">
             <div class="quote-total">
@@ -281,10 +294,15 @@
                 <i class="fab fa-whatsapp"></i>
                 Enviar Cotización por WhatsApp
             </button>
-            <button class="btn btn-outline-danger btn-full" onclick="clearQuote()">
-                <i class="fas fa-trash-alt"></i>
-                Limpiar Lista
-            </button>
+            <div style="display: flex; gap: 0.5rem; width: 100%;">
+                <button class="btn btn-outline-secondary btn-full" onclick="downloadQuoteXML()" title="Solo para uso administrativo">
+                    <i class="fas fa-file-code"></i>
+                    Descargar XML
+                </button>
+                <button class="btn btn-outline-danger btn-full" onclick="clearQuote()">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </div>
         </div>
     </div>
 
