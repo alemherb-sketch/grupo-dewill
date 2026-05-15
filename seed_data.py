@@ -2,7 +2,7 @@
 import os, sys
 sys.path.insert(0, os.path.dirname(__file__))
 
-from app import app
+from flask import current_app
 from models import db, AdminUser, Category, Brand, Product, ProductSpec, Banner, SiteConfig
 
 CATEGORIES = [
@@ -86,7 +86,10 @@ SITE_DEFAULTS = {
     'meta_description': 'Grupo Dewill - Distribuidor líder de pinturas, recubrimientos epóxicos, solventes y accesorios para pintura en Perú.',
 }
 
-def seed():
+def seed(app=None):
+    if app is None:
+        from flask import current_app
+        app = current_app
     with app.app_context():
         db.create_all()
 
@@ -149,4 +152,5 @@ def seed():
         print("[OK] Seed complete!")
 
 if __name__ == '__main__':
-    seed()
+    from app import app
+    seed(app)

@@ -40,8 +40,18 @@
             <div class="form-group"><label>Palabras Clave (Meta Keywords)</label><input type="text" name="meta_keywords" value="{{ site.get('meta_keywords', '') }}" class="form-input"></div>
         </div>
     </div>
-    <div class="form-actions" style="margin-top:2rem;">
+    <div class="form-actions" style="margin-top:2rem; display: flex; justify-content: space-between; align-items: center;">
         <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-save"></i> Guardar Cambios</button>
     </div>
 </form>
+
+<div class="form-section" style="margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 2rem;">
+    <h3><i class="fas fa-tools"></i> Mantenimiento del Sistema</h3>
+    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Utiliza estas opciones para restaurar los datos iniciales si la base de datos está vacía.</p>
+    <form action="{{ url_for('admin_seed_db') }}" method="POST" onsubmit="return confirm('¿Estás seguro de cargar los datos de demostración? Esto agregará productos y categorías si no existen.')">
+        <button type="submit" class="btn btn-outline" style="color: var(--primary); border-color: var(--primary);">
+            <i class="fas fa-database"></i> Cargar Datos de Demostración
+        </button>
+    </form>
+</div>
 {% endblock %}

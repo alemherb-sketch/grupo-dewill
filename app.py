@@ -10,6 +10,9 @@ from config import Config
 from models import db, AdminUser, Category, Brand, Product, ProductImage, ProductSpec
 from models import QuoteRequest, QuoteItem, Banner, GalleryCategory, GalleryImage, AmbientCategory, AmbientImage, SiteConfig
 import time
+import threading
+import resend
+from seed_data import seed as seed_database
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -29,6 +32,33 @@ with app.app_context():
 mail = Mail(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'admin_login'
+
+if app.config.get('RESEND_API_KEY'):
+    resend.api_key = app.config['RESEND_API_KEY']
+
+def send_async_email(app, msg_data):
+    with app.app_context():
+        try:
+            # Try Resend first if configured
+            if app.config.get('RESEND_API_KEY'):
+                resend.Emails.send({
+                    "from": f"Grupo Dewill <onboarding@resend.dev>", # Update this once domain is verified
+                    "to": msg_data['recipients'],
+                    "subject": msg_data['subject'],
+                    "text": msg_data['body']
+                })
+                print("Email sent via Resend API")
+            else:
+                # Fallback to Flask-Mail
+                msg = Message(
+                    msg_data['subject'],
+                    recipients=msg_data['recipients'],
+                    body=msg_data['body']
+                )
+                mail.send(msg)
+                print("Email sent via SMTP")
+        except Exception as e:
+            print(f"Async email failed: {e}")
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -148,12 +178,13 @@ def api_cotizacion():
                 f"Ver en el panel: {url_for('admin_quote_detail', qid=quote.id, _external=True)}"
             )
             
-            msg = Message(
-                f'Nueva Solicitud de Cotización #{quote.id}',
-                recipients=[notify],
-                body=body
-            )
-            mail.send(msg)
+            msg_data = {
+                'subject': f'Nueva Solicitud de Cotización #{quote.id}',
+                'recipients': [notify],
+                'body': body
+            }
+            # Send in background to avoid hanging the UI
+            threading.Thread(target=send_async_email, args=(app._get_current_object(), msg_data)).start()
     except Exception as e:
         print(f"Email failed: {e}")
     return jsonify({'success': True, 'quote_id': quote.id})
@@ -441,6 +472,17 @@ def admin_settings():
         flash('Configuración guardada', 'success')
         return redirect(url_for('admin_settings'))
     return render_template('admin/settings.html')
+
+
+@app.route('/admin/seed-db', methods=['POST'])
+@login_required
+def admin_seed_db():
+    try:
+        seed_database()
+        flash('Datos de demostración cargados exitosamente', 'success')
+    except Exception as e:
+        flash(f'Error al cargar datos: {e}', 'error')
+    return redirect(url_for('admin_settings'))
 
 
 @app.route('/admin/ambientes')

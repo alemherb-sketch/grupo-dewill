@@ -27,3 +27,6 @@ class Config:
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD', 'aoojbirscsgxulwk')
     MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER', 'Jorgecross14@gmail.com')
     MAIL_NOTIFY_TO = os.environ.get('MAIL_NOTIFY_TO', 'Jorgecross14@gmail.com')
+
+    # Resend API
+    RESEND_API_KEY = os.environ.get('RESEND_API_KEY')
