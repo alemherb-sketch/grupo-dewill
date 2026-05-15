@@ -140,7 +140,7 @@ def producto_detalle(product_id):
     related = Product.query.filter(Product.category_id == product.category_id,
         Product.id != product.id, Product.is_active == True).limit(4).all()
     paint_colors = []
-    if product.category and product.category.slug == 'pinturas':
+    if product.category and 'pintura' in product.category.name.lower():
         paint_colors = PaintColor.query.filter_by(is_active=True).all()
     return render_template('producto_detalle.html', product=product, related=related, paint_colors=paint_colors)
 
