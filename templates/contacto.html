@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Contacto | Grupo Dewill{% endblock %}
+{% block nav_class %}scrolled{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+    <div class="page-hero-bg"><img src="{{ url_for('static', filename='assets/hero_bg.png') }}" alt="Contacto" class="hero-bg-img"><div class="hero-overlay"></div></div>
+    <div class="page-hero-content">
+        <div class="hero-badge animate-fade-up"><i class="fas fa-envelope"></i> Contacto</div>
+        <h1 class="page-hero-title animate-fade-up delay-1">Hablemos de tu <span class="gradient-text">Proyecto</span></h1>
+        <p class="page-hero-subtitle animate-fade-up delay-2">Estamos listos para atenderte. Contáctanos por cualquier medio.</p>
+    </div>
+</section>
+
+<section class="section contact-section">
+    <div class="container">
+        <div class="contact-grid-full">
+            <div class="contact-info-panel glass-card">
+                <h2>Información de <span class="gradient-text">Contacto</span></h2>
+                <div class="contact-info-list">
+                    <div class="contact-info-item">
+                        <div class="contact-info-icon"><i class="fab fa-whatsapp"></i></div>
+                        <div>
+                            <h4>WhatsApp</h4>
+                            <p>{{ site.get('phone', '+51 977 585 654') }}</p>
+                            <a href="https://wa.me/{{ site.get('whatsapp','51977585654') }}" target="_blank" class="contact-link">Escribir ahora <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+                    <div class="contact-info-item">
+                        <div class="contact-info-icon"><i class="fas fa-envelope"></i></div>
+                        <div>
+                            <h4>Email</h4>
+                            <p>{{ site.get('email', 'ventas@grupodewill.com') }}</p>
+                            <a href="mailto:{{ site.get('email','ventas@grupodewill.com') }}" class="contact-link">Enviar email <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+                    <div class="contact-info-item">
+                        <div class="contact-info-icon"><i class="fas fa-clock"></i></div>
+                        <div>
+                            <h4>Horario de Atención</h4>
+                            <p>Lunes a Viernes: 8:00 AM - 6:00 PM</p>
+                            <p>Sábados: 8:00 AM - 1:00 PM</p>
+                        </div>
+                    </div>
+                    <div class="contact-info-item">
+                        <div class="contact-info-icon"><i class="fas fa-map-marker-alt"></i></div>
+                        <div>
+                            <h4>Dirección</h4>
+                            <p>{{ site.get('address', 'Lima, Perú') }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="contact-socials">
+                    <h4>Síguenos</h4>
+                    <div class="footer-social">
+                        <a href="{{ site.get('facebook','#') }}" class="social-link"><i class="fab fa-facebook-f"></i></a>
+                        <a href="{{ site.get('instagram','#') }}" class="social-link"><i class="fab fa-instagram"></i></a>
+                        {% if site.get('tiktok') %}<a href="{{ site.get('tiktok') }}" class="social-link"><i class="fab fa-tiktok"></i></a>{% endif %}
+                        <a href="https://wa.me/{{ site.get('whatsapp','51977585654') }}" class="social-link"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="contact-map-panel">
+                <h3><i class="fas fa-map-marked-alt"></i> Nuestra Ubicación</h3>
+                <div class="map-container">
+                    {% if site.get('maps_embed') %}
+                    <iframe src="{{ site.get('maps_embed') }}" width="100%" height="450" style="border:0;border-radius:16px;" allowfullscreen="" loading="lazy"></iframe>
+                    {% else %}
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3901.963!2d-77.0428!3d-12.0464!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTLCsDAyJzQ3LjAiUyA3N8KwMDInMzQuMSJX!5e0!3m2!1ses!2spe!4v1" width="100%" height="450" style="border:0;border-radius:16px;" allowfullscreen="" loading="lazy"></iframe>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

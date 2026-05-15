@@ -1,0 +1,84 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}{{ 'Editar' if ambient else 'Nuevo' }} Ambiente{% endblock %}
+{% block page_title %}{{ 'Editar' if ambient else 'Nuevo' }} Ambiente{% endblock %}
+
+{% block admin_content %}
+<form method="POST" enctype="multipart/form-data" class="admin-form">
+    <div class="form-grid-2">
+        <div class="form-section">
+            <h3><i class="fas fa-info-circle"></i> Configuración</h3>
+            <div class="form-group">
+                <label>Nombre del Ambiente (ej: Rojo, Sala, Cocina) *</label>
+                <input type="text" name="name" value="{{ ambient.name if ambient else '' }}" required class="form-input">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Tipo *</label>
+                    <select name="type" required class="form-input">
+                        <option value="color" {% if ambient and ambient.type == 'color' %}selected{% endif %}>Color (Psicología)</option>
+                        <option value="room" {% if ambient and ambient.type == 'room' %}selected{% endif %}>Habitación / Espacio</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Orden</label>
+                    <input type="number" name="order" value="{{ ambient.order if ambient else 0 }}" class="form-input">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Descripción / Nota</label>
+                <textarea name="description" rows="4" class="form-input">{{ ambient.description if ambient else '' }}</textarea>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3><i class="fas fa-images"></i> Imágenes</h3>
+            <div class="form-group">
+                <label>Imagen de Portada (Card)</label>
+                {% if ambient and ambient.cover_image %}
+                <div class="current-image">
+                    <img src="{{ url_for('static', filename=ambient.cover_image) }}" alt="">
+                </div>
+                {% endif %}
+                <input type="file" name="cover_image" accept="image/*" class="form-input-file">
+            </div>
+
+            <div class="form-group">
+                <label>Galería de Ambientes (Slider)</label>
+                {% if ambient and ambient.images %}
+                <div class="image-thumbs">
+                    {% for img in ambient.images %}
+                    <div class="image-thumb-item">
+                        <img src="{{ url_for('static', filename=img.image_url) }}" alt="">
+                        <button type="button" class="thumb-delete" title="Eliminar" onclick="deleteAmbientImage({{ img.id }})">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <p style="font-size: 0.8rem; color: var(--admin-text-muted); margin-bottom: 0.5rem;">Puedes seleccionar varias imágenes a la vez.</p>
+                <input type="file" name="extra_images" accept="image/*" multiple class="form-input-file">
+            </div>
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <a href="{{ url_for('admin_ambientes') }}" class="btn btn-outline">Cancelar</a>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> {{ 'Actualizar' if ambient else 'Crear' }} Ambiente</button>
+    </div>
+</form>
+
+<form id="deleteImageForm" method="POST" style="display:none;"></form>
+{% endblock %}
+
+{% block admin_js %}
+<script>
+function deleteAmbientImage(imgId) {
+    if (confirm('¿Estás seguro de eliminar esta imagen de la galería?')) {
+        const form = document.getElementById('deleteImageForm');
+        form.action = `/admin/ambientes/imagen/${imgId}/eliminar`;
+        form.submit();
+    }
+}
+</script>
+{% endblock %}

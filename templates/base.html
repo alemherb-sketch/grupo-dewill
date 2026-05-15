@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{{ site.get('meta_description', 'Grupo Dewill - Suministros Industriales') }}">
+    <title>{% block title %}{{ site.get('meta_title', 'Grupo Dewill') }}{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=2.2">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar {% block nav_class %}{% endblock %}" id="navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('index') }}" class="nav-logo">
+                <div class="logo-icon"><i class="fas fa-industry"></i></div>
+                <span class="logo-text">GRUPO <span class="logo-accent">DEWILL</span></span>
+            </a>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">Inicio</a></li>
+                <li><a href="{{ url_for('nosotros') }}" class="nav-link {% if request.endpoint == 'nosotros' %}active{% endif %}">Nosotros</a></li>
+                <li><a href="{{ url_for('productos') }}" class="nav-link {% if request.endpoint in ['productos','producto_detalle'] %}active{% endif %}">Productos</a></li>
+                <li><a href="{{ url_for('galeria') }}" class="nav-link {% if request.endpoint == 'galeria' %}active{% endif %}">Galería</a></li>
+                <li><a href="{{ url_for('galeria_ambientes') }}" class="nav-link {% if request.endpoint == 'galeria_ambientes' %}active{% endif %}">Ambientes</a></li>
+                <li><a href="{{ url_for('contacto') }}" class="nav-link {% if request.endpoint == 'contacto' %}active{% endif %}">Contacto</a></li>
+            </ul>
+            <div class="nav-actions">
+                <button class="btn-cart" id="btnCart" onclick="toggleQuotePanel()">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span class="cart-badge" id="cartBadge">0</span>
+                    <span class="cart-label">Mi Cotización</span>
+                </button>
+                <button class="hamburger" id="hamburger" onclick="toggleMobileMenu()">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    {% block content %}{% endblock %}
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <i class="fas fa-industry"></i>
+                        <span>GRUPO <span class="logo-accent">DEWILL</span></span>
+                    </div>
+                    <p>Tu aliado estratégico en suministros industriales. Calidad, confianza y servicio al mejor precio.</p>
+                    <div class="footer-social">
+                        <a href="{{ site.get('facebook', '#') }}" class="social-link"><i class="fab fa-facebook-f"></i></a>
+                        <a href="{{ site.get('instagram', '#') }}" class="social-link"><i class="fab fa-instagram"></i></a>
+                        <a href="https://wa.me/{{ site.get('whatsapp', '51977585654') }}" target="_blank" class="social-link"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+                <div class="footer-links-group">
+                    <h4>Enlace Rápidos</h4>
+                    <a href="{{ url_for('index') }}">Inicio</a>
+                    <a href="{{ url_for('nosotros') }}">Nosotros</a>
+                    <a href="{{ url_for('productos') }}">Productos</a>
+                    <a href="{{ url_for('galeria') }}">Galería</a>
+                    <a href="{{ url_for('contacto') }}">Contacto</a>
+                </div>
+                <div class="footer-links-group">
+                    <h4>Categorías</h4>
+                    <a href="{{ url_for('productos', cat='pinturas') }}">Pinturas</a>
+                    <a href="{{ url_for('productos', cat='epoxicos') }}">Epóxicos</a>
+                    <a href="{{ url_for('productos', cat='solventes') }}">Solventes</a>
+                    <a href="{{ url_for('productos', cat='trafico') }}">Tráfico</a>
+                    <a href="{{ url_for('productos', cat='accesorios') }}">Accesorios</a>
+                </div>
+            </div>
+            <div class="footer-bottom" style="display:flex; justify-content:space-between; align-items:center;">
+                <p>&copy; 2026 Grupo Dewill. Todos los derechos reservados.</p>
+                <a href="{{ url_for('admin_login') }}" style="color:var(--text-muted); font-size:1.2rem; transition:color 0.3s;" title="Acceso Administrativo"><i class="fas fa-cog"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Quote Panel -->
+    <div class="quote-overlay" id="quoteOverlay" onclick="toggleQuotePanel()"></div>
+    <div class="quote-panel" id="quotePanel">
+        <div class="quote-header">
+            <h3><i class="fas fa-clipboard-list"></i> Mi Lista de Cotización</h3>
+            <button class="quote-close" onclick="toggleQuotePanel()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="quote-body" id="quoteBody">
+            <div class="quote-empty" id="quoteEmpty">
+                <i class="fas fa-clipboard"></i>
+                <p>Tu lista está vacía</p>
+                <span>Agrega productos desde el catálogo</span>
+            </div>
+            <div class="quote-items" id="quoteItems"></div>
+            <div class="client-info-form" id="clientInfoForm" style="display:none;">
+                <h4><i class="fas fa-user-edit"></i> Mis Datos</h4>
+                <div class="form-group"><input type="text" id="clientName" class="form-input" placeholder="Nombre completo *"></div>
+                <div class="form-group"><input type="text" id="clientCompany" class="form-input" placeholder="Empresa"></div>
+                <div class="form-group"><input type="email" id="clientEmail" class="form-input" placeholder="Email *"></div>
+                <div class="form-group"><input type="tel" id="clientPhone" class="form-input" placeholder="Teléfono / WhatsApp *"></div>
+                <div class="form-group"><textarea id="clientMessage" class="form-input" placeholder="Mensaje adicional (opcional)" rows="2"></textarea></div>
+            </div>
+        </div>
+        <div class="quote-footer" id="quoteFooter" style="display:none;">
+            <div class="quote-total">
+                <span>Productos seleccionados:</span>
+                <strong id="quoteTotalCount">0</strong>
+            </div>
+            <button class="btn btn-primary btn-full" onclick="submitQuoteRequest()">
+                <i class="fas fa-paper-plane"></i> Enviar Solicitud de Cotización
+            </button>
+            <button class="btn btn-outline-danger btn-full" onclick="clearQuote()" style="margin-top:0.5rem;">
+                <i class="fas fa-trash-alt"></i> Limpiar Toda la Lista
+            </button>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toastContainer"></div>
+
+    <!-- WhatsApp Float -->
+    <a href="https://wa.me/{{ site.get('whatsapp', '51977585654') }}?text=Hola%20Grupo%20Dewill" target="_blank" class="whatsapp-float">
+        <i class="fab fa-whatsapp"></i>
+        <span class="whatsapp-tooltip">¿Necesitas ayuda?</span>
+    </a>
+
+    <script>const WHATSAPP_NUMBER = "{{ site.get('whatsapp', '51977585654') }}";</script>
+    <script src="{{ url_for('static', filename='js/app.js') }}?v=1.6"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

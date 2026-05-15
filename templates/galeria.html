@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Galería de Ambientes | Grupo Dewill{% endblock %}
+{% block nav_class %}scrolled{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+    <div class="page-hero-bg"><img src="{{ url_for('static', filename='assets/hero_bg.png') }}" alt="Galería" class="hero-bg-img"><div class="hero-overlay"></div></div>
+    <div class="page-hero-content">
+        <div class="hero-badge animate-fade-up"><i class="fas fa-images"></i> Inspiración</div>
+        <h1 class="page-hero-title animate-fade-up delay-1">Galería de <span class="gradient-text">Ambientes</span></h1>
+        <p class="page-hero-subtitle animate-fade-up delay-2">Descubre cómo nuestros productos transforman espacios. Inspírate con colores y acabados.</p>
+    </div>
+</section>
+
+<section class="section gallery-section">
+    <div class="container">
+        {% if gallery_categories %}
+        <div class="category-filter">
+            <a href="{{ url_for('galeria') }}" class="filter-btn {% if not current_cat %}active{% endif %}"><i class="fas fa-th-large"></i> Todos</a>
+            {% for gc in gallery_categories %}
+            <a href="{{ url_for('galeria', cat=gc.slug) }}" class="filter-btn {% if current_cat == gc.slug %}active{% endif %}">{{ gc.name }}</a>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if images %}
+        <div class="gallery-grid">
+            {% for img in images %}
+            <div class="gallery-item" onclick="openLightbox('{{ url_for('static', filename=img.image_url) }}', '{{ img.title }}')">
+                <img src="{{ url_for('static', filename=img.image_url) }}" alt="{{ img.title }}" loading="lazy">
+                <div class="gallery-item-overlay">
+                    <span class="gallery-item-title">{{ img.title }}</span>
+                    {% if img.color_code %}
+                    <span class="gallery-color-swatch" style="background:{{ img.color_code }}"></span>
+                    {% endif %}
+                    <i class="fas fa-expand"></i>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-images"></i>
+            <h3>Próximamente</h3>
+            <p>Estamos preparando nuestra galería de ambientes. ¡Vuelve pronto!</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <button class="lightbox-close" onclick="closeLightbox()"><i class="fas fa-times"></i></button>
+    <img id="lightboxImage" src="" alt="">
+    <p class="lightbox-caption" id="lightboxCaption"></p>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function openLightbox(src, title) {
+    document.getElementById('lightboxImage').src = src;
+    document.getElementById('lightboxCaption').textContent = title || '';
+    document.getElementById('lightbox').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('active');
+    document.body.style.overflow = 'auto';
+}
+</script>
+{% endblock %}

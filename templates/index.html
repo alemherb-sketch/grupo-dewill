@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block title %}{{ site.get('meta_title', 'Grupo Dewill | Suministros Industriales') }}{% endblock %}
+
+{% block content %}
+<!-- HERO BANNER CAROUSEL -->
+<section class="hero-carousel" id="heroCarousel">
+    {% for banner in banners %}
+    <div class="hero-slide {% if loop.first %}active{% endif %}" data-index="{{ loop.index0 }}">
+        <a href="{{ banner.cta_link or '#' }}" class="hero-banner-link">
+            <img src="{{ url_for('static', filename=banner.image_url) }}" alt="{{ banner.title }}" class="hero-banner-img">
+        </a>
+    </div>
+    {% endfor %}
+    {% if banners|length > 1 %}
+    <div class="carousel-controls">
+        <button class="carousel-btn prev" onclick="prevSlide()"><i class="fas fa-chevron-left"></i></button>
+        <div class="carousel-dots">
+            {% for b in banners %}
+            <span class="dot {% if loop.first %}active{% endif %}" onclick="goToSlide({{ loop.index0 }})"></span>
+            {% endfor %}
+        </div>
+        <button class="carousel-btn next" onclick="nextSlide()"><i class="fas fa-chevron-right"></i></button>
+    </div>
+    {% endif %}
+</section>
+
+<div class="hero-stats-bar">
+    <div class="container">
+        <div class="hero-stats">
+            <div class="stat-item"><div class="stat-value"><span class="stat-number" data-target="500">0</span><span class="stat-suffix">+</span></div><span class="stat-label">Productos</span></div>
+            <div class="stat-divider"></div>
+            <div class="stat-item"><div class="stat-value"><span class="stat-number" data-target="150">0</span><span class="stat-suffix">+</span></div><span class="stat-label">Clientes</span></div>
+            <div class="stat-divider"></div>
+            <div class="stat-item"><div class="stat-value"><span class="stat-number" data-target="10">0</span><span class="stat-suffix">+</span></div><span class="stat-label">Años</span></div>
+        </div>
+    </div>
+</div>
+
+<!-- ABOUT / WELCOME -->
+<section class="section about-section" id="nosotros">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-tag"><i class="fas fa-building"></i> Bienvenidos</span>
+            <h2 class="section-title">Comprometidos con la <span class="gradient-text">Excelencia Industrial</span></h2>
+            <p class="section-subtitle">Somos su aliado estratégico en suministros industriales, ofreciendo soluciones integrales con los más altos estándares de calidad.</p>
+        </div>
+        <div class="about-grid">
+            <div class="about-card glass-card"><div class="about-icon-wrap"><i class="fas fa-bullseye"></i></div><h3>Nuestra Misión</h3><p>Proveer suministros industriales de la más alta calidad, garantizando entregas oportunas y precios competitivos.</p></div>
+            <div class="about-card glass-card"><div class="about-icon-wrap"><i class="fas fa-eye"></i></div><h3>Nuestra Visión</h3><p>Ser el proveedor industrial líder a nivel nacional, reconocido por nuestra innovación y confiabilidad.</p></div>
+            <div class="about-card glass-card"><div class="about-icon-wrap"><i class="fas fa-gem"></i></div><h3>Nuestros Valores</h3><p>Integridad, calidad, innovación y servicio al cliente son los pilares que guían nuestra operación.</p></div>
+        </div>
+    </div>
+</section>
+
+<!-- BRANDS / REPRESENTATIONS -->
+{% if brands %}
+<section class="section brands-section">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-tag"><i class="fas fa-handshake"></i> Representaciones</span>
+            <h2 class="section-title">Nuestras <span class="gradient-text">Marcas Representadas</span></h2>
+        </div>
+        <div class="brands-grid">
+            {% for brand in brands %}
+            <a href="{{ url_for('productos', marca=brand.slug) }}" class="brand-card glass-card">
+                {% if brand.logo_url %}
+                <img src="{{ url_for('static', filename=brand.logo_url) }}" alt="{{ brand.name }}">
+                {% else %}
+                <span class="brand-name-text">{{ brand.name }}</span>
+                {% endif %}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- FEATURED PRODUCTS -->
+{% if featured_products %}
+<section class="section featured-section">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-tag"><i class="fas fa-star"></i> Destacados</span>
+            <h2 class="section-title">Productos <span class="gradient-text">Destacados</span></h2>
+            <p class="section-subtitle">Los productos más solicitados por nuestros clientes.</p>
+        </div>
+        <div class="product-slider-container">
+            <button class="slider-btn prev" onclick="scrollFeaturedSlider(-1)"><i class="fas fa-chevron-left"></i></button>
+            <div class="products-slider" id="featuredSlider">
+                {% for product in featured_products %}
+                <div class="product-card animate-fade-up">
+                    <div class="product-img-wrap">
+                        <img src="{{ url_for('static', filename=product.main_image or 'assets/product_paint.png') }}" alt="{{ product.name }}">
+                        <span class="product-category-tag">{{ product.category.name if product.category else '' }}</span>
+                        {% if product.brand %}<span class="product-brand-tag">{{ product.brand.name }}</span>{% endif %}
+                    </div>
+                    <div class="product-info">
+                        <h3>{{ product.name }}</h3>
+                        <p class="product-desc">{{ product.description }}</p>
+                        <div class="product-actions">
+                            <a href="{{ url_for('producto_detalle', product_id=product.id) }}" class="btn-detail">Ver Detalle</a>
+                            <button class="btn-add" onclick="addToQuote({{ product.id }}, '{{ product.name }}', '{{ product.main_image or 'assets/product_paint.png' }}')">
+                                <i class="fas fa-plus"></i> Cotizar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <button class="slider-btn next" onclick="scrollFeaturedSlider(1)"><i class="fas fa-chevron-right"></i></button>
+        </div>
+        <div class="section-cta">
+            <a href="{{ url_for('productos') }}" class="btn btn-primary"><i class="fas fa-th-large"></i> Ver Todo el Catálogo</a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- WHY US -->
+<section class="section why-section" id="por-que">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-tag"><i class="fas fa-star"></i> Ventajas</span>
+            <h2 class="section-title">¿Por Qué <span class="gradient-text">Elegirnos?</span></h2>
+        </div>
+        <div class="why-grid">
+            <div class="why-card"><div class="why-number">01</div><div class="why-icon"><i class="fas fa-truck-fast"></i></div><h3>Entrega Rápida</h3><p>Despacho inmediato a nivel local y envíos a todo el Perú.</p></div>
+            <div class="why-card"><div class="why-number">02</div><div class="why-icon"><i class="fas fa-certificate"></i></div><h3>Calidad Garantizada</h3><p>Todos nuestros productos cuentan con certificaciones y garantía.</p></div>
+            <div class="why-card"><div class="why-number">03</div><div class="why-icon"><i class="fas fa-tags"></i></div><h3>Precios Competitivos</h3><p>Las mejores tarifas del mercado sin comprometer la calidad.</p></div>
+            <div class="why-card"><div class="why-number">04</div><div class="why-icon"><i class="fas fa-headset"></i></div><h3>Asesoría Técnica</h3><p>Equipo de expertos listos para ayudarte.</p></div>
+            <div class="why-card"><div class="why-number">05</div><div class="why-icon"><i class="fas fa-boxes-packing"></i></div><h3>Amplio Stock</h3><p>Más de 500 productos disponibles para despacho inmediato.</p></div>
+            <div class="why-card"><div class="why-number">06</div><div class="why-icon"><i class="fas fa-handshake"></i></div><h3>Confianza Total</h3><p>Más de 10 años respaldando industrias.</p></div>
+        </div>
+    </div>
+</section>
+
+<!-- CERTIFICATIONS -->
+<section class="section certifications-section">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-tag"><i class="fas fa-award"></i> Certificaciones</span>
+            <h2 class="section-title">Calidad <span class="gradient-text">Certificada</span></h2>
+        </div>
+        <div class="cert-grid">
+            <div class="cert-card glass-card"><div class="cert-icon"><i class="fas fa-shield-halved"></i></div><h3>ISO 9001</h3><p>Sistema de Gestión de Calidad</p></div>
+            <div class="cert-card glass-card"><div class="cert-icon"><i class="fas fa-leaf"></i></div><h3>ISO 14001</h3><p>Gestión Ambiental</p></div>
+            <div class="cert-card glass-card"><div class="cert-icon"><i class="fas fa-hard-hat"></i></div><h3>OHSAS 18001</h3><p>Seguridad y Salud</p></div>
+            <div class="cert-card glass-card"><div class="cert-icon"><i class="fas fa-check-double"></i></div><h3>NTP</h3><p>Norma Técnica Peruana</p></div>
+        </div>
+    </div>
+</section>
+{% endblock %}

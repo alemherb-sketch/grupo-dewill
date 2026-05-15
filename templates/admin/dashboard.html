@@ -1,0 +1,47 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block admin_content %}
+<div class="stats-grid">
+    <div class="stat-card"><div class="stat-card-icon bg-blue"><i class="fas fa-box"></i></div><div class="stat-card-info"><h3>{{ stats.total_products }}</h3><p>Productos Total</p></div></div>
+    <div class="stat-card"><div class="stat-card-icon bg-green"><i class="fas fa-check-circle"></i></div><div class="stat-card-info"><h3>{{ stats.active_products }}</h3><p>Productos Activos</p></div></div>
+    <div class="stat-card"><div class="stat-card-icon bg-orange"><i class="fas fa-file-invoice"></i></div><div class="stat-card-info"><h3>{{ stats.total_quotes }}</h3><p>Solicitudes Total</p></div></div>
+    <div class="stat-card"><div class="stat-card-icon bg-red"><i class="fas fa-clock"></i></div><div class="stat-card-info"><h3>{{ stats.pending_quotes }}</h3><p>Pendientes</p></div></div>
+    <div class="stat-card"><div class="stat-card-icon bg-purple"><i class="fas fa-tags"></i></div><div class="stat-card-info"><h3>{{ stats.categories }}</h3><p>Categorías</p></div></div>
+    <div class="stat-card"><div class="stat-card-icon bg-teal"><i class="fas fa-building"></i></div><div class="stat-card-info"><h3>{{ stats.brands }}</h3><p>Marcas</p></div></div>
+</div>
+
+<div class="admin-panel">
+    <div class="panel-header"><h3><i class="fas fa-clock"></i> Últimas Solicitudes de Cotización</h3></div>
+    <div class="panel-body">
+        {% if recent_quotes %}
+        <table class="admin-table">
+            <thead><tr><th>#</th><th>Cliente</th><th>Email</th><th>Productos</th><th>Estado</th><th>Fecha</th><th></th></tr></thead>
+            <tbody>
+                {% for q in recent_quotes %}
+                <tr>
+                    <td>{{ q.id }}</td>
+                    <td>{{ q.client_name or 'Sin nombre' }}</td>
+                    <td>{{ q.client_email or '-' }}</td>
+                    <td>{{ q.items|length }}</td>
+                    <td><span class="status-badge status-{{ q.status }}">{{ q.status }}</span></td>
+                    <td>{{ q.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                    <td><a href="{{ url_for('admin_quote_detail', qid=q.id) }}" class="btn-sm"><i class="fas fa-eye"></i></a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="empty-text">No hay solicitudes aún.</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="quick-actions">
+    <a href="{{ url_for('admin_product_new') }}" class="quick-action-card"><i class="fas fa-plus-circle"></i><span>Nuevo Producto</span></a>
+    <a href="{{ url_for('admin_quotes') }}" class="quick-action-card"><i class="fas fa-file-invoice"></i><span>Ver Solicitudes</span></a>
+    <a href="{{ url_for('admin_banners') }}" class="quick-action-card"><i class="fas fa-image"></i><span>Gestionar Banners</span></a>
+    <a href="{{ url_for('admin_settings') }}" class="quick-action-card"><i class="fas fa-cog"></i><span>Configuración</span></a>
+</div>
+{% endblock %}

@@ -1,0 +1,104 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}{{ 'Editar' if product else 'Nuevo' }} Producto{% endblock %}
+{% block page_title %}{{ 'Editar' if product else 'Nuevo' }} Producto{% endblock %}
+
+{% block admin_content %}
+<form method="POST" enctype="multipart/form-data" class="admin-form">
+    <div class="form-grid-2">
+        <div class="form-section">
+            <h3><i class="fas fa-info-circle"></i> Información General</h3>
+            <div class="form-group"><label>Nombre *</label><input type="text" name="name" value="{{ product.name if product else '' }}" required class="form-input"></div>
+            <div class="form-row">
+                <div class="form-group"><label>SKU</label><input type="text" name="sku" value="{{ product.sku if product else '' }}" class="form-input"></div>
+                <div class="form-group"><label>Categoría *</label>
+                    <select name="category_id" required class="form-input">
+                        <option value="">Seleccionar...</option>
+                        {% for c in categories %}<option value="{{ c.id }}" {% if product and product.category_id == c.id %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="form-group"><label>Marca</label>
+                <select name="brand_id" class="form-input">
+                    <option value="">Sin marca</option>
+                    {% for b in brands %}<option value="{{ b.id }}" {% if product and product.brand_id == b.id %}selected{% endif %}>{{ b.name }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="form-group"><label>Descripción</label><textarea name="description" rows="3" class="form-input">{{ product.description if product else '' }}</textarea></div>
+            <div class="form-group"><label>Descripción Técnica</label><textarea name="technical_description" rows="4" class="form-input">{{ product.technical_description if product else '' }}</textarea></div>
+            <div class="form-group"><label>URL de Video (YouTube embed)</label><input type="text" name="video_url" value="{{ product.video_url if product else '' }}" class="form-input" placeholder="https://www.youtube.com/embed/..."></div>
+            <div class="form-row">
+                <div class="form-group form-check"><label><input type="checkbox" name="is_featured" {% if product and product.is_featured %}checked{% endif %}> Producto Destacado</label></div>
+                <div class="form-group form-check"><label><input type="checkbox" name="is_active" {% if not product or product.is_active %}checked{% endif %}> Activo</label></div>
+            </div>
+        </div>
+        <div class="form-section">
+            <h3><i class="fas fa-image"></i> Imágenes y Documentos</h3>
+            <div class="form-group">
+                <label>Imagen Principal</label>
+                {% if product and product.main_image %}<div class="current-image"><img src="{{ url_for('static', filename=product.main_image) }}" alt=""></div>{% endif %}
+                <input type="file" name="main_image" accept="image/*" class="form-input-file">
+            </div>
+            <div class="form-group">
+                <label>Imágenes Adicionales</label>
+                {% if product and product.images %}
+                <div class="image-thumbs">
+                    {% for img in product.images %}
+                    <div class="image-thumb-item">
+                        <img src="{{ url_for('static', filename=img.image_url) }}" alt="">
+                        <button type="button" class="thumb-delete" title="Eliminar" onclick="deleteProductImage({{ img.id }})">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <input type="file" name="extra_images" accept="image/*" multiple class="form-input-file">
+            </div>
+            <div class="form-group">
+                <label>Ficha Técnica (PDF)</label>
+                {% if product and product.pdf_url %}<p class="current-file"><i class="fas fa-file-pdf"></i> <a href="{{ url_for('static', filename=product.pdf_url) }}" target="_blank">Ver actual</a></p>{% endif %}
+                <input type="file" name="pdf_file" accept=".pdf" class="form-input-file">
+            </div>
+
+            <h3><i class="fas fa-list-check"></i> Especificaciones Técnicas</h3>
+            <div id="specsContainer">
+                {% if product and product.specs %}
+                {% for spec in product.specs %}
+                <div class="spec-row"><input type="text" name="spec_key[]" value="{{ spec.key }}" placeholder="Ej: Tipo" class="form-input"><input type="text" name="spec_value[]" value="{{ spec.value }}" placeholder="Ej: Acrílico" class="form-input"><button type="button" class="btn-sm btn-delete" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button></div>
+                {% endfor %}
+                {% else %}
+                <div class="spec-row"><input type="text" name="spec_key[]" placeholder="Ej: Tipo" class="form-input"><input type="text" name="spec_value[]" placeholder="Ej: Acrílico" class="form-input"><button type="button" class="btn-sm btn-delete" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button></div>
+                {% endif %}
+            </div>
+            <button type="button" class="btn btn-outline btn-sm" onclick="addSpecRow()"><i class="fas fa-plus"></i> Agregar Especificación</button>
+        </div>
+    </div>
+    <div class="form-actions">
+        <a href="{{ url_for('admin_products') }}" class="btn btn-outline">Cancelar</a>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> {{ 'Actualizar' if product else 'Crear' }} Producto</button>
+    </div>
+</form>
+
+{# Hidden form for image deletion #}
+<form id="deleteImageForm" method="POST" style="display:none;"></form>
+{% endblock %}
+
+{% block admin_js %}
+<script>
+function addSpecRow(){
+    const c = document.getElementById('specsContainer');
+    const row = document.createElement('div');
+    row.className = 'spec-row';
+    row.innerHTML = '<input type="text" name="spec_key[]" placeholder="Ej: Tipo" class="form-input"><input type="text" name="spec_value[]" placeholder="Ej: Acrílico" class="form-input"><button type="button" class="btn-sm btn-delete" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>';
+    c.appendChild(row);
+}
+
+function deleteProductImage(imgId) {
+    if (confirm('¿Estás seguro de eliminar esta imagen?')) {
+        const form = document.getElementById('deleteImageForm');
+        form.action = `/admin/productos/imagen/${imgId}/eliminar`;
+        form.submit();
+    }
+}
+</script>
+{% endblock %}

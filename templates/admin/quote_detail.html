@@ -1,0 +1,54 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Solicitud #{{ quote.id }}{% endblock %}
+{% block page_title %}Solicitud #{{ quote.id }}{% endblock %}
+
+{% block admin_content %}
+<div class="admin-toolbar">
+    <a href="{{ url_for('admin_quotes') }}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Volver a Solicitudes</a>
+    <form method="POST" action="{{ url_for('admin_quote_status', qid=quote.id) }}" style="display:flex;gap:1rem;align-items:center;">
+        <label>Estado:</label>
+        <select name="status" class="form-input" style="width:auto;">
+            <option value="pendiente" {% if quote.status == 'pendiente' %}selected{% endif %}>Pendiente</option>
+            <option value="en_proceso" {% if quote.status == 'en_proceso' %}selected{% endif %}>En Proceso</option>
+            <option value="respondida" {% if quote.status == 'respondida' %}selected{% endif %}>Respondida</option>
+        </select>
+        <button type="submit" class="btn btn-primary btn-sm">Actualizar Estado</button>
+    </form>
+</div>
+
+<div class="form-grid-2">
+    <div class="admin-panel">
+        <div class="panel-header"><h3><i class="fas fa-user"></i> Datos del Cliente</h3></div>
+        <div class="panel-body">
+            <p><strong>Fecha de solicitud:</strong> {{ quote.created_at.strftime('%d/%m/%Y %H:%M') }}</p>
+            <p><strong>Nombre:</strong> {{ quote.client_name or 'No especificado' }}</p>
+            <p><strong>Empresa:</strong> {{ quote.client_company or 'No especificado' }}</p>
+            <p><strong>Email:</strong> {% if quote.client_email %}<a href="mailto:{{ quote.client_email }}">{{ quote.client_email }}</a>{% else %}No especificado{% endif %}</p>
+            <p><strong>Teléfono / WhatsApp:</strong> {% if quote.client_phone %}<a href="https://wa.me/{{ quote.client_phone | replace('+','') | replace(' ','') }}" target="_blank">{{ quote.client_phone }}</a>{% else %}No especificado{% endif %}</p>
+            {% if quote.message %}
+            <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.1);">
+                <strong>Mensaje adicional:</strong>
+                <p style="margin-top:0.5rem;color:var(--text-muted);">{{ quote.message }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="admin-panel">
+        <div class="panel-header"><h3><i class="fas fa-box"></i> Productos Solicitados</h3></div>
+        <div class="panel-body">
+            <ul style="list-style:none;padding:0;margin:0;">
+                {% for item in quote.items %}
+                <li style="display:flex;gap:1rem;align-items:center;padding:1rem 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+                    <img src="{{ url_for('static', filename=item.product.main_image or 'assets/product_paint.png') }}" style="width:50px;height:50px;object-fit:cover;border-radius:4px;">
+                    <div>
+                        <h4 style="margin:0 0 0.25rem 0;">{{ item.product.name }}</h4>
+                        <p style="margin:0;font-size:0.85rem;color:var(--text-muted);">{{ item.product.sku or 'Sin SKU' }} | Cantidad: <strong>{{ item.quantity }}</strong></p>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

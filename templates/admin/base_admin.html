@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin{% endblock %} | Grupo Dewill</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body class="admin-body">
+    <aside class="admin-sidebar" id="adminSidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-industry"></i>
+            <span>GRUPO <strong>DEWILL</strong></span>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('admin_dashboard') }}" class="sidebar-link {% if request.endpoint == 'admin_dashboard' %}active{% endif %}"><i class="fas fa-chart-pie"></i> Dashboard</a>
+            <span class="sidebar-section-title">Catálogo</span>
+            <a href="{{ url_for('admin_products') }}" class="sidebar-link {% if request.endpoint in ['admin_products','admin_product_new','admin_product_edit'] %}active{% endif %}"><i class="fas fa-box"></i> Productos</a>
+            <a href="{{ url_for('admin_categories') }}" class="sidebar-link {% if request.endpoint == 'admin_categories' %}active{% endif %}"><i class="fas fa-tags"></i> Categorías</a>
+            <a href="{{ url_for('admin_brands') }}" class="sidebar-link {% if request.endpoint == 'admin_brands' %}active{% endif %}"><i class="fas fa-building"></i> Marcas</a>
+            <span class="sidebar-section-title">Ventas</span>
+            <a href="{{ url_for('admin_quotes') }}" class="sidebar-link {% if request.endpoint in ['admin_quotes','admin_quote_detail'] %}active{% endif %}"><i class="fas fa-file-invoice"></i> Solicitudes</a>
+            <span class="sidebar-section-title">Contenido</span>
+            <a href="{{ url_for('admin_banners') }}" class="sidebar-link {% if request.endpoint == 'admin_banners' %}active{% endif %}"><i class="fas fa-image"></i> Banners</a>
+            <a href="{{ url_for('admin_gallery') }}" class="sidebar-link {% if request.endpoint == 'admin_gallery' %}active{% endif %}"><i class="fas fa-images"></i> Galería</a>
+            <a href="{{ url_for('admin_ambientes') }}" class="sidebar-link {% if request.endpoint in ['admin_ambientes','admin_ambient_new','admin_ambient_edit'] %}active{% endif %}"><i class="fas fa-paint-roller"></i> Ambientes</a>
+            <span class="sidebar-section-title">Sistema</span>
+            <a href="{{ url_for('admin_settings') }}" class="sidebar-link {% if request.endpoint == 'admin_settings' %}active{% endif %}"><i class="fas fa-cog"></i> Configuración</a>
+            <a href="{{ url_for('index') }}" class="sidebar-link" target="_blank"><i class="fas fa-external-link-alt"></i> Ver Sitio</a>
+            <a href="{{ url_for('admin_logout') }}" class="sidebar-link logout"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+        </nav>
+    </aside>
+
+    <main class="admin-main">
+        <header class="admin-header">
+            <button class="sidebar-toggle" onclick="document.getElementById('adminSidebar').classList.toggle('open')"><i class="fas fa-bars"></i></button>
+            <h2>{% block page_title %}Dashboard{% endblock %}</h2>
+            <div class="admin-user"><i class="fas fa-user-circle"></i> {{ current_user.username }}</div>
+        </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="admin-alerts">
+            {% for category, message in messages %}
+            <div class="admin-alert admin-alert-{{ category }}"><i class="fas {% if category == 'success' %}fa-check-circle{% elif category == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %}"></i> {{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <div class="admin-content">
+            {% block admin_content %}{% endblock %}
+        </div>
+    </main>
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+    {% block admin_js %}{% endblock %}
+</body>
+</html>

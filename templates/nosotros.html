@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Nosotros | Grupo Dewill{% endblock %}
+{% block nav_class %}scrolled{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+    <div class="page-hero-bg"><img src="{{ url_for('static', filename='assets/hero_bg.png') }}" alt="Nosotros" class="hero-bg-img"><div class="hero-overlay"></div></div>
+    <div class="page-hero-content">
+        <div class="hero-badge animate-fade-up"><i class="fas fa-building"></i> Conócenos</div>
+        <h1 class="page-hero-title animate-fade-up delay-1">Sobre <span class="gradient-text">Nosotros</span></h1>
+        <p class="page-hero-subtitle animate-fade-up delay-2">Más de 10 años siendo su aliado estratégico en suministros industriales.</p>
+    </div>
+</section>
+
+<section class="section about-full-section">
+    <div class="container">
+        <div class="about-intro">
+            <div class="about-intro-text">
+                <span class="section-tag"><i class="fas fa-industry"></i> Nuestra Historia</span>
+                <h2>Una trayectoria de <span class="gradient-text">excelencia y compromiso</span></h2>
+                <p>Grupo Dewill nació con la visión de ser el proveedor industrial más confiable del Perú. Desde nuestros inicios, nos hemos dedicado a ofrecer productos de la más alta calidad, construyendo relaciones duraderas con nuestros clientes basadas en la confianza, la transparencia y el servicio excepcional.</p>
+                <p>Hoy, con más de una década de experiencia en el mercado, nos enorgullecemos de contar con un catálogo de más de 500 productos, representando las marcas más prestigiosas del sector industrial. Nuestro equipo de profesionales especializados está siempre listo para brindar asesoría técnica personalizada.</p>
+            </div>
+            <div class="about-intro-stats">
+                <div class="big-stat glass-card"><span class="big-stat-number">500+</span><span class="big-stat-label">Productos</span></div>
+                <div class="big-stat glass-card"><span class="big-stat-number">150+</span><span class="big-stat-label">Clientes Activos</span></div>
+                <div class="big-stat glass-card"><span class="big-stat-number">10+</span><span class="big-stat-label">Años de Experiencia</span></div>
+                <div class="big-stat glass-card"><span class="big-stat-number">17+</span><span class="big-stat-label">Marcas Representadas</span></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-tag"><i class="fas fa-compass"></i> Pilares</span>
+            <h2 class="section-title">Misión, Visión y <span class="gradient-text">Valores</span></h2>
+        </div>
+        <div class="about-grid">
+            <div class="about-card glass-card">
+                <div class="about-icon-wrap"><i class="fas fa-bullseye"></i></div>
+                <h3>Nuestra Misión</h3>
+                <p>Proveer suministros industriales de la más alta calidad, garantizando entregas oportunas y precios competitivos que impulsen el crecimiento de nuestros clientes. Nos comprometemos a brindar un servicio integral que supere las expectativas.</p>
+            </div>
+            <div class="about-card glass-card">
+                <div class="about-icon-wrap"><i class="fas fa-eye"></i></div>
+                <h3>Nuestra Visión</h3>
+                <p>Ser el proveedor industrial líder a nivel nacional, reconocido por nuestra innovación, confiabilidad y compromiso con la satisfacción total del cliente. Aspiramos a expandir nuestra presencia en toda Latinoamérica.</p>
+            </div>
+            <div class="about-card glass-card">
+                <div class="about-icon-wrap"><i class="fas fa-gem"></i></div>
+                <h3>Nuestros Valores</h3>
+                <p>Integridad, calidad, innovación y servicio al cliente son los pilares que guían cada aspecto de nuestra operación y relaciones comerciales. La excelencia no es un objetivo, es nuestro estándar.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section why-section">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-tag"><i class="fas fa-star"></i> Ventajas</span>
+            <h2 class="section-title">¿Por Qué <span class="gradient-text">Elegirnos?</span></h2>
+        </div>
+        <div class="why-grid">
+            <div class="why-card"><div class="why-number">01</div><div class="why-icon"><i class="fas fa-truck-fast"></i></div><h3>Entrega Rápida</h3><p>Despacho inmediato a nivel local y envíos a todo el Perú en tiempo récord.</p></div>
+            <div class="why-card"><div class="why-number">02</div><div class="why-icon"><i class="fas fa-certificate"></i></div><h3>Calidad Garantizada</h3><p>Todos nuestros productos cuentan con certificaciones y garantía de fábrica.</p></div>
+            <div class="why-card"><div class="why-number">03</div><div class="why-icon"><i class="fas fa-tags"></i></div><h3>Precios Competitivos</h3><p>Las mejores tarifas del mercado sin comprometer la calidad ni el servicio.</p></div>
+            <div class="why-card"><div class="why-number">04</div><div class="why-icon"><i class="fas fa-headset"></i></div><h3>Asesoría Técnica</h3><p>Equipo de expertos listos para ayudarte a elegir la solución correcta.</p></div>
+        </div>
+    </div>
+</section>
+{% endblock %}

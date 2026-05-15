@@ -1,0 +1,97 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Banners{% endblock %}
+{% block page_title %}Gestión de Banners{% endblock %}
+
+{% block admin_content %}
+<div class="admin-toolbar">
+    <h3>{{ banners|length }} banners registrados</h3>
+    <button class="btn btn-primary" onclick="document.getElementById('newBannerModal').classList.add('show')"><i class="fas fa-plus"></i> Nuevo Banner</button>
+</div>
+
+<div class="admin-panel">
+    <table class="admin-table">
+        <thead><tr><th>Imagen</th><th>Título</th><th>CTA</th><th>Orden</th><th>Estado</th><th>Acciones</th></tr></thead>
+        <tbody>
+            {% for b in banners %}
+            <tr>
+                <td><img src="{{ url_for('static', filename=b.image_url) }}" style="width:120px;height:60px;object-fit:cover;border-radius:4px;" alt=""></td>
+                <td><strong>{{ b.title }}</strong><br><small style="color:var(--text-muted)">{{ b.subtitle }}</small></td>
+                <td>{{ b.cta_text }}</td>
+                <td>{{ b.order }}</td>
+                <td>{% if b.is_active %}<span class="status-badge status-active">Activo</span>{% else %}<span class="status-badge status-inactive">Inactivo</span>{% endif %}</td>
+                <td class="actions-cell">
+                    <button class="btn-sm btn-edit" onclick="editBanner({{ b.id }},'{{ b.title|e }}','{{ b.subtitle|e }}','{{ b.cta_text|e }}','{{ b.cta_link|e }}',{{ b.order }},{{ 'true' if b.is_active else 'false' }})"><i class="fas fa-edit"></i></button>
+                    <form method="POST" style="display:inline;" onsubmit="return confirm('¿Eliminar este banner?')">
+                        <input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="{{ b.id }}">
+                        <button type="submit" class="btn-sm btn-delete"><i class="fas fa-trash"></i></button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="admin-modal" id="newBannerModal">
+    <div class="modal-card">
+        <h3>Nuevo Banner</h3>
+        <form method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="action" value="create">
+            <div class="form-group"><label>Imagen *</label><input type="file" name="image" accept="image/*" required class="form-input-file"></div>
+            <div class="form-group"><label>Título</label><input type="text" name="title" class="form-input"></div>
+            <div class="form-group"><label>Subtítulo</label><textarea name="subtitle" rows="2" class="form-input"></textarea></div>
+            <div class="form-row">
+                <div class="form-group"><label>Texto Botón CTA</label><input type="text" name="cta_text" class="form-input" placeholder="Ver Catálogo"></div>
+                <div class="form-group"><label>Enlace Botón CTA</label><input type="text" name="cta_link" class="form-input" placeholder="/productos"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Orden</label><input type="number" name="order" value="0" class="form-input"></div>
+                <div class="form-group form-check" style="margin-top:1.5rem;"><label><input type="checkbox" name="is_active" checked> Banner Activo</label></div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="this.closest('.admin-modal').classList.remove('show')">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Crear</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="admin-modal" id="editBannerModal">
+    <div class="modal-card">
+        <h3>Editar Banner</h3>
+        <form method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="action" value="update"><input type="hidden" name="id" id="editBannerId">
+            <div class="form-group"><label>Nueva Imagen (opcional)</label><input type="file" name="image" accept="image/*" class="form-input-file"></div>
+            <div class="form-group"><label>Título</label><input type="text" name="title" id="editBannerTitle" class="form-input"></div>
+            <div class="form-group"><label>Subtítulo</label><textarea name="subtitle" id="editBannerSubtitle" rows="2" class="form-input"></textarea></div>
+            <div class="form-row">
+                <div class="form-group"><label>Texto Botón CTA</label><input type="text" name="cta_text" id="editBannerCtaText" class="form-input"></div>
+                <div class="form-group"><label>Enlace Botón CTA</label><input type="text" name="cta_link" id="editBannerCtaLink" class="form-input"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Orden</label><input type="number" name="order" id="editBannerOrder" class="form-input"></div>
+                <div class="form-group form-check" style="margin-top:1.5rem;"><label><input type="checkbox" name="is_active" id="editBannerActive"> Banner Activo</label></div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="this.closest('.admin-modal').classList.remove('show')">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Actualizar</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block admin_js %}
+<script>
+function editBanner(id,title,sub,cta_txt,cta_lnk,order,active){
+    document.getElementById('editBannerId').value=id;
+    document.getElementById('editBannerTitle').value=title;
+    document.getElementById('editBannerSubtitle').value=sub;
+    document.getElementById('editBannerCtaText').value=cta_txt;
+    document.getElementById('editBannerCtaLink').value=cta_lnk;
+    document.getElementById('editBannerOrder').value=order;
+    document.getElementById('editBannerActive').checked=active;
+    document.getElementById('editBannerModal').classList.add('show');
+}
+</script>
+{% endblock %}

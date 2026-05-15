@@ -1,0 +1,47 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Productos{% endblock %}
+{% block page_title %}Gestión de Productos{% endblock %}
+
+{% block admin_content %}
+<div class="admin-toolbar">
+    <form class="toolbar-search" method="GET">
+        <input type="text" name="q" value="{{ q }}" placeholder="Buscar productos..." class="form-input">
+        <select name="cat" class="form-input" style="width:auto;">
+            <option value="">Todas las categorías</option>
+            {% for c in categories %}<option value="{{ c.id }}" {% if cat_id == c.id|string %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+        </select>
+        <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i></button>
+    </form>
+    <a href="{{ url_for('admin_product_new') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Nuevo Producto</a>
+</div>
+
+<div class="admin-panel">
+    <table class="admin-table">
+        <thead><tr><th>Imagen</th><th>Nombre</th><th>SKU</th><th>Categoría</th><th>Marca</th><th>Destacado</th><th>Activo</th><th>Acciones</th></tr></thead>
+        <tbody>
+            {% for p in products.items %}
+            <tr>
+                <td><img src="{{ url_for('static', filename=p.main_image or 'assets/product_paint.png') }}" class="table-thumb" alt=""></td>
+                <td><strong>{{ p.name }}</strong></td>
+                <td>{{ p.sku or '-' }}</td>
+                <td>{{ p.category.name if p.category else '-' }}</td>
+                <td>{{ p.brand.name if p.brand else '-' }}</td>
+                <td>{% if p.is_featured %}<i class="fas fa-star text-yellow"></i>{% else %}-{% endif %}</td>
+                <td>{% if p.is_active %}<span class="status-badge status-active">Sí</span>{% else %}<span class="status-badge status-inactive">No</span>{% endif %}</td>
+                <td class="actions-cell">
+                    <a href="{{ url_for('admin_product_edit', pid=p.id) }}" class="btn-sm btn-edit"><i class="fas fa-edit"></i></a>
+                    <form method="POST" action="{{ url_for('admin_product_delete', pid=p.id) }}" style="display:inline;" onsubmit="return confirm('¿Eliminar este producto?')">
+                        <button type="submit" class="btn-sm btn-delete"><i class="fas fa-trash"></i></button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% if products.pages > 1 %}
+    <div class="admin-pagination">
+        {% for p in products.iter_pages() %}{% if p %}<a href="?page={{ p }}&q={{ q }}&cat={{ cat_id }}" class="{% if p == products.page %}active{% endif %}">{{ p }}</a>{% else %}<span>...</span>{% endif %}{% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

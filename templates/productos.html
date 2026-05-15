@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Productos | Grupo Dewill{% endblock %}
+{% block nav_class %}scrolled{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+    <div class="page-hero-bg"><img src="{{ url_for('static', filename='assets/hero_bg.png') }}" alt="Productos" class="hero-bg-img"><div class="hero-overlay"></div></div>
+    <div class="page-hero-content">
+        <div class="hero-badge animate-fade-up"><i class="fas fa-boxes-stacked"></i> Catálogo Completo</div>
+        <h1 class="page-hero-title animate-fade-up delay-1">Nuestros <span class="gradient-text">Productos</span></h1>
+        <p class="page-hero-subtitle animate-fade-up delay-2">Explora nuestro catálogo completo. Arma tu cotización y envíala directamente.</p>
+    </div>
+</section>
+
+<section class="section products-section" id="productos">
+    <div class="container">
+        <!-- Search with autocomplete -->
+        <div class="product-search-bar animate-fade-up">
+            <i class="fas fa-search"></i>
+            <input type="text" id="productSearch" placeholder="Buscar productos..." value="{{ search_query }}" autocomplete="off">
+            <div class="autocomplete-dropdown" id="autocompleteDropdown"></div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-row">
+            <div class="category-filter" id="categoryFilter">
+                <a href="{{ url_for('productos', marca=current_brand, q=search_query) }}" class="filter-btn {% if not current_cat %}active{% endif %}"><i class="fas fa-th-large"></i> Todos</a>
+                {% for cat in categories %}
+                <a href="{{ url_for('productos', cat=cat.slug, marca=current_brand, q=search_query) }}" class="filter-btn {% if current_cat == cat.slug %}active{% endif %}"><i class="{{ cat.icon }}"></i> {{ cat.name }}</a>
+                {% endfor %}
+            </div>
+            <div class="brand-filter">
+                <select id="brandFilter" onchange="window.location.href=this.value" class="filter-select">
+                    <option value="{{ url_for('productos', cat=current_cat, q=search_query) }}">Todas las marcas</option>
+                    {% for brand in brands %}
+                    <option value="{{ url_for('productos', cat=current_cat, marca=brand.slug, q=search_query) }}" {% if current_brand == brand.slug %}selected{% endif %}>{{ brand.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="products-count"><span>Mostrando <strong>{{ products.total }}</strong> productos</span></div>
+
+        <div class="products-grid" id="productsGrid">
+            {% for product in products.items %}
+            <div class="product-card animate-fade-up">
+                <div class="product-img-wrap">
+                    <img src="{{ url_for('static', filename=product.main_image or 'assets/product_paint.png') }}" alt="{{ product.name }}">
+                    <span class="product-category-tag">{{ product.category.name if product.category else '' }}</span>
+                    {% if product.brand %}<span class="product-brand-tag">{{ product.brand.name }}</span>{% endif %}
+                </div>
+                <div class="product-info">
+                    <h3>{{ product.name }}</h3>
+                    <p class="product-desc">{{ product.description }}</p>
+                    <div class="product-actions">
+                        <a href="{{ url_for('producto_detalle', product_id=product.id) }}" class="btn-detail">Ver Detalle</a>
+                        <button class="btn-add" onclick="addToQuote({{ product.id }}, '{{ product.name|e }}', '{{ product.main_image or 'assets/product_paint.png' }}')">
+                            <i class="fas fa-plus"></i> Cotizar
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if products.pages > 1 %}
+        <div class="pagination">
+            {% if products.has_prev %}
+            <a href="{{ url_for('productos', page=products.prev_num, cat=current_cat, marca=current_brand, q=search_query) }}" class="page-btn"><i class="fas fa-chevron-left"></i></a>
+            {% endif %}
+            {% for p in products.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if p %}
+                <a href="{{ url_for('productos', page=p, cat=current_cat, marca=current_brand, q=search_query) }}" class="page-btn {% if p == products.page %}active{% endif %}">{{ p }}</a>
+                {% else %}
+                <span class="page-ellipsis">...</span>
+                {% endif %}
+            {% endfor %}
+            {% if products.has_next %}
+            <a href="{{ url_for('productos', page=products.next_num, cat=current_cat, marca=current_brand, q=search_query) }}" class="page-btn"><i class="fas fa-chevron-right"></i></a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<section class="section cta-section">
+    <div class="container">
+        <div class="cta-box glass-card">
+            <div class="cta-content"><h2>¿No encuentras lo que buscas?</h2><p>Contáctanos y te ayudamos a encontrar el producto ideal.</p></div>
+            <a href="https://wa.me/{{ site.get('whatsapp','51977585654') }}" target="_blank" class="btn btn-whatsapp btn-lg"><i class="fab fa-whatsapp"></i> Escríbenos Ahora</a>
+        </div>
+    </div>
+</section>
+{% endblock %}
