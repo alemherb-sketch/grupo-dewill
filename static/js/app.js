@@ -27,21 +27,22 @@ function toggleMobileMenu() {
 }
 
 // ==================== QUOTE SYSTEM ====================
-function addToQuote(id, name, image) {
-    const existing = quoteList.find(item => item.product_id === id);
+function addToQuote(id, name, image, color = null) {
+    const cart_id = color ? id + '_' + color : id.toString();
+    const existing = quoteList.find(item => (item.cart_id === cart_id) || (item.product_id === id && item.color == color));
     if (existing) {
         existing.quantity += 1;
         showToast(`Cantidad aumentada: ${existing.quantity}`, 'success');
     } else {
-        quoteList.push({ product_id: id, name, image, quantity: 1 });
+        quoteList.push({ product_id: id, cart_id, name, image, color, quantity: 1 });
         showToast('Agregado a la lista de cotización', 'success');
     }
     saveQuote();
     updateQuoteUI();
 }
 
-function updateQuantity(id, delta) {
-    const item = quoteList.find(p => p.product_id === id);
+function updateQuantity(cart_id, delta) {
+    const item = quoteList.find(p => p.cart_id === cart_id || p.product_id === cart_id);
     if (!item) return;
     item.quantity += delta;
     if (item.quantity < 1) item.quantity = 1;
@@ -49,8 +50,8 @@ function updateQuantity(id, delta) {
     updateQuoteUI();
 }
 
-function removeFromQuote(id) {
-    quoteList = quoteList.filter(item => item.product_id !== id);
+function removeFromQuote(cart_id) {
+    quoteList = quoteList.filter(item => item.cart_id !== cart_id && item.product_id !== cart_id);
     saveQuote();
     updateQuoteUI();
 }
@@ -88,18 +89,21 @@ function updateQuoteUI() {
 
         itemsContainer.innerHTML = '';
         quoteList.forEach(item => {
+            const colorBadge = item.color ? `<span style="display:inline-block; margin-top:5px; font-size:12px; background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:12px;">Color: ${item.color}</span>` : '';
+            const c_id = typeof item.cart_id === 'string' ? `'${item.cart_id}'` : item.product_id;
             itemsContainer.innerHTML += `
                 <div class="quote-item">
                     <img src="${item.image.startsWith('http') || item.image.startsWith('/') ? item.image : '/static/' + item.image}" class="quote-item-img">
                     <div class="quote-item-info">
                         <h4>${item.name}</h4>
+                        ${colorBadge}
                         <div class="quote-item-controls">
                             <div class="quantity-selector">
-                                <button class="qty-btn" onclick="updateQuantity(${item.product_id}, -1)">-</button>
+                                <button class="qty-btn" onclick="updateQuantity(${c_id}, -1)">-</button>
                                 <span class="qty-val">${item.quantity}</span>
-                                <button class="qty-btn" onclick="updateQuantity(${item.product_id}, 1)">+</button>
+                                <button class="qty-btn" onclick="updateQuantity(${c_id}, 1)">+</button>
                             </div>
-                            <button class="btn-remove" onclick="removeFromQuote(${item.product_id})"><i class="fas fa-trash-alt"></i></button>
+                            <button class="btn-remove" onclick="removeFromQuote(${c_id})"><i class="fas fa-trash-alt"></i></button>
                         </div>
                     </div>
                 </div>
@@ -167,7 +171,10 @@ function sendQuoteWhatsApp() {
     let msg = "Hola Grupo Dewill, solicito una cotización:\n\n";
     if (name) msg += `*Cliente:* ${name}\n\n`;
     msg += "*Productos:*\n";
-    quoteList.forEach((item, i) => msg += `${i+1}. [Cant: ${item.quantity}] ${item.name}\n`);
+    quoteList.forEach((item, i) => {
+        const colorText = item.color ? ` (Color: ${item.color})` : '';
+        msg += `${i+1}. [Cant: ${item.quantity}] ${item.name}${colorText}\n`;
+    });
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
 }
 

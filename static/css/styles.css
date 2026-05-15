@@ -1976,3 +1976,84 @@ img {
         font-size: 0.8rem;
     }
 }
+
+/* ========== COLOR PANEL ========== */
+.color-selection-panel {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+}
+
+.color-selection-panel h3 {
+    margin-bottom: 0.5rem;
+    font-size: 1.2rem;
+}
+
+.color-selection-hint {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+}
+
+.color-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.color-swatch {
+    background: transparent;
+    border: 2px solid transparent;
+    border-radius: var(--radius-sm);
+    padding: 0.25rem;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    transition: var(--transition);
+}
+
+.color-swatch:hover, .color-swatch.active {
+    border-color: var(--primary);
+    background: rgba(0, 210, 255, 0.1);
+}
+
+.swatch-fill {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: var(--shadow-sm);
+}
+
+.swatch-name {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.selected-color-display {
+    background: rgba(0, 255, 136, 0.1);
+    color: var(--success);
+    padding: 0.75rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    border: 1px solid rgba(0, 255, 136, 0.2);
+}
+
+.color-overlay-circle {
+    position: absolute;
+    bottom: 10%;
+    right: 10%;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 3px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    transition: background-color 0.3s ease;
+}

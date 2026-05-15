@@ -112,6 +112,15 @@ class QuoteItem(db.Model):
     quote_id = db.Column(db.Integer, db.ForeignKey('quote_requests.id'), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
     quantity = db.Column(db.Integer, default=1)
+    color = db.Column(db.String(100))
+
+
+class PaintColor(db.Model):
+    __tablename__ = 'paint_colors'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    hex_code = db.Column(db.String(10), nullable=False)
+    is_active = db.Column(db.Boolean, default=True)
 
 
 class Banner(db.Model):

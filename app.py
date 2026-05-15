@@ -8,7 +8,7 @@ from flask_mail import Mail, Message
 from werkzeug.utils import secure_filename
 from config import Config
 from models import db, AdminUser, Category, Brand, Product, ProductImage, ProductSpec
-from models import QuoteRequest, QuoteItem, Banner, GalleryCategory, GalleryImage, AmbientCategory, AmbientImage, SiteConfig
+from models import QuoteRequest, QuoteItem, Banner, GalleryCategory, GalleryImage, AmbientCategory, AmbientImage, SiteConfig, PaintColor
 import time
 import threading
 import resend
@@ -139,7 +139,10 @@ def producto_detalle(product_id):
     product = Product.query.get_or_404(product_id)
     related = Product.query.filter(Product.category_id == product.category_id,
         Product.id != product.id, Product.is_active == True).limit(4).all()
-    return render_template('producto_detalle.html', product=product, related=related)
+    paint_colors = []
+    if product.category and product.category.slug == 'pinturas':
+        paint_colors = PaintColor.query.filter_by(is_active=True).all()
+    return render_template('producto_detalle.html', product=product, related=related, paint_colors=paint_colors)
 
 @app.route('/api/cotizacion', methods=['POST'])
 def api_cotizacion():
@@ -151,7 +154,7 @@ def api_cotizacion():
     db.session.add(quote)
     db.session.flush()
     for item in data['items']:
-        db.session.add(QuoteItem(quote_id=quote.id, product_id=item['product_id'], quantity=item.get('quantity',1)))
+        db.session.add(QuoteItem(quote_id=quote.id, product_id=item['product_id'], quantity=item.get('quantity',1), color=item.get('color')))
     db.session.commit()
     try:
         # Obtener configuración de correo
@@ -162,7 +165,8 @@ def api_cotizacion():
             for item in data['items']:
                 prod = Product.query.get(item['product_id'])
                 if prod:
-                    items_text += f"- {prod.name} (SKU: {prod.sku or 'N/A'}) x {item.get('quantity', 1)}\n"
+                    color_info = f" - Color: {item.get('color')}" if item.get('color') else ""
+                    items_text += f"- {prod.name} (SKU: {prod.sku or 'N/A'}){color_info} x {item.get('quantity', 1)}\n"
             
             body = (
                 f"Nueva Solicitud de Cotización #{quote.id}\n"
@@ -565,6 +569,26 @@ def admin_ambient_image_delete(img_id):
     db.session.commit()
     flash('Imagen eliminada')
     return redirect(url_for('admin_ambient_edit', id=parent_id))
+
+
+@app.route('/admin/colores', methods=['GET', 'POST'])
+@login_required
+def admin_colors():
+    if request.method == 'POST':
+        action = request.form.get('action')
+        if action == 'create':
+            db.session.add(PaintColor(name=request.form['name'], hex_code=request.form['hex_code'], is_active='is_active' in request.form))
+            db.session.commit(); flash('Color creado', 'success')
+        elif action == 'update':
+            c = PaintColor.query.get(request.form['id'])
+            if c:
+                c.name = request.form['name']; c.hex_code = request.form['hex_code']; c.is_active = 'is_active' in request.form
+                db.session.commit(); flash('Color actualizado', 'success')
+        elif action == 'delete':
+            c = PaintColor.query.get(request.form['id'])
+            if c: db.session.delete(c); db.session.commit(); flash('Color eliminado', 'success')
+        return redirect(url_for('admin_colors'))
+    return render_template('admin/colors.html', colors=PaintColor.query.all())
 
 
 if __name__ == '__main__':

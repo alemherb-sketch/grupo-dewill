@@ -43,7 +43,11 @@
                     <img src="{{ url_for('static', filename=item.product.main_image or 'assets/product_paint.png') }}" style="width:50px;height:50px;object-fit:cover;border-radius:4px;">
                     <div>
                         <h4 style="margin:0 0 0.25rem 0;">{{ item.product.name }}</h4>
-                        <p style="margin:0;font-size:0.85rem;color:var(--text-muted);">{{ item.product.sku or 'Sin SKU' }} | Cantidad: <strong>{{ item.quantity }}</strong></p>
+                        <p style="margin:0;font-size:0.85rem;color:var(--text-muted);">
+                            {{ item.product.sku or 'Sin SKU' }} 
+                            {% if item.color %} | Color: <strong style="color:var(--primary);">{{ item.color }}</strong> {% endif %}
+                            | Cantidad: <strong>{{ item.quantity }}</strong>
+                        </p>
                     </div>
                 </li>
                 {% endfor %}

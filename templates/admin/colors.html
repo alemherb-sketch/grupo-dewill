@@ -1,0 +1,117 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Colores de Pintura{% endblock %}
+{% block page_title %}Gestión de Colores{% endblock %}
+
+{% block admin_content %}
+<div class="admin-toolbar">
+    <button class="btn btn-primary" onclick="openModal('colorModal')">
+        <i class="fas fa-plus"></i> Nuevo Color
+    </button>
+</div>
+
+<div class="admin-table-container">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Color</th>
+                <th>Nombre</th>
+                <th>Hexadecimal</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for color in colors %}
+            <tr>
+                <td>
+                    <div style="width:30px;height:30px;border-radius:50%;background-color:{{ color.hex_code }};border:1px solid #ccc;"></div>
+                </td>
+                <td>{{ color.name }}</td>
+                <td>{{ color.hex_code }}</td>
+                <td>
+                    {% if color.is_active %}
+                    <span class="badge badge-success">Activo</span>
+                    {% else %}
+                    <span class="badge badge-error">Inactivo</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-outline" onclick="editColor({{ color.id }}, '{{ color.name|e }}', '{{ color.hex_code }}', {{ 'true' if color.is_active else 'false' }})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <form method="POST" style="display:inline;" onsubmit="return confirm('¿Eliminar color?');">
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="id" value="{{ color.id }}">
+                        <button type="submit" class="btn btn-sm btn-error"><i class="fas fa-trash"></i></button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal -->
+<div id="colorModal" class="modal">
+    <div class="modal-content" style="max-width:400px;">
+        <div class="modal-header">
+            <h2 id="modalTitle">Nuevo Color</h2>
+            <button class="close-modal" onclick="closeModal('colorModal')">&times;</button>
+        </div>
+        <form method="POST">
+            <input type="hidden" name="action" id="formAction" value="create">
+            <input type="hidden" name="id" id="colorId" value="">
+            
+            <div class="form-group">
+                <label>Nombre del Color</label>
+                <input type="text" name="name" id="colorName" class="form-input" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Código Hexadecimal</label>
+                <input type="color" name="hex_code" id="colorHex" class="form-input" value="#FFFFFF" required style="height:50px;">
+            </div>
+            
+            <div class="form-group" style="display:flex;align-items:center;gap:0.5rem;">
+                <input type="checkbox" name="is_active" id="colorActive" value="1" checked>
+                <label for="colorActive" style="margin:0;">Activo (Visible para clientes)</label>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Guardar Color</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function editColor(id, name, hex, isActive) {
+    document.getElementById('modalTitle').innerText = 'Editar Color';
+    document.getElementById('formAction').value = 'update';
+    document.getElementById('colorId').value = id;
+    document.getElementById('colorName').value = name;
+    document.getElementById('colorHex').value = hex;
+    document.getElementById('colorActive').checked = isActive;
+    openModal('colorModal');
+}
+
+function openModal(id) {
+    if(id==='colorModal' && document.getElementById('formAction').value==='create') {
+        document.getElementById('modalTitle').innerText = 'Nuevo Color';
+        document.getElementById('colorId').value = '';
+        document.getElementById('colorName').value = '';
+        document.getElementById('colorHex').value = '#FFFFFF';
+        document.getElementById('colorActive').checked = true;
+    }
+    document.getElementById(id).classList.add('active');
+}
+function closeModal(id) {
+    document.getElementById(id).classList.remove('active');
+    setTimeout(() => {
+        if(id==='colorModal') {
+            document.getElementById('formAction').value='create';
+        }
+    }, 300);
+}
+</script>
+{% endblock %}

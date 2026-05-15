@@ -15,8 +15,12 @@
         <div class="product-detail-grid">
             <!-- Image Gallery -->
             <div class="product-gallery">
-                <div class="gallery-main">
+                <div class="gallery-main" style="position: relative;">
                     <img id="mainImage" src="{{ url_for('static', filename=product.main_image or 'assets/product_paint.png') }}" alt="{{ product.name }}">
+                    {% if paint_colors %}
+                    <!-- Color Overlay Indicator -->
+                    <div id="colorOverlay" class="color-overlay-circle" style="display:none;"></div>
+                    {% endif %}
                 </div>
                 {% if product.images %}
                 <div class="gallery-thumbs">
@@ -65,7 +69,30 @@
                 </div>
 
                 <div class="detail-actions">
-                    <button class="btn btn-primary btn-lg" onclick="addToQuote({{ product.id }}, '{{ product.name|e }}', '{{ product.main_image or 'assets/product_paint.png' }}')">
+                    {% if paint_colors %}
+                    <div class="color-selection-panel">
+                        <h3><i class="fas fa-palette"></i> Seleccionar Color</h3>
+                        <p class="color-selection-hint">Por favor selecciona un color para tu cotización.</p>
+                        
+                        <div class="color-grid">
+                            {% for color in paint_colors %}
+                            <button class="color-swatch" data-name="{{ color.name }}" data-hex="{{ color.hex_code }}" title="{{ color.name }}" onclick="selectProductColor(this, '{{ color.name|e }}', '{{ color.hex_code }}')">
+                                <span class="swatch-fill" style="background-color: {{ color.hex_code }};"></span>
+                                <span class="swatch-name">{{ color.name }}</span>
+                            </button>
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- Hidden input to store selected color -->
+                        <input type="hidden" id="selectedColorName" value="">
+                        
+                        <div id="selectedColorDisplay" class="selected-color-display" style="display:none;">
+                            <strong>Color Seleccionado:</strong> <span id="selectedColorText"></span>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <button class="btn btn-primary btn-lg" onclick="handleAddToCart()">
                         <i class="fas fa-clipboard-list"></i> Agregar a Cotización
                     </button>
                 </div>
@@ -106,4 +133,47 @@
         {% endif %}
     </div>
 </section>
+{% if paint_colors %}
+<script>
+function selectProductColor(btn, name, hex) {
+    // Update active state on buttons
+    document.querySelectorAll('.color-swatch').forEach(el => el.classList.remove('active'));
+    btn.classList.add('active');
+    
+    // Store selected color
+    document.getElementById('selectedColorName').value = name;
+    
+    // Show selected color text
+    document.getElementById('selectedColorDisplay').style.display = 'block';
+    document.getElementById('selectedColorText').innerText = name;
+    
+    // Update visual overlay
+    const overlay = document.getElementById('colorOverlay');
+    overlay.style.display = 'block';
+    overlay.style.backgroundColor = hex;
+}
+
+function handleAddToCart() {
+    const isPaint = {{ 'true' if paint_colors else 'false' }};
+    let colorName = null;
+    
+    if (isPaint) {
+        colorName = document.getElementById('selectedColorName').value;
+        if (!colorName) {
+            alert("Por favor selecciona un color para la pintura.");
+            return;
+        }
+    }
+    
+    addToQuote({{ product.id }}, '{{ product.name|e }}', '{{ product.main_image or 'assets/product_paint.png' }}', colorName);
+}
+</script>
+{% else %}
+<script>
+function handleAddToCart() {
+    addToQuote({{ product.id }}, '{{ product.name|e }}', '{{ product.main_image or 'assets/product_paint.png' }}', null);
+}
+</script>
+{% endif %}
+
 {% endblock %}
