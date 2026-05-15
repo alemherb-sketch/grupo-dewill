@@ -23,7 +23,7 @@ class Config:
     MAIL_SERVER = 'smtp.gmail.com'
     MAIL_PORT = 587
     MAIL_USE_TLS = True
-    MAIL_USERNAME = os.environ.get('MAIL_USERNAME', 'alemherb@gmail.com')
-    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD', 'eczgozohtkbrjqvp')
-    MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER', 'alemherb@gmail.com')
-    MAIL_NOTIFY_TO = os.environ.get('MAIL_NOTIFY_TO', 'alemherb@gmail.com')
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME', 'Jorgecross14@gmail.com')
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD', 'aoojbirscsgxulwk')
+    MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER', 'Jorgecross14@gmail.com')
+    MAIL_NOTIFY_TO = os.environ.get('MAIL_NOTIFY_TO', 'Jorgecross14@gmail.com')
