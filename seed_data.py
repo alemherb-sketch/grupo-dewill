@@ -74,7 +74,8 @@ PRODUCTS = [
 
 SITE_DEFAULTS = {
     'phone': '+51 977 585 654',
-    'whatsapp': '51977585654',
+    'whatsapp': '51983461199',
+    'whatsapp_2': '51977585654',
     'email': 'ventas@grupodewill.com',
     'address': 'Lima, Perú',
     'facebook': '#',

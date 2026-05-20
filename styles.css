@@ -811,11 +811,18 @@ img {
     overflow-y: auto;
 }
 
-/* ========== WHATSAPP FLOAT ========== */
-.whatsapp-float {
+/* ========== WHATSAPP WIDGET & FLOAT ========== */
+.wa-widget-container {
     position: fixed;
     bottom: 2rem;
     right: 2rem;
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.whatsapp-float {
     width: 60px;
     height: 60px;
     background: #25d366;
@@ -826,8 +833,10 @@ img {
     justify-content: center;
     font-size: 2rem;
     box-shadow: 0 10px 25px rgba(37, 211, 102, 0.3);
-    z-index: 999;
     transition: var(--transition);
+    border: none;
+    cursor: pointer;
+    position: relative;
 }
 
 .whatsapp-float:hover {
@@ -853,6 +862,132 @@ img {
 .whatsapp-float:hover .whatsapp-tooltip {
     opacity: 1;
     visibility: visible;
+}
+
+.wa-widget-card {
+    position: absolute;
+    bottom: 75px;
+    right: 0;
+    width: 320px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    transform: translateY(20px);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.wa-widget-card.show {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+}
+
+.wa-widget-header {
+    background: linear-gradient(135deg, #20b954, #128c7e);
+    padding: 1.25rem;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-align: left;
+}
+
+.wa-widget-header-icon {
+    font-size: 2.2rem;
+    line-height: 1;
+}
+
+.wa-widget-header-text h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.wa-widget-header-text p {
+    margin: 4px 0 0;
+    font-size: 0.75rem;
+    line-height: 1.3;
+    opacity: 0.9;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.wa-widget-body {
+    padding: 1.25rem;
+    background: #ffffff;
+    text-align: left;
+}
+
+.wa-widget-status {
+    font-size: 0.75rem;
+    color: #666666;
+    margin: 0 0 1rem;
+}
+
+.wa-agent-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-left: 3px solid #25d366;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.wa-agent-card:last-child {
+    margin-bottom: 0;
+}
+
+.wa-agent-card:hover {
+    background: #f1f3f5;
+    border-color: #dee2e6;
+    border-left-color: #128c7e;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.wa-agent-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.wa-agent-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #b30006; /* Red company color */
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.wa-agent-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #333333;
+}
+
+.wa-agent-action {
+    color: #25d366;
+    font-size: 1.25rem;
+    transition: all 0.2s ease;
+}
+
+.wa-agent-card:hover .wa-agent-action {
+    color: #128c7e;
+    transform: scale(1.1);
 }
 
 /* ========== FOOTER ========== */

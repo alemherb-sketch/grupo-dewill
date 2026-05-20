@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=2.2">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=2.3">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -121,14 +121,54 @@
     <!-- Toast -->
     <div id="toastContainer"></div>
 
-    <!-- WhatsApp Float -->
-    <a href="https://wa.me/{{ site.get('whatsapp', '51977585654') }}?text=Hola%20Grupo%20Dewill" target="_blank" class="whatsapp-float">
-        <i class="fab fa-whatsapp"></i>
-        <span class="whatsapp-tooltip">¿Necesitas ayuda?</span>
-    </a>
+    <!-- WhatsApp Widget & Float -->
+    <div class="wa-widget-container">
+        <div class="wa-widget-card" id="waWidgetCard">
+            <div class="wa-widget-header">
+                <div class="wa-widget-header-icon">
+                    <i class="fab fa-whatsapp"></i>
+                </div>
+                <div class="wa-widget-header-text">
+                    <h4>Habla con un Asesor</h4>
+                    <p>¡Hola! Haz clic en uno de nuestros asesores a continuación para chatear por WhatsApp.</p>
+                </div>
+            </div>
+            <div class="wa-widget-body">
+                <p class="wa-widget-status">El equipo normalmente responde en unos minutos.</p>
+                
+                <a href="https://wa.me/{{ site.get('whatsapp', '51983461199') }}?text=Hola%20Grupo%20Dewill%2C%20necesito%20informaci%C3%B3n" target="_blank" class="wa-agent-card">
+                    <div class="wa-agent-info">
+                        <div class="wa-agent-avatar">
+                            <i class="fas fa-industry"></i>
+                        </div>
+                        <span class="wa-agent-name">Ventas 01</span>
+                    </div>
+                    <div class="wa-agent-action">
+                        <i class="fab fa-whatsapp"></i>
+                    </div>
+                </a>
+                
+                <a href="https://wa.me/{{ site.get('whatsapp_2', '51977585654') }}?text=Hola%20Grupo%20Dewill%2C%20necesito%20informaci%C3%B3n" target="_blank" class="wa-agent-card">
+                    <div class="wa-agent-info">
+                        <div class="wa-agent-avatar">
+                            <i class="fas fa-industry"></i>
+                        </div>
+                        <span class="wa-agent-name">Ventas 02</span>
+                    </div>
+                    <div class="wa-agent-action">
+                        <i class="fab fa-whatsapp"></i>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <button class="whatsapp-float" id="whatsappFloatBtn" onclick="toggleWhatsAppWidget(event)" aria-label="WhatsApp">
+            <i class="fab fa-whatsapp" id="waFloatIcon"></i>
+            <span class="whatsapp-tooltip">¿Necesitas ayuda?</span>
+        </button>
+    </div>
 
     <script>const WHATSAPP_NUMBER = "{{ site.get('whatsapp', '51977585654') }}";</script>
-    <script src="{{ url_for('static', filename='js/app.js') }}?v=1.6"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}?v=2.0"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

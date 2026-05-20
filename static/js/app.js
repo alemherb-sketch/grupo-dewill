@@ -353,3 +353,38 @@ function initAnimations() {
 
     document.querySelectorAll('.stat-number').forEach(el => statsObserver.observe(el));
 }
+
+// ==================== WHATSAPP WIDGET ====================
+function toggleWhatsAppWidget(event) {
+    if (event) event.stopPropagation();
+    const card = document.getElementById('waWidgetCard');
+    const icon = document.getElementById('waFloatIcon');
+    if (!card) return;
+    
+    card.classList.toggle('show');
+    
+    if (card.classList.contains('show')) {
+        if (icon) {
+            icon.className = 'fas fa-times';
+        }
+    } else {
+        if (icon) {
+            icon.className = 'fab fa-whatsapp';
+        }
+    }
+}
+
+// Close widget when clicking outside
+document.addEventListener('click', (event) => {
+    const card = document.getElementById('waWidgetCard');
+    const btn = document.getElementById('whatsappFloatBtn');
+    const icon = document.getElementById('waFloatIcon');
+    if (card && card.classList.contains('show')) {
+        if (!card.contains(event.target) && (!btn || !btn.contains(event.target))) {
+            card.classList.remove('show');
+            if (icon) {
+                icon.className = 'fab fa-whatsapp';
+            }
+        }
+    }
+});
