@@ -253,9 +253,24 @@ def admin_logout():
 @app.route('/admin/')
 @login_required
 def admin_dashboard():
-    stats = {'total_products': Product.query.count(), 'active_products': Product.query.filter_by(is_active=True).count(),
-        'total_quotes': QuoteRequest.query.count(), 'pending_quotes': QuoteRequest.query.filter_by(status='pendiente').count(),
-        'categories': Category.query.count(), 'brands': Brand.query.count()}
+    total_q = QuoteRequest.query.count()
+    responded_q = QuoteRequest.query.filter_by(status='respondida').count()
+    processing_q = QuoteRequest.query.filter_by(status='en_proceso').count()
+    conversion_rate = 0
+    if total_q > 0:
+        conversion_rate = round(((responded_q + processing_q) / total_q) * 100, 1)
+
+    stats = {
+        'total_products': Product.query.count(),
+        'active_products': Product.query.filter_by(is_active=True).count(),
+        'total_quotes': total_q,
+        'pending_quotes': QuoteRequest.query.filter_by(status='pendiente').count(),
+        'responded_quotes': responded_q,
+        'processing_quotes': processing_q,
+        'conversion_rate': conversion_rate,
+        'categories': Category.query.count(),
+        'brands': Brand.query.count()
+    }
     recent = QuoteRequest.query.order_by(QuoteRequest.created_at.desc()).limit(5).all()
     return render_template('admin/dashboard.html', stats=stats, recent_quotes=recent)
 
