@@ -4,7 +4,7 @@
 */
 
 :root {
-    /* Tonos Rojos y Azul */
+    /* Tonos Rojos y Azul (Mix Creativo) */
     --primary: #e62020; /* Rojo vibrante */
     --primary-dark: #b31212; /* Rojo oscuro */
     --secondary: #0055ff; /* Azul vibrante */
@@ -12,22 +12,23 @@
     --success: #00cc66;
     --danger: #ff3333;
     
-    /* Tonos Gris Metálico */
-    --bg-dark: #1a1c21; /* Gris metálico oscuro */
-    --bg-surface: #262930; /* Gris metálico medio */
-    --bg-glass: rgba(38, 41, 48, 0.85); /* Gris metálico translúcido */
+    /* Tonos Gris Metálico (Más pronunciado y elegante) */
+    --bg-dark: #2a2d34; /* Gris acero */
+    --bg-surface: #353942; /* Gris metálico para tarjetas */
+    --bg-glass: rgba(53, 57, 66, 0.7); /* Gris metálico translúcido */
     
-    --text-main: #f0f2f5;
-    --text-muted: #a0aab5;
+    --text-main: #f8f9fa;
+    --text-muted: #b0bac5;
     --text-on-primary: #ffffff;
     
     --font-heading: 'Outfit', sans-serif;
     --font-body: 'Inter', sans-serif;
     
-    --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
-    --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
-    --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
-    --shadow-glow: 0 0 15px rgba(230, 32, 32, 0.4); /* Resplandor rojo */
+    --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+    /* Resplandor combinado Rojo/Azul para un efecto cyberpunk/moderno */
+    --shadow-glow: 0 0 20px rgba(230, 32, 32, 0.5), 0 0 40px rgba(0, 85, 255, 0.3);
     
     --radius-sm: 8px;
     --radius-md: 12px;
@@ -47,7 +48,8 @@
 
 body {
     font-family: var(--font-body);
-    background-color: var(--bg-dark);
+    background: linear-gradient(145deg, #2a2d34 0%, #15181c 100%); /* Fondo gris metálico texturizado */
+    background-attachment: fixed;
     color: var(--text-main);
     line-height: 1.6;
     overflow-x: hidden;
@@ -84,7 +86,7 @@ img {
 }
 
 .gradient-text {
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    background: linear-gradient(135deg, var(--primary), var(--secondary)); /* Gradiente de Rojo a Azul */
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
@@ -400,11 +402,13 @@ img {
 .btn-primary {
     background: linear-gradient(135deg, var(--primary), var(--primary-dark));
     color: var(--text-on-primary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 15px rgba(230, 32, 32, 0.3);
 }
 
 .btn-primary:hover {
     transform: translateY(-3px);
-    box-shadow: var(--shadow-glow);
+    box-shadow: 0 8px 25px rgba(230, 32, 32, 0.5), 0 0 20px rgba(0, 85, 255, 0.4); /* Glow combinado */
 }
 
 .btn-whatsapp {
