@@ -120,7 +120,8 @@ def productos():
         if brand:
             query = query.filter_by(brand_id=brand.id)
     if q:
-        query = query.filter(db.or_(Product.name.ilike(f'%{q}%'), Product.description.ilike(f'%{q}%')))
+        search_term = ''.join(['_' if c.lower() in 'aeiouáéíóú' else c for c in q])
+        query = query.filter(db.or_(Product.name.ilike(f'%{search_term}%'), Product.description.ilike(f'%{search_term}%')))
     prods = query.order_by(Product.name).paginate(page=page, per_page=12, error_out=False)
     return render_template('productos.html', products=prods, categories=categories, brands=brands,
                            current_cat=cat_slug, current_brand=brand_slug, search_query=q)
@@ -130,8 +131,9 @@ def api_search():
     q = request.args.get('q', '').strip()
     if len(q) < 2:
         return jsonify([])
+    search_term = ''.join(['_' if c.lower() in 'aeiouáéíóú' else c for c in q])
     results = Product.query.filter(Product.is_active == True,
-        db.or_(Product.name.ilike(f'%{q}%'), Product.description.ilike(f'%{q}%'))).limit(8).all()
+        db.or_(Product.name.ilike(f'%{search_term}%'), Product.description.ilike(f'%{search_term}%'))).limit(8).all()
     return jsonify([p.to_dict() for p in results])
 
 @app.route('/producto/<int:product_id>')
