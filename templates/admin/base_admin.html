@@ -11,9 +11,10 @@
 </head>
 <body class="admin-body">
     <aside class="admin-sidebar" id="adminSidebar">
-        <div class="sidebar-header">
-            <i class="fas fa-industry"></i>
-            <span>GRUPO <strong>DEWILL</strong></span>
+        <div class="sidebar-header" style="padding: 1.25rem 1.5rem; display: flex; align-items: center; justify-content: center; background: #ffffff; border-bottom: 3px solid var(--admin-primary);">
+            <a href="{{ url_for('admin_dashboard') }}" style="display: flex; align-items: center; justify-content: center;">
+                <img src="{{ url_for('static', filename='assets/logo.png') }}" alt="Grupo Dewill" style="max-height: 45px; object-fit: contain;">
+            </a>
         </div>
         <nav class="sidebar-nav">
             <a href="{{ url_for('admin_dashboard') }}" class="sidebar-link {% if request.endpoint == 'admin_dashboard' %}active{% endif %}"><i class="fas fa-chart-pie"></i> Dashboard</a>
