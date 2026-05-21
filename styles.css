@@ -267,9 +267,8 @@ img {
     left: 0;
     width: 100%;
     height: 100%;
-    background: radial-gradient(circle at top left, rgba(217, 32, 39, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at bottom right, rgba(26, 86, 219, 0.15) 0%, transparent 50%),
-                linear-gradient(145deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.3) 100%);
+    /* Overlay m\u00ednimo solo para suavizar bordes */
+    background: linear-gradient(to bottom, rgba(255,255,255,0.05) 0%, transparent 30%, transparent 70%, rgba(255,255,255,0.1) 100%);
     pointer-events: none;
     z-index: 2;
 }
