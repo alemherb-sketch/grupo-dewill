@@ -1076,7 +1076,7 @@ img {
 
 /* ========== FOOTER ========== */
 .footer {
-    background: linear-gradient(135deg, #0b1c3d 0%, #1a56db 100%);
+    background: linear-gradient(135deg, #021a69 0%, #0044ff 100%);
     padding: 5rem 0 2rem;
     border-top: 4px solid var(--primary);
     position: relative;
@@ -1106,6 +1106,19 @@ img {
     font-size: 1.5rem;
     font-weight: 800;
     margin-bottom: 1.5rem;
+}
+
+.footer-logo img {
+    background: #ffffff;
+    padding: 8px 16px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    max-height: 55px !important;
+    transition: transform 0.3s ease;
+}
+
+.footer-logo:hover img {
+    transform: translateY(-2px);
 }
 
 .footer-brand p {
