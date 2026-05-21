@@ -80,12 +80,14 @@ function updateQuoteUI() {
         itemsContainer.style.display = 'none';
         footer.style.display = 'none';
         form.style.display = 'none';
+        document.getElementById('btnCart').classList.remove('has-items-alert');
     } else {
         empty.style.display = 'none';
         itemsContainer.style.display = 'block';
         footer.style.display = 'flex';
         form.style.display = 'block';
         document.getElementById('quoteTotalCount').innerText = quoteList.length;
+        document.getElementById('btnCart').classList.add('has-items-alert');
 
         itemsContainer.innerHTML = '';
         quoteList.forEach(item => {
@@ -99,9 +101,9 @@ function updateQuoteUI() {
                         ${colorBadge}
                         <div class="quote-item-controls">
                             <div class="quantity-selector">
-                                <button class="qty-btn" onclick="updateQuantity(${c_id}, -1)">-</button>
+                                <button class="qty-btn" onclick="updateQuantity(${c_id}, -1)"><i class="fas fa-minus"></i></button>
                                 <span class="qty-val">${item.quantity}</span>
-                                <button class="qty-btn" onclick="updateQuantity(${c_id}, 1)">+</button>
+                                <button class="qty-btn" onclick="updateQuantity(${c_id}, 1)"><i class="fas fa-plus"></i></button>
                             </div>
                             <button class="btn-remove" onclick="removeFromQuote(${c_id})"><i class="fas fa-trash-alt"></i></button>
                         </div>

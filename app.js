@@ -517,11 +517,13 @@ function updateQuoteUI() {
         quoteItems.style.display = 'none';
         quoteFooter.style.display = 'none';
         if (infoForm) infoForm.style.display = 'none';
+        document.getElementById('btnCart').classList.remove('has-items-alert');
     } else {
         quoteEmpty.style.display = 'none';
         quoteItems.style.display = 'block';
         quoteFooter.style.display = 'flex';
         if (infoForm) infoForm.style.display = 'block';
+        document.getElementById('btnCart').classList.add('has-items-alert');
 
         quoteItems.innerHTML = '';
         quoteList.forEach(item => {
@@ -533,9 +535,9 @@ function updateQuoteUI() {
                     <h4>${item.name}</h4>
                     <div class="quote-item-controls">
                         <div class="quantity-selector">
-                            <button class="qty-btn" onclick="updateQuantity(${item.id}, -1)">-</button>
+                            <button class="qty-btn" onclick="updateQuantity(${item.id}, -1)"><i class="fas fa-minus"></i></button>
                             <span class="qty-val">${item.quantity || 1}</span>
-                            <button class="qty-btn" onclick="updateQuantity(${item.id}, 1)">+</button>
+                            <button class="qty-btn" onclick="updateQuantity(${item.id}, 1)"><i class="fas fa-plus"></i></button>
                         </div>
                         <button class="btn-remove" onclick="removeFromQuote(${item.id})" title="Eliminar">
                             <i class="fas fa-trash-alt"></i>

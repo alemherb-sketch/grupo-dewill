@@ -809,34 +809,81 @@ img {
 .quantity-selector {
     display: flex;
     align-items: center;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.15);
     border-radius: var(--radius-sm);
     overflow: hidden;
 }
 
 .qty-btn {
-    background: none;
+    background: #f8f9fa;
     border: none;
     color: var(--primary);
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     cursor: pointer;
-    font-weight: 700;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: var(--transition);
 }
 
 .qty-btn:hover {
     background: var(--primary);
-    color: var(--text-on-primary);
+    color: #ffffff;
 }
 
 .qty-val {
     padding: 0 10px;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     font-weight: 600;
-    min-width: 30px;
+    min-width: 35px;
     text-align: center;
+    color: var(--text-main);
+}
+
+/* Interactive Notice Bubble for Cart */
+@keyframes bounceAlert {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(5px); }
+}
+
+#btnCart.has-items-alert::after {
+    content: '¡Cotizaciones pendientes!';
+    position: absolute;
+    top: calc(100% + 15px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--primary);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: none;
+    z-index: 100;
+    animation: bounceAlert 2s infinite;
+    box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);
+}
+
+#btnCart.has-items-alert::before {
+    content: '';
+    position: absolute;
+    top: calc(100% + 9px);
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: transparent transparent var(--primary) transparent;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: none;
+    z-index: 100;
+    animation: bounceAlert 2s infinite;
 }
 
 .btn-remove {
