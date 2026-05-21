@@ -27,6 +27,10 @@
                 <li><a href="#contacto" class="nav-link">Contacto</a></li>
             </ul>
             <div class="nav-actions">
+                <form action="productos.html" method="GET" class="nav-search">
+                    <input type="text" name="q" placeholder="Buscar productos..." required>
+                    <button type="submit" title="Buscar"><i class="fas fa-search"></i></button>
+                </form>
                 <button class="btn-cart" id="btnCart" onclick="toggleQuotePanel()">
                     <i class="fas fa-clipboard-list"></i>
                     <span class="cart-badge" id="cartBadge">0</span>
