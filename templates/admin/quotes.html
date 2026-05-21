@@ -14,19 +14,19 @@
 
 <div class="admin-panel">
     <table class="admin-table">
-        <thead><tr><th>#</th><th>Cliente</th><th>Empresa</th><th>Email</th><th>Teléfono</th><th>Productos</th><th>Estado</th><th>Fecha</th><th></th></tr></thead>
+        <thead><tr><th>#</th><th>Cliente</th><th>Empresa</th><th>Email</th><th>Teléfono</th><th>Productos</th><th>Estado</th><th>Fecha</th><th style="text-align: right;">Acción</th></tr></thead>
         <tbody>
             {% for q in quotes.items %}
             <tr>
-                <td>{{ q.id }}</td>
-                <td>{{ q.client_name or 'Sin nombre' }}</td>
+                <td style="font-weight: 600; color: #64748b;">#{{ q.id }}</td>
+                <td style="font-weight: 500;">{{ q.client_name or 'Sin nombre' }}</td>
                 <td>{{ q.client_company or '-' }}</td>
                 <td>{{ q.client_email or '-' }}</td>
                 <td>{{ q.client_phone or '-' }}</td>
-                <td><span class="badge">{{ q.items|length }}</span></td>
+                <td><span style="background: #f1f5f9; color: #475569; padding: 3px 10px; border-radius: 12px; font-weight: 600; font-size: 0.8rem;">{{ q.items|length }} prod.</span></td>
                 <td><span class="status-badge status-{{ q.status }}">{{ q.status }}</span></td>
-                <td>{{ q.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
-                <td><a href="{{ url_for('admin_quote_detail', qid=q.id) }}" class="btn-sm"><i class="fas fa-eye"></i> Ver</a></td>
+                <td style="font-size: 0.85rem; color: #64748b;">{{ q.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                <td style="text-align: right;"><a href="{{ url_for('admin_quote_detail', qid=q.id) }}" class="btn btn-sm btn-outline"><i class="fas fa-eye"></i> Ver Detalle</a></td>
             </tr>
             {% else %}
             <tr><td colspan="9" class="empty-text">No hay solicitudes.</td></tr>
