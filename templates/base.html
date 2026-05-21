@@ -36,6 +36,7 @@
                     <span class="cart-badge" id="cartBadge">0</span>
                     <span class="cart-label">Mi Cotización</span>
                 </button>
+                <a href="{{ url_for('admin_login') }}" class="btn-admin" title="Panel Administrativo"><i class="fas fa-cog"></i></a>
                 <button class="hamburger" id="hamburger" onclick="toggleMobileMenu()">
                     <span></span><span></span><span></span>
                 </button>
@@ -76,9 +77,8 @@
                     <a href="{{ url_for('productos', cat='accesorios') }}">Accesorios</a>
                 </div>
             </div>
-            <div class="footer-bottom" style="display:flex; justify-content:space-between; align-items:center;">
+            <div class="footer-bottom">
                 <p>&copy; 2026 Grupo Dewill. Todos los derechos reservados.</p>
-                <a href="{{ url_for('admin_login') }}" style="color:var(--text-muted); font-size:1.2rem; transition:color 0.3s;" title="Acceso Administrativo"><i class="fas fa-cog"></i></a>
             </div>
         </div>
     </footer>
