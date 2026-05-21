@@ -6,12 +6,12 @@
     <title>Admin Login | Grupo Dewill</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}?v=1.1">
 </head>
 <body class="login-body">
     <div class="login-container">
         <div class="login-card">
-            <div class="login-logo"><div class="logo-icon-lg"><i class="fas fa-industry"></i></div><h1>GRUPO <span>DEWILL</span></h1><p>Panel de Administración</p></div>
+            <div class="login-logo"><img src="{{ url_for('static', filename='assets/logo.png') }}" alt="Grupo Dewill S.A.C." style="max-height: 55px; margin-bottom: 0.5rem;"><p>Panel de Administración</p></div>
             {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}{% for cat, msg in messages %}<div class="admin-alert admin-alert-{{ cat }}">{{ msg }}</div>{% endfor %}{% endif %}{% endwith %}
             <form method="POST" class="login-form">
                 <div class="form-group"><label><i class="fas fa-user"></i> Usuario</label><input type="text" name="username" required autofocus class="form-input"></div>
