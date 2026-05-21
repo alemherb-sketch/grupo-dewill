@@ -16,8 +16,7 @@
     <nav class="navbar {% block nav_class %}{% endblock %}" id="navbar">
         <div class="nav-container">
             <a href="{{ url_for('index') }}" class="nav-logo">
-                <div class="logo-icon"><i class="fas fa-industry"></i></div>
-                <span class="logo-text">GRUPO <span class="logo-accent">DEWILL</span></span>
+                <img src="{{ url_for('static', filename='assets/logo.png') }}" alt="Grupo Dewill S.A.C." class="logo-img">
             </a>
             <ul class="nav-links" id="navLinks">
                 <li><a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">Inicio</a></li>
@@ -47,8 +46,7 @@
             <div class="footer-content">
                 <div class="footer-brand">
                     <div class="footer-logo">
-                        <i class="fas fa-industry"></i>
-                        <span>GRUPO <span class="logo-accent">DEWILL</span></span>
+                        <img src="{{ url_for('static', filename='assets/logo.png') }}" alt="Grupo Dewill S.A.C." class="logo-img" style="height: 45px;">
                     </div>
                     <p>Tu aliado estratégico en suministros industriales. Calidad, confianza y servicio al mejor precio.</p>
                     <div class="footer-social">
