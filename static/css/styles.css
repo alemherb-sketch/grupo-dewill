@@ -1272,7 +1272,6 @@ img {
 .footer {
     background: linear-gradient(135deg, #021a69 0%, #0044ff 100%);
     padding: 5rem 0 2rem;
-    border-top: 4px solid var(--primary);
     position: relative;
 }
 
