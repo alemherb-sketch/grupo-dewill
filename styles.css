@@ -1686,7 +1686,7 @@ img {
 .client-info-form {
     padding: 1rem 0;
     margin-top: 1rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .client-info-form h4 {
@@ -1706,8 +1706,8 @@ img {
 
 .form-input {
     width: 100%;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: var(--radius-sm);
     padding: 0.6rem 0.8rem;
     color: var(--text-main);
@@ -1719,22 +1719,22 @@ img {
 .form-input:focus {
     outline: none;
     border-color: var(--primary);
-    background: rgba(255, 255, 255, 0.05);
+    background: #ffffff;
 }
 
 .form-input::placeholder {
-    color: rgba(255, 255, 255, 0.3);
+    color: #a0aabf;
 }
 
 .btn-outline-secondary {
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.1);
     color: var(--text-muted);
 }
 
 .btn-outline-secondary:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.3);
+    background: #f8f9fa;
+    border-color: rgba(0, 0, 0, 0.2);
     color: var(--text-main);
 }
 
