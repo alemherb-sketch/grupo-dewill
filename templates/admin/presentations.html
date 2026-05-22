@@ -1,0 +1,107 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Presentaciones{% endblock %}
+{% block page_title %}Gestión de Presentaciones{% endblock %}
+
+{% block admin_content %}
+<div class="admin-toolbar">
+    <h3>{{ presentations|length }} presentaciones registradas</h3>
+    <button class="btn btn-primary" onclick="document.getElementById('newPresModal').classList.add('show')"><i class="fas fa-plus"></i> Nueva Presentación</button>
+</div>
+
+<div class="admin-panel">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Slug</th>
+                <th>Productos Asociados</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in presentations %}
+            <tr>
+                <td>{{ p.id }}</td>
+                <td><strong>{{ p.name }}</strong></td>
+                <td><code>{{ p.slug }}</code></td>
+                <td>{{ p.products|length }}</td>
+                <td class="actions-cell">
+                    <button class="btn-sm btn-edit" onclick="editPres({{ p.id }}, '{{ p.name }}', '{{ p.slug }}')"><i class="fas fa-edit"></i></button>
+                    <form method="POST" style="display:inline;" onsubmit="return confirm('¿Eliminar esta presentación?')">
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="id" value="{{ p.id }}">
+                        <button type="submit" class="btn-sm btn-delete"><i class="fas fa-trash"></i></button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- New Presentation Modal -->
+<div class="admin-modal" id="newPresModal">
+    <div class="modal-card">
+        <h3>Nueva Presentación</h3>
+        <form method="POST">
+            <input type="hidden" name="action" value="create">
+            <div class="form-group">
+                <label>Nombre</label>
+                <input type="text" name="name" required class="form-input" id="newPresName" placeholder="ej: 1 Galón, Balde, Cilindro" oninput="generateSlug(this.value, 'newPresSlug')">
+            </div>
+            <div class="form-group">
+                <label>Slug</label>
+                <input type="text" name="slug" required class="form-input" id="newPresSlug" placeholder="ej: 1-galon">
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="this.closest('.admin-modal').classList.remove('show')">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Crear</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Presentation Modal -->
+<div class="admin-modal" id="editPresModal">
+    <div class="modal-card">
+        <h3>Editar Presentación</h3>
+        <form method="POST">
+            <input type="hidden" name="action" value="update">
+            <input type="hidden" name="id" id="editPresId">
+            <div class="form-group">
+                <label>Nombre</label>
+                <input type="text" name="name" id="editPresName" required class="form-input" oninput="generateSlug(this.value, 'editPresSlug')">
+            </div>
+            <div class="form-group">
+                <label>Slug</label>
+                <input type="text" name="slug" id="editPresSlug" required class="form-input">
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="this.closest('.admin-modal').classList.remove('show')">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Actualizar</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block admin_js %}
+<script>
+function editPres(id, name, slug) {
+    document.getElementById('editPresId').value = id;
+    document.getElementById('editPresName').value = name;
+    document.getElementById('editPresSlug').value = slug;
+    document.getElementById('editPresModal').classList.add('show');
+}
+
+function generateSlug(text, targetId) {
+    const slug = text.toString().toLowerCase().trim()
+        .replace(/\s+/g, '-')           // Replace spaces with -
+        .replace(/&/g, '-and-')         // Replace & with 'and'
+        .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
+        .replace(/\-\-+/g, '-');        // Replace multiple - with single -
+    document.getElementById(targetId).value = slug;
+}
+</script>
+{% endblock %}

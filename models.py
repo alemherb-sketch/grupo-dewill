@@ -28,6 +28,16 @@ class Category(db.Model):
     icon = db.Column(db.String(50), default='fas fa-tag')
     order = db.Column(db.Integer, default=0)
     products = db.relationship('Product', backref='category', lazy=True)
+    subcategories = db.relationship('SubCategory', backref='category', lazy=True, cascade='all, delete-orphan')
+
+
+class SubCategory(db.Model):
+    __tablename__ = 'subcategories'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    slug = db.Column(db.String(100), unique=True, nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=False)
+    products = db.relationship('Product', backref='subcategory', lazy=True)
 
 
 class Brand(db.Model):
@@ -40,6 +50,19 @@ class Brand(db.Model):
     products = db.relationship('Product', backref='brand', lazy=True)
 
 
+product_presentations = db.Table('product_presentations',
+    db.Column('product_id', db.Integer, db.ForeignKey('products.id', ondelete='CASCADE'), primary_key=True),
+    db.Column('presentation_id', db.Integer, db.ForeignKey('presentations.id', ondelete='CASCADE'), primary_key=True)
+)
+
+
+class Presentation(db.Model):
+    __tablename__ = 'presentations'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    slug = db.Column(db.String(100), unique=True, nullable=False)
+
+
 class Product(db.Model):
     __tablename__ = 'products'
     id = db.Column(db.Integer, primary_key=True)
@@ -48,6 +71,7 @@ class Product(db.Model):
     description = db.Column(db.Text)
     technical_description = db.Column(db.Text)
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id'))
+    subcategory_id = db.Column(db.Integer, db.ForeignKey('subcategories.id'))
     brand_id = db.Column(db.Integer, db.ForeignKey('brands.id'))
     main_image = db.Column(db.String(300))
     pdf_url = db.Column(db.String(300))
@@ -56,6 +80,8 @@ class Product(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    presentations = db.relationship('Presentation', secondary=product_presentations, lazy='subquery',
+                                   backref=db.backref('products', lazy=True))
     images = db.relationship('ProductImage', backref='product', lazy=True,
                              cascade='all, delete-orphan', order_by='ProductImage.order')
     specs = db.relationship('ProductSpec', backref='product', lazy=True,
@@ -70,9 +96,12 @@ class Product(db.Model):
             'description': self.description,
             'category': self.category.name if self.category else '',
             'category_slug': self.category.slug if self.category else '',
+            'subcategory': self.subcategory.name if self.subcategory else '',
+            'subcategory_slug': self.subcategory.slug if self.subcategory else '',
             'brand': self.brand.name if self.brand else '',
             'main_image': self.main_image or '',
             'is_featured': self.is_featured,
+            'presentations': [p.name for p in self.presentations]
         }
 
 

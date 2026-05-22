@@ -1,0 +1,127 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Sub Categorías{% endblock %}
+{% block page_title %}Gestión de Sub Categorías{% endblock %}
+
+{% block admin_content %}
+<div class="admin-toolbar">
+    <h3>{{ subcategories|length }} sub categorías registradas</h3>
+    <button class="btn btn-primary" onclick="document.getElementById('newSubcatModal').classList.add('show')"><i class="fas fa-plus"></i> Nueva Sub Categoría</button>
+</div>
+
+<div class="admin-panel">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Slug</th>
+                <th>Categoría Principal</th>
+                <th>Productos</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sc in subcategories %}
+            <tr>
+                <td>{{ sc.id }}</td>
+                <td><strong>{{ sc.name }}</strong></td>
+                <td><code>{{ sc.slug }}</code></td>
+                <td><span class="badge" style="background: rgba(255,255,255,0.05); padding: 0.3rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1);">{{ sc.category.name }}</span></td>
+                <td>{{ sc.products|length }}</td>
+                <td class="actions-cell">
+                    <button class="btn-sm btn-edit" onclick="editSubcat({{ sc.id }}, '{{ sc.name }}', '{{ sc.slug }}', {{ sc.category_id }})"><i class="fas fa-edit"></i></button>
+                    <form method="POST" style="display:inline;" onsubmit="return confirm('¿Eliminar esta sub categoría?')">
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="id" value="{{ sc.id }}">
+                        <button type="submit" class="btn-sm btn-delete"><i class="fas fa-trash"></i></button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- New Subcategory Modal -->
+<div class="admin-modal" id="newSubcatModal">
+    <div class="modal-card">
+        <h3>Nueva Sub Categoría</h3>
+        <form method="POST">
+            <input type="hidden" name="action" value="create">
+            <div class="form-group">
+                <label>Nombre</label>
+                <input type="text" name="name" required class="form-input" id="newSubcatName" oninput="generateSlug(this.value, 'newSubcatSlug')">
+            </div>
+            <div class="form-group">
+                <label>Slug</label>
+                <input type="text" name="slug" required class="form-input" id="newSubcatSlug" placeholder="ej: latex-premium">
+            </div>
+            <div class="form-group">
+                <label>Categoría Principal</label>
+                <select name="category_id" required class="form-input">
+                    <option value="">Seleccionar...</option>
+                    {% for c in categories %}
+                    <option value="{{ c.id }}">{{ c.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="this.closest('.admin-modal').classList.remove('show')">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Crear</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Subcategory Modal -->
+<div class="admin-modal" id="editSubcatModal">
+    <div class="modal-card">
+        <h3>Editar Sub Categoría</h3>
+        <form method="POST">
+            <input type="hidden" name="action" value="update">
+            <input type="hidden" name="id" id="editSubcatId">
+            <div class="form-group">
+                <label>Nombre</label>
+                <input type="text" name="name" id="editSubcatName" required class="form-input" oninput="generateSlug(this.value, 'editSubcatSlug')">
+            </div>
+            <div class="form-group">
+                <label>Slug</label>
+                <input type="text" name="slug" id="editSubcatSlug" required class="form-input">
+            </div>
+            <div class="form-group">
+                <label>Categoría Principal</label>
+                <select name="category_id" id="editSubcatCategoryId" required class="form-input">
+                    {% for c in categories %}
+                    <option value="{{ c.id }}">{{ c.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="this.closest('.admin-modal').classList.remove('show')">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Actualizar</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block admin_js %}
+<script>
+function editSubcat(id, name, slug, categoryId) {
+    document.getElementById('editSubcatId').value = id;
+    document.getElementById('editSubcatName').value = name;
+    document.getElementById('editSubcatSlug').value = slug;
+    document.getElementById('editSubcatCategoryId').value = categoryId;
+    document.getElementById('editSubcatModal').classList.add('show');
+}
+
+function generateSlug(text, targetId) {
+    const slug = text.toString().toLowerCase().trim()
+        .replace(/\s+/g, '-')           // Replace spaces with -
+        .replace(/&/g, '-and-')         // Replace & with 'and'
+        .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
+        .replace(/\-\-+/g, '-');        // Replace multiple - with single -
+    document.getElementById(targetId).value = slug;
+}
+</script>
+{% endblock %}

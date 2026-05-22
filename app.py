@@ -7,7 +7,7 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 from flask_mail import Mail, Message
 from werkzeug.utils import secure_filename
 from config import Config
-from models import db, AdminUser, Category, Brand, Product, ProductImage, ProductSpec
+from models import db, AdminUser, Category, SubCategory, Brand, Product, ProductImage, ProductSpec, Presentation
 from models import QuoteRequest, QuoteItem, Banner, GalleryCategory, GalleryImage, AmbientCategory, AmbientImage, SiteConfig, PaintColor
 import time
 import threading
@@ -269,7 +269,9 @@ def admin_dashboard():
         'processing_quotes': processing_q,
         'conversion_rate': conversion_rate,
         'categories': Category.query.count(),
-        'brands': Brand.query.count()
+        'subcategories': SubCategory.query.count(),
+        'brands': Brand.query.count(),
+        'presentations': Presentation.query.count()
     }
     recent = QuoteRequest.query.order_by(QuoteRequest.created_at.desc()).limit(5).all()
     return render_template('admin/dashboard.html', stats=stats, recent_quotes=recent)
@@ -291,17 +293,28 @@ def admin_products():
 @login_required
 def admin_product_new():
     categories = Category.query.order_by(Category.order).all()
+    subcategories = SubCategory.query.order_by(SubCategory.name).all()
     brands = Brand.query.order_by(Brand.name).all()
+    presentations = Presentation.query.order_by(Presentation.name).all()
     if request.method == 'POST':
         p = Product(name=request.form['name'], sku=request.form.get('sku',''),
             description=request.form.get('description',''), technical_description=request.form.get('technical_description',''),
-            category_id=request.form.get('category_id',type=int), brand_id=request.form.get('brand_id',type=int) or None,
+            category_id=request.form.get('category_id',type=int) or None,
+            subcategory_id=request.form.get('subcategory_id',type=int) or None,
+            brand_id=request.form.get('brand_id',type=int) or None,
             video_url=request.form.get('video_url',''), is_featured='is_featured' in request.form,
             is_active='is_active' in request.form)
         if 'main_image' in request.files and request.files['main_image'].filename:
             p.main_image = save_upload(request.files['main_image'], 'products')
         if 'pdf_file' in request.files and request.files['pdf_file'].filename:
             p.pdf_url = save_upload(request.files['pdf_file'], 'docs')
+        
+        # Save presentations
+        pres_ids = request.form.getlist('presentation_ids', type=int)
+        for pres_id in pres_ids:
+            pres = Presentation.query.get(pres_id)
+            if pres: p.presentations.append(pres)
+
         db.session.add(p)
         db.session.flush()
         for f in request.files.getlist('extra_images'):
@@ -314,18 +327,22 @@ def admin_product_new():
         db.session.commit()
         flash('Producto creado exitosamente', 'success')
         return redirect(url_for('admin_products'))
-    return render_template('admin/product_form.html', product=None, categories=categories, brands=brands)
+    return render_template('admin/product_form.html', product=None, categories=categories, subcategories=subcategories, brands=brands, presentations=presentations)
 
 @app.route('/admin/productos/<int:pid>/editar', methods=['GET', 'POST'])
 @login_required
 def admin_product_edit(pid):
     p = Product.query.get_or_404(pid)
     categories = Category.query.order_by(Category.order).all()
+    subcategories = SubCategory.query.order_by(SubCategory.name).all()
     brands = Brand.query.order_by(Brand.name).all()
+    presentations = Presentation.query.order_by(Presentation.name).all()
     if request.method == 'POST':
         p.name = request.form['name']; p.sku = request.form.get('sku','')
         p.description = request.form.get('description',''); p.technical_description = request.form.get('technical_description','')
-        p.category_id = request.form.get('category_id',type=int); p.brand_id = request.form.get('brand_id',type=int) or None
+        p.category_id = request.form.get('category_id',type=int) or None
+        p.subcategory_id = request.form.get('subcategory_id',type=int) or None
+        p.brand_id = request.form.get('brand_id',type=int) or None
         p.video_url = request.form.get('video_url',''); p.is_featured = 'is_featured' in request.form
         p.is_active = 'is_active' in request.form
         if 'main_image' in request.files and request.files['main_image'].filename:
@@ -340,10 +357,18 @@ def admin_product_edit(pid):
         for k, v in zip(request.form.getlist('spec_key[]'), request.form.getlist('spec_value[]')):
             if k.strip() and v.strip():
                 db.session.add(ProductSpec(product_id=p.id, key=k.strip(), value=v.strip()))
+        
+        # Update presentations
+        p.presentations = []
+        pres_ids = request.form.getlist('presentation_ids', type=int)
+        for pres_id in pres_ids:
+            pres = Presentation.query.get(pres_id)
+            if pres: p.presentations.append(pres)
+            
         db.session.commit()
         flash('Producto actualizado', 'success')
         return redirect(url_for('admin_products'))
-    return render_template('admin/product_form.html', product=p, categories=categories, brands=brands)
+    return render_template('admin/product_form.html', product=p, categories=categories, subcategories=subcategories, brands=brands, presentations=presentations)
 
 @app.route('/admin/productos/<int:pid>/eliminar', methods=['POST'])
 @login_required
@@ -406,6 +431,71 @@ def admin_brands():
             else: flash('No se puede eliminar: tiene productos', 'error')
         return redirect(url_for('admin_brands'))
     return render_template('admin/brands.html', brands=Brand.query.order_by(Brand.name).all())
+
+
+@app.route('/admin/subcategorias', methods=['GET', 'POST'])
+@login_required
+def admin_subcategories():
+    categories = Category.query.order_by(Category.order).all()
+    if request.method == 'POST':
+        action = request.form.get('action')
+        if action == 'create':
+            name = request.form['name']
+            slug = request.form.get('slug') or slugify(name)
+            cat_id = request.form.get('category_id', type=int)
+            db.session.add(SubCategory(name=name, slug=slug, category_id=cat_id))
+            db.session.commit()
+            flash('Sub Categoría creada', 'success')
+        elif action == 'update':
+            sc = SubCategory.query.get(request.form['id'])
+            if sc:
+                sc.name = request.form['name']
+                sc.slug = request.form.get('slug') or slugify(sc.name)
+                sc.category_id = request.form.get('category_id', type=int)
+                db.session.commit()
+                flash('Sub Categoría actualizada', 'success')
+        elif action == 'delete':
+            sc = SubCategory.query.get(request.form['id'])
+            if sc and not sc.products:
+                db.session.delete(sc)
+                db.session.commit()
+                flash('Sub Categoría eliminada', 'success')
+            else:
+                flash('No se puede eliminar: tiene productos asociados', 'error')
+        return redirect(url_for('admin_subcategories'))
+    subcategories = SubCategory.query.join(Category).order_by(Category.order, SubCategory.name).all()
+    return render_template('admin/subcategories.html', subcategories=subcategories, categories=categories)
+
+
+@app.route('/admin/presentaciones', methods=['GET', 'POST'])
+@login_required
+def admin_presentations():
+    if request.method == 'POST':
+        action = request.form.get('action')
+        if action == 'create':
+            name = request.form['name']
+            slug = request.form.get('slug') or slugify(name)
+            db.session.add(Presentation(name=name, slug=slug))
+            db.session.commit()
+            flash('Presentación creada', 'success')
+        elif action == 'update':
+            p = Presentation.query.get(request.form['id'])
+            if p:
+                p.name = request.form['name']
+                p.slug = request.form.get('slug') or slugify(p.name)
+                db.session.commit()
+                flash('Presentación actualizada', 'success')
+        elif action == 'delete':
+            p = Presentation.query.get(request.form['id'])
+            if p and not p.products:
+                db.session.delete(p)
+                db.session.commit()
+                flash('Presentación eliminada', 'success')
+            else:
+                flash('No se puede eliminar: está asociada a productos', 'error')
+        return redirect(url_for('admin_presentations'))
+    presentations = Presentation.query.order_by(Presentation.name).all()
+    return render_template('admin/presentations.html', presentations=presentations)
 
 @app.route('/admin/solicitudes')
 @login_required

@@ -10,18 +10,26 @@
             <div class="form-group"><label>Nombre *</label><input type="text" name="name" value="{{ product.name if product else '' }}" required class="form-input"></div>
             <div class="form-row">
                 <div class="form-group"><label>SKU</label><input type="text" name="sku" value="{{ product.sku if product else '' }}" class="form-input"></div>
+                <div class="form-group"><label>Marca</label>
+                    <select name="brand_id" class="form-input">
+                        <option value="">Sin marca</option>
+                        {% for b in brands %}<option value="{{ b.id }}" {% if product and product.brand_id == b.id %}selected{% endif %}>{{ b.name }}</option>{% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
                 <div class="form-group"><label>Categoría *</label>
                     <select name="category_id" required class="form-input">
                         <option value="">Seleccionar...</option>
                         {% for c in categories %}<option value="{{ c.id }}" {% if product and product.category_id == c.id %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
                     </select>
                 </div>
-            </div>
-            <div class="form-group"><label>Marca</label>
-                <select name="brand_id" class="form-input">
-                    <option value="">Sin marca</option>
-                    {% for b in brands %}<option value="{{ b.id }}" {% if product and product.brand_id == b.id %}selected{% endif %}>{{ b.name }}</option>{% endfor %}
-                </select>
+                <div class="form-group"><label>Subcategoría</label>
+                    <select name="subcategory_id" id="productSubcategoryId" class="form-input">
+                        <option value="">Sin subcategoría</option>
+                        {% for sc in subcategories %}<option value="{{ sc.id }}" data-category-id="{{ sc.category_id }}" {% if product and product.subcategory_id == sc.id %}selected{% endif %}>{{ sc.name }}</option>{% endfor %}
+                    </select>
+                </div>
             </div>
             <div class="form-group"><label>Descripción</label><textarea name="description" rows="3" class="form-input">{{ product.description if product else '' }}</textarea></div>
             <div class="form-group"><label>Descripción Técnica</label><textarea name="technical_description" rows="4" class="form-input">{{ product.technical_description if product else '' }}</textarea></div>
@@ -58,6 +66,20 @@
                 <label>Ficha Técnica (PDF)</label>
                 {% if product and product.pdf_url %}<p class="current-file"><i class="fas fa-file-pdf"></i> <a href="{{ url_for('static', filename=product.pdf_url) }}" target="_blank">Ver actual</a></p>{% endif %}
                 <input type="file" name="pdf_file" accept=".pdf" class="form-input-file">
+            </div>
+
+            <h3><i class="fas fa-box-open"></i> Presentaciones</h3>
+            <div class="form-group">
+                <div class="checkbox-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 0.5rem; background: rgba(255,255,255,0.02); padding: 0.8rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 1.5rem;">
+                    {% for p in presentations %}
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--text-light); font-size: 0.9rem;">
+                        <input type="checkbox" name="presentation_ids" value="{{ p.id }}" {% if product and p in product.presentations %}checked{% endif %}>
+                        {{ p.name }}
+                    </label>
+                    {% else %}
+                    <p style="color: var(--text-muted); font-style: italic; font-size: 0.9rem; grid-column: 1 / -1;">No hay presentaciones registradas.</p>
+                    {% endfor %}
+                </div>
             </div>
 
             <h3><i class="fas fa-list-check"></i> Especificaciones Técnicas</h3>
@@ -98,6 +120,47 @@ function deleteProductImage(imgId) {
         const form = document.getElementById('deleteImageForm');
         form.action = `/admin/productos/imagen/${imgId}/eliminar`;
         form.submit();
+    }
+}
+
+// Dynamic Subcategories Filter
+const categorySelect = document.querySelector('select[name="category_id"]');
+const subcategorySelect = document.getElementById('productSubcategoryId');
+
+function filterSubcategories() {
+    if (!categorySelect || !subcategorySelect) return;
+    const selectedCategoryId = categorySelect.value;
+    const options = subcategorySelect.querySelectorAll('option');
+    let currentlySelectedStillValid = false;
+    
+    options.forEach(opt => {
+        const catId = opt.getAttribute('data-category-id');
+        if (!catId) {
+            opt.style.display = '';
+        } else if (catId === selectedCategoryId) {
+            opt.style.display = '';
+            if (opt.selected) {
+                currentlySelectedStillValid = true;
+            }
+        } else {
+            opt.style.display = 'none';
+            if (opt.selected) {
+                opt.selected = false;
+            }
+        }
+    });
+    
+    if (!currentlySelectedStillValid) {
+        subcategorySelect.value = "";
+    }
+}
+
+if (categorySelect && subcategorySelect) {
+    categorySelect.addEventListener('change', filterSubcategories);
+    const initialVal = subcategorySelect.value;
+    filterSubcategories();
+    if (initialVal) {
+        subcategorySelect.value = initialVal;
     }
 }
 </script>

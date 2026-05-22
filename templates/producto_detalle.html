@@ -8,7 +8,12 @@
         <div class="breadcrumb">
             <a href="{{ url_for('index') }}">Inicio</a> <i class="fas fa-chevron-right"></i>
             <a href="{{ url_for('productos') }}">Productos</a> <i class="fas fa-chevron-right"></i>
-            {% if product.category %}<a href="{{ url_for('productos', cat=product.category.slug) }}">{{ product.category.name }}</a> <i class="fas fa-chevron-right"></i>{% endif %}
+            {% if product.category %}
+                <a href="{{ url_for('productos', cat=product.category.slug) }}">{{ product.category.name }}</a> <i class="fas fa-chevron-right"></i>
+                {% if product.subcategory %}
+                    <span style="color: var(--text-muted);">{{ product.subcategory.name }}</span> <i class="fas fa-chevron-right"></i>
+                {% endif %}
+            {% endif %}
             <span>{{ product.name }}</span>
         </div>
 
@@ -38,7 +43,14 @@
 
             <!-- Product Info -->
             <div class="product-detail-info">
-                {% if product.category %}<span class="detail-category"><i class="{{ product.category.icon }}"></i> {{ product.category.name }}</span>{% endif %}
+                {% if product.category %}
+                <span class="detail-category">
+                    <i class="{{ product.category.icon }}"></i> {{ product.category.name }}
+                    {% if product.subcategory %}
+                     &rsaquo; {{ product.subcategory.name }}
+                    {% endif %}
+                </span>
+                {% endif %}
                 {% if product.brand %}<span class="detail-brand">{{ product.brand.name }}</span>{% endif %}
                 <h1>{{ product.name }}</h1>
                 {% if product.sku %}<p class="detail-sku">SKU: {{ product.sku }}</p>{% endif %}
@@ -59,6 +71,17 @@
                         <tr><td class="spec-key">{{ spec.key }}</td><td class="spec-value">{{ spec.value }}</td></tr>
                         {% endfor %}
                     </table>
+                </div>
+                {% endif %}
+
+                {% if product.presentations %}
+                <div class="detail-presentations" style="margin-top: 1.5rem; margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 0.5rem; font-weight: 600;"><i class="fas fa-box-open" style="color: var(--primary); margin-right: 0.3rem;"></i> Presentaciones</h3>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        {% for pres in product.presentations %}
+                        <span class="presentation-badge" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.3rem 0.8rem; border-radius: 6px; font-size: 0.85rem; font-weight: 500; color: var(--text-light);">{{ pres.name }}</span>
+                        {% endfor %}
+                    </div>
                 </div>
                 {% endif %}
 
