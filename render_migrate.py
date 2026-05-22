@@ -4,7 +4,11 @@ from models import PaintColor
 
 def migrate():
     with app.app_context():
-        # Intentar agregar la columna a la base de datos de producción
+        # 1. Crear todas las tablas nuevas si no existen (subcategories, presentations, product_presentations)
+        db.create_all()
+        print("Tablas de la base de datos creadas/verificadas.")
+
+        # 2. Intentar agregar la columna a la base de datos de producción (quote_items)
         try:
             db.session.execute(text("ALTER TABLE quote_items ADD COLUMN color VARCHAR(100)"))
             db.session.commit()
@@ -13,8 +17,14 @@ def migrate():
             db.session.rollback()
             print(f"Nota: La columna 'color' probablemente ya existe o hubo un error: {e}")
         
-        # Crear la tabla paint_colors si no existe
-        db.create_all()
+        # 3. Intentar agregar la columna subcategory_id a products
+        try:
+            db.session.execute(text("ALTER TABLE products ADD COLUMN subcategory_id INTEGER REFERENCES subcategories(id)"))
+            db.session.commit()
+            print("Columna 'subcategory_id' agregada a products exitosamente.")
+        except Exception as e:
+            db.session.rollback()
+            print(f"Nota: La columna 'subcategory_id' probablemente ya existe o hubo un error: {e}")
         
         # Insertar los colores por defecto
         colors = [
