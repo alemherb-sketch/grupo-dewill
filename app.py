@@ -21,7 +21,25 @@ os.makedirs(os.path.join(app.instance_path), exist_ok=True)
 
 db.init_app(app)
 with app.app_context():
-    db.create_all()
+    # Run auto-migrations
+    try:
+        db.create_all()
+        from sqlalchemy import text
+        # Add color column to quote_items
+        try:
+            db.session.execute(text("ALTER TABLE quote_items ADD COLUMN color VARCHAR(100)"))
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+        # Add subcategory_id column to products
+        try:
+            db.session.execute(text("ALTER TABLE products ADD COLUMN subcategory_id INTEGER REFERENCES subcategories(id)"))
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+    except Exception as e:
+        print(f"Migration error: {e}")
+
     # Asegurar que existe al menos un admin
     if not AdminUser.query.filter_by(username='admin').first():
         admin = AdminUser(username='admin')
