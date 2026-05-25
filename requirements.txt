@@ -7,3 +7,5 @@ Pillow
 gunicorn
 psycopg2-binary
 resend
+pandas
+openpyxl

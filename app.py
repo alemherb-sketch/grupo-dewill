@@ -307,6 +307,131 @@ def admin_products():
     categories = Category.query.order_by(Category.order).all()
     return render_template('admin/products.html', products=products, categories=categories, q=q, cat_id=cat_id)
 
+@app.route('/admin/productos/importar', methods=['GET', 'POST'])
+@login_required
+def admin_product_import():
+    if request.method == 'POST':
+        if 'excel_file' not in request.files:
+            flash('No se seleccionó ningún archivo', 'error')
+            return redirect(request.url)
+        file = request.files['excel_file']
+        if file.filename == '':
+            flash('No se seleccionó ningún archivo', 'error')
+            return redirect(request.url)
+            
+        if file and (file.filename.endswith('.xlsx') or file.filename.endswith('.xls')):
+            try:
+                import pandas as pd
+                df = pd.read_excel(file)
+                # Normalize columns
+                df.columns = [str(c).strip() for c in df.columns]
+                
+                required_cols = ['Codigo', 'Categoria', 'Sub Categoria', 'Marca', 'Producto']
+                for col in required_cols:
+                    if col not in df.columns:
+                        flash(f'Falta la columna requerida: {col}', 'error')
+                        return redirect(request.url)
+                        
+                imported = 0
+                skipped = 0
+                
+                for index, row in df.iterrows():
+                    # Safely handle missing/nan values
+                    if pd.isna(row['Codigo']):
+                        skipped += 1
+                        continue
+                    codigo = str(row['Codigo']).strip()
+                    if not codigo:
+                        skipped += 1
+                        continue
+                        
+                    # Check if SKU exists
+                    if Product.query.filter_by(sku=codigo).first():
+                        skipped += 1
+                        continue
+                        
+                    # Handle Brand
+                    brand = None
+                    if not pd.isna(row['Marca']):
+                        marca_name = str(row['Marca']).strip()
+                        if marca_name:
+                            brand = Brand.query.filter(Brand.name.ilike(marca_name)).first()
+                            if not brand:
+                                brand = Brand(name=marca_name, slug=slugify(marca_name))
+                                db.session.add(brand)
+                                db.session.flush()
+                            
+                    # Handle Category
+                    category = None
+                    if not pd.isna(row['Categoria']):
+                        cat_name = str(row['Categoria']).strip()
+                        if cat_name:
+                            category = Category.query.filter(Category.name.ilike(cat_name)).first()
+                            if not category:
+                                category = Category(name=cat_name, slug=slugify(cat_name), order=0)
+                                db.session.add(category)
+                                db.session.flush()
+                            
+                    # Handle Sub Category
+                    subcategory = None
+                    if category and not pd.isna(row['Sub Categoria']):
+                        subcat_name = str(row['Sub Categoria']).strip()
+                        if subcat_name:
+                            subcategory = SubCategory.query.filter(SubCategory.name.ilike(subcat_name), SubCategory.category_id == category.id).first()
+                            if not subcategory:
+                                subcategory = SubCategory(name=subcat_name, slug=slugify(subcat_name), category_id=category.id)
+                                db.session.add(subcategory)
+                                db.session.flush()
+                            
+                    # Create Product
+                    prod_name = str(row['Producto']).strip() if not pd.isna(row['Producto']) else 'Sin Nombre'
+                    
+                    product = Product(
+                        name=prod_name,
+                        sku=codigo,
+                        category_id=category.id if category else None,
+                        subcategory_id=subcategory.id if subcategory else None,
+                        brand_id=brand.id if brand else None,
+                        is_active=True,
+                        is_featured=False
+                    )
+                    db.session.add(product)
+                    db.session.flush()
+                    
+                    # Handle Color
+                    if 'Color' in df.columns and not pd.isna(row['Color']):
+                        color_val = str(row['Color']).strip()
+                        if color_val:
+                            spec = ProductSpec(product_id=product.id, key='Color', value=color_val)
+                            db.session.add(spec)
+                            
+                    # Handle Presentation
+                    if 'Presentacion' in df.columns and not pd.isna(row['Presentacion']):
+                        pres_name = str(row['Presentacion']).strip()
+                        if pres_name:
+                            pres = Presentation.query.filter(Presentation.name.ilike(pres_name)).first()
+                            if not pres:
+                                pres = Presentation(name=pres_name, slug=slugify(pres_name))
+                                db.session.add(pres)
+                                db.session.flush()
+                            product.presentations.append(pres)
+                            
+                    imported += 1
+                    
+                db.session.commit()
+                flash(f'Importación completada. {imported} productos importados, {skipped} omitidos.', 'success')
+                return redirect(url_for('admin_products'))
+                
+            except Exception as e:
+                db.session.rollback()
+                flash(f'Error al procesar el archivo Excel: {str(e)}', 'error')
+                return redirect(request.url)
+        else:
+            flash('Formato de archivo no válido. Use .xlsx o .xls', 'error')
+            return redirect(request.url)
+            
+    return render_template('admin/product_import.html')
+
 @app.route('/admin/productos/nuevo', methods=['GET', 'POST'])
 @login_required
 def admin_product_new():

@@ -1,0 +1,37 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Importar Productos{% endblock %}
+{% block page_title %}Importar Productos desde Excel{% endblock %}
+
+{% block admin_content %}
+<div class="admin-panel" style="max-width: 800px; margin: 0 auto;">
+    <div class="panel-header">
+        <h3>Instrucciones</h3>
+        <p>Sube un archivo de Excel (.xlsx) para importar productos masivamente.</p>
+        <p>El archivo <strong>debe contener</strong> las siguientes columnas exactamente (pueden estar en cualquier orden):</p>
+        <ul>
+            <li><strong>Codigo</strong>: SKU único del producto. Si ya existe, se ignorará la fila.</li>
+            <li><strong>Categoria</strong>: Nombre de la categoría. Si no existe, se creará.</li>
+            <li><strong>Sub Categoria</strong>: Nombre de la subcategoría. Si no existe, se creará bajo la categoría indicada.</li>
+            <li><strong>Marca</strong>: Nombre de la marca. Si no existe, se creará.</li>
+            <li><strong>Producto</strong>: Nombre del producto.</li>
+            <li><strong>Color</strong>: (Opcional) Color del producto, se guardará como especificación.</li>
+            <li><strong>Presentacion</strong>: (Opcional) Presentación del producto. Si no existe, se creará.</li>
+        </ul>
+        <div class="alert alert-info mt-3" style="background-color: #e9f5ff; border-left: 4px solid #007bff; padding: 15px;">
+            <i class="fas fa-info-circle"></i> Los productos creados se marcarán como "Activos" por defecto y sin imagen destacada. Puedes editar los detalles posteriormente.
+        </div>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" style="margin-top: 30px;">
+        <div class="form-group">
+            <label for="excel_file">Archivo de Excel (.xlsx)</label>
+            <input type="file" name="excel_file" id="excel_file" class="form-input" accept=".xlsx, .xls" required>
+        </div>
+        
+        <div class="form-actions" style="margin-top: 20px;">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-file-import"></i> Iniciar Importación</button>
+            <a href="{{ url_for('admin_products') }}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
