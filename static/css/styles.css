@@ -545,6 +545,7 @@ img {
 .hero-cta {
     display: flex;
     gap: 1rem;
+    justify-content: flex-start;
 }
 .hero-image {
     flex: 1;
