@@ -13,29 +13,37 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
+    <div class="top-header">
+        <div class="top-header-container">
+            <div class="top-header-info">
+                <span><i class="fas fa-map-marker-alt"></i> Av. Guillermo Dansey N° 595, Lima, Perú</span>
+                <span><i class="fas fa-phone-alt"></i> Llámanos: 01 123 4567</span>
+                <span><i class="fas fa-envelope"></i> Escribenos: ventas@grupodewill.com</span>
+            </div>
+            <div class="top-header-social">
+                <a href="{{ site.get('facebook', '#') }}"><i class="fab fa-facebook-f"></i></a>
+                <a href="{{ site.get('instagram', '#') }}"><i class="fab fa-instagram"></i></a>
+            </div>
+        </div>
+    </div>
     <nav class="navbar {% block nav_class %}{% endblock %}" id="navbar">
         <div class="nav-container">
             <a href="{{ url_for('index') }}" class="nav-logo">
                 <img src="{{ url_for('static', filename='assets/logo.png') }}" alt="Grupo Dewill S.A.C." class="logo-img">
             </a>
-            <ul class="nav-links" id="navLinks">
-                <li><a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">Inicio</a></li>
-                <li><a href="{{ url_for('nosotros') }}" class="nav-link {% if request.endpoint == 'nosotros' %}active{% endif %}">Nosotros</a></li>
-                <li><a href="{{ url_for('productos') }}" class="nav-link {% if request.endpoint in ['productos','producto_detalle'] %}active{% endif %}">Productos</a></li>
-                <li><a href="{{ url_for('galeria') }}" class="nav-link {% if request.endpoint == 'galeria' %}active{% endif %}">Galería</a></li>
-                <li><a href="{{ url_for('galeria_ambientes') }}" class="nav-link {% if request.endpoint == 'galeria_ambientes' %}active{% endif %}">Ambientes</a></li>
-                <li><a href="{{ url_for('contacto') }}" class="nav-link {% if request.endpoint == 'contacto' %}active{% endif %}">Contacto</a></li>
+            <ul class="nav-links" id="navLinks" style="margin: 0 auto;">
+                <li><a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">INICIO</a></li>
+                <li><a href="{{ url_for('nosotros') }}" class="nav-link {% if request.endpoint == 'nosotros' %}active{% endif %}">NOSOTROS</a></li>
+                <li><a href="{{ url_for('productos') }}" class="nav-link {% if request.endpoint in ['productos','producto_detalle'] %}active{% endif %}">PRODUCTOS</a></li>
+                <li><a href="{{ url_for('galeria') }}" class="nav-link {% if request.endpoint == 'galeria' %}active{% endif %}">MARCAS</a></li>
+                <li><a href="{{ url_for('galeria_ambientes') }}" class="nav-link {% if request.endpoint == 'galeria_ambientes' %}active{% endif %}">SERVICIOS</a></li>
+                <li><a href="{{ url_for('contacto') }}" class="nav-link {% if request.endpoint == 'contacto' %}active{% endif %}">CONTACTO</a></li>
             </ul>
             <div class="nav-actions">
-                <form action="{{ url_for('productos') }}" method="GET" class="nav-search">
-                    <input type="text" name="q" placeholder="Buscar productos..." required>
-                    <button type="submit" title="Buscar"><i class="fas fa-search"></i></button>
-                </form>
-                <button class="btn-cart" id="btnCart" onclick="toggleQuotePanel()">
-                    <i class="fas fa-clipboard-list"></i>
-                    <span class="cart-badge" id="cartBadge">0</span>
-                    <span class="cart-label">Mi Cotización</span>
-                </button>
+                <a href="https://wa.me/{{ site.get('whatsapp', '51977585654') }}" target="_blank" class="btn-cart" style="background: var(--primary); color: white; border-radius: var(--radius-sm); padding: 0.6rem 1.2rem;">
+                    <i class="fab fa-whatsapp"></i>
+                    <span>COTIZA POR WHATSAPP</span>
+                </a>
                 <a href="{{ url_for('admin_login') }}" class="btn-admin" title="Panel Administrativo"><i class="fas fa-cog"></i></a>
                 <button class="hamburger" id="hamburger" onclick="toggleMobileMenu()">
                     <span></span><span></span><span></span>

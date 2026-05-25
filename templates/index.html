@@ -2,52 +2,92 @@
 {% block title %}{{ site.get('meta_title', 'Grupo Dewill | Suministros Industriales') }}{% endblock %}
 
 {% block content %}
-<!-- HERO BANNER CAROUSEL -->
-<section class="hero-carousel" id="heroCarousel">
-    {% for banner in banners %}
-    <div class="hero-slide {% if loop.first %}active{% endif %}" data-index="{{ loop.index0 }}">
-        <a href="{{ banner.cta_link or '#' }}" class="hero-banner-link">
-            <img src="{{ url_for('static', filename=banner.image_url) }}" alt="{{ banner.title }}" class="hero-banner-img">
-        </a>
-    </div>
-    {% endfor %}
-    {% if banners|length > 1 %}
-    <div class="carousel-controls">
-        <button class="carousel-btn prev" onclick="prevSlide()"><i class="fas fa-chevron-left"></i></button>
-        <div class="carousel-dots">
-            {% for b in banners %}
-            <span class="dot {% if loop.first %}active{% endif %}" onclick="goToSlide({{ loop.index0 }})"></span>
-            {% endfor %}
+<!-- HERO STATIC BANNER -->
+<section class="hero-static">
+    <div class="hero-static-container">
+        <div class="hero-content">
+            <h1>PINTURAS, HERRAMIENTAS<br>Y SOLUCIONES QUE<br><span>TRANSFORMAN TUS PROYECTOS</span></h1>
+            <p>Ofrecemos productos de alta calidad y las mejores marcas para la construcción, industria y hogar en todo el Perú.</p>
+            <div class="hero-features">
+                <div class="feature"><i class="fas fa-shield-alt"></i> PRODUCTOS DE CALIDAD</div>
+                <div class="feature"><i class="fas fa-award"></i> LAS MEJORES MARCAS</div>
+                <div class="feature"><i class="fas fa-truck"></i> ENVÍOS A TODO EL PERÚ</div>
+                <div class="feature"><i class="fas fa-headset"></i> ATENCIÓN PERSONALIZADA</div>
+            </div>
+            <div class="hero-cta">
+                <a href="{{ url_for('productos') }}" class="btn btn-primary">VER PRODUCTOS <i class="fas fa-arrow-right"></i></a>
+                <a href="https://wa.me/{{ site.get('whatsapp', '51977585654') }}" target="_blank" class="btn btn-outline">COTIZA POR WHATSAPP <i class="fab fa-whatsapp"></i></a>
+            </div>
         </div>
-        <button class="carousel-btn next" onclick="nextSlide()"><i class="fas fa-chevron-right"></i></button>
+        <div class="hero-image">
+            <div class="hero-bg-shapes"></div>
+            <img src="{{ url_for('static', filename='assets/hero-painter.png') }}" alt="Pintor Profesional">
+        </div>
     </div>
-    {% endif %}
 </section>
 
-<div class="hero-stats-bar">
+<!-- ABOUT / WELCOME NEW -->
+<section class="about-new-section" id="nosotros">
     <div class="container">
-        <div class="hero-stats">
-            <div class="stat-item"><div class="stat-value"><span class="stat-number" data-target="500">0</span><span class="stat-suffix">+</span></div><span class="stat-label">Productos</span></div>
-            <div class="stat-divider"></div>
-            <div class="stat-item"><div class="stat-value"><span class="stat-number" data-target="150">0</span><span class="stat-suffix">+</span></div><span class="stat-label">Clientes</span></div>
-            <div class="stat-divider"></div>
-            <div class="stat-item"><div class="stat-value"><span class="stat-number" data-target="10">0</span><span class="stat-suffix">+</span></div><span class="stat-label">Años</span></div>
+        <div class="about-new-grid">
+            <div class="about-new-content">
+                <span class="about-new-tag">QUIÉNES SOMOS</span>
+                <h2 class="about-new-title">CONOCE MÁS SOBRE<br>GRUPO DEWILL S.A.C</h2>
+                <p class="about-new-desc">Somos una empresa peruana dedicada a la comercialización de pinturas, herramientas y soluciones para la construcción, industria y hogar. Trabajamos con las mejores marcas del mercado para ofrecer productos de alta calidad que garantizan resultados duraderos.</p>
+                <p class="about-new-desc">Nuestro compromiso es brindar atención personalizada, asesoría especializada y soluciones que se adapten a las necesidades de nuestros clientes.</p>
+            </div>
+            <div class="about-new-cards">
+                <div class="about-new-card">
+                    <i class="fas fa-bullseye"></i>
+                    <div>
+                        <h3>MISIÓN</h3>
+                        <p>Brindar productos y servicios de alta calidad, superando las expectativas de nuestros clientes con soluciones innovadoras y un servicio confiable.</p>
+                    </div>
+                </div>
+                <div class="about-new-card">
+                    <i class="fas fa-eye"></i>
+                    <div>
+                        <h3>VISIÓN</h3>
+                        <p>Ser la empresa líder en el sector, reconocida por nuestra calidad, confianza y compromiso con el desarrollo del país.</p>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
-</div>
-
-<!-- ABOUT / WELCOME -->
-<section class="section about-section" id="nosotros">
-    <div class="container">
-        <div class="section-header">
-            <span class="section-tag"><i class="fas fa-building"></i> Bienvenidos</span>
-            <h2 class="section-title">Comprometidos con la <span class="gradient-text">Excelencia Industrial</span></h2>
-            <p class="section-subtitle">Somos su aliado estratégico en suministros industriales, ofreciendo soluciones integrales con los más altos estándares de calidad.</p>
-        </div>
-        <div class="about-grid">
-            <div class="about-card glass-card"><div class="about-icon-wrap"><i class="fas fa-bullseye"></i></div><h3>Nuestra Misión</h3><p>Proveer suministros industriales de la más alta calidad, garantizando entregas oportunas y precios competitivos.</p></div>
-            <div class="about-card glass-card"><div class="about-icon-wrap"><i class="fas fa-eye"></i></div><h3>Nuestra Visión</h3><p>Ser el proveedor industrial líder a nivel nacional, reconocido por nuestra innovación y confiabilidad.</p></div>
-            <div class="about-card glass-card"><div class="about-icon-wrap"><i class="fas fa-gem"></i></div><h3>Nuestros Valores</h3><p>Integridad, calidad, innovación y servicio al cliente son los pilares que guían nuestra operación.</p></div>
+        
+        <div class="about-new-image" style="margin-top: 4rem;">
+            <img src="{{ url_for('static', filename='assets/about-building.png') }}" alt="Local Grupo Dewill S.A.C">
+            <div class="about-stats-bar">
+                <div class="about-stats-container">
+                    <div class="about-stat-item">
+                        <i class="fas fa-trophy"></i>
+                        <div class="about-stat-info">
+                            <strong>+10 AÑOS</strong>
+                            <span>En el mercado</span>
+                        </div>
+                    </div>
+                    <div class="about-stat-item">
+                        <i class="fas fa-users"></i>
+                        <div class="about-stat-info">
+                            <strong>MILES</strong>
+                            <span>De clientes satisfechos</span>
+                        </div>
+                    </div>
+                    <div class="about-stat-item">
+                        <i class="fas fa-certificate"></i>
+                        <div class="about-stat-info">
+                            <strong>MARCAS</strong>
+                            <span>De prestigio</span>
+                        </div>
+                    </div>
+                    <div class="about-stat-item">
+                        <i class="fas fa-map-marked-alt"></i>
+                        <div class="about-stat-info">
+                            <strong>COBERTURA</strong>
+                            <span>En todo el Perú</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </section>
