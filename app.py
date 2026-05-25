@@ -323,8 +323,8 @@ def admin_product_import():
             try:
                 import pandas as pd
                 df = pd.read_excel(file)
-                # Normalize columns
-                df.columns = [str(c).strip() for c in df.columns]
+                # Normalize columns to Title Case to handle variations like 'CODIGO' or 'codigo'
+                df.columns = [str(c).strip().title() for c in df.columns]
                 
                 required_cols = ['Codigo', 'Categoria', 'Sub Categoria', 'Marca', 'Producto']
                 for col in required_cols:
