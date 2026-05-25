@@ -35,10 +35,8 @@ def download_image(url, filename):
 
 def fetch_images_for_products():
     with app.app_context():
-        # Buscar productos activos que no tengan imagen principal
-        products = Product.query.filter(Product.is_active == True).filter(
-            (Product.main_image == None) | (Product.main_image == '')
-        ).all()
+        # Buscar TODOS los productos activos para forzar la actualización de imagen masiva
+        products = Product.query.filter(Product.is_active == True).all()
         
         if not products:
             print("Todos los productos activos ya tienen imagen.")
