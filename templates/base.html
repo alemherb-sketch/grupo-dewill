@@ -40,10 +40,11 @@
                 <li><a href="{{ url_for('contacto') }}" class="nav-link {% if request.endpoint == 'contacto' %}active{% endif %}">CONTACTO</a></li>
             </ul>
             <div class="nav-actions">
-                <a href="https://wa.me/{{ site.get('whatsapp', '51977585654') }}" target="_blank" class="btn-cart" style="background: var(--primary); color: white; border-radius: var(--radius-sm); padding: 0.6rem 1.2rem;">
-                    <i class="fab fa-whatsapp"></i>
-                    <span>COTIZA POR WHATSAPP</span>
-                </a>
+                <button class="btn-cart" id="btnCart" onclick="toggleQuotePanel()">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span class="cart-badge" id="cartBadge">0</span>
+                    <span class="cart-label">Mi Cotización</span>
+                </button>
                 <a href="{{ url_for('admin_login') }}" class="btn-admin" title="Panel Administrativo"><i class="fas fa-cog"></i></a>
                 <button class="hamburger" id="hamburger" onclick="toggleMobileMenu()">
                     <span></span><span></span><span></span>
