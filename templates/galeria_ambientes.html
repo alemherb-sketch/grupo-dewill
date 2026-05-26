@@ -255,5 +255,12 @@ function moveSlider(dir) {
     currentAmbientIdx = (currentAmbientIdx + dir + total) % total;
     slider.style.transform = `translateX(-${currentAmbientIdx * 100}%)`;
 }
+// Initialize filter on load
+document.addEventListener('DOMContentLoaded', () => {
+    const activeTab = document.querySelector('.ambient-tab.active');
+    if (activeTab) {
+        filterAmbients(activeTab.dataset.filter, activeTab);
+    }
+});
 </script>
 {% endblock %}
