@@ -205,6 +205,8 @@ class AmbientCategory(db.Model):
     type = db.Column(db.String(20), default='room')  # 'color' or 'room'
     cover_image = db.Column(db.String(300))
     description = db.Column(db.Text)
+    colors = db.Column(db.String(200)) # comma-separated list of colors e.g. '#f2ebdd,#d7cbb6'
+    area = db.Column(db.String(50), default='interior') # 'interior' or 'exterior'
     order = db.Column(db.Integer, default=0)
     images = db.relationship('AmbientImage', backref='category', lazy=True,
                              cascade='all, delete-orphan', order_by='AmbientImage.order')

@@ -43,6 +43,18 @@ with app.app_context():
             db.session.commit()
         except Exception:
             db.session.rollback()
+        # Add colors column to ambient_categories
+        try:
+            db.session.execute(text("ALTER TABLE ambient_categories ADD COLUMN colors VARCHAR(200)"))
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+        # Add area column to ambient_categories
+        try:
+            db.session.execute(text("ALTER TABLE ambient_categories ADD COLUMN area VARCHAR(50)"))
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
         # Create blog tables if they don't exist
         try:
             db.create_all()

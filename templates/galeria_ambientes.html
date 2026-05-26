@@ -11,7 +11,7 @@
     </div>
     <div class="page-hero-content">
         <div class="hero-badge animate-fade-up"><i class="fas fa-paint-roller"></i> INSPIRACIÓN REAL</div>
-        <h1 class="page-hero-title animate-fade-up delay-1">Galería de <span class="gradient-text">Ambientes</span></h1>
+        <h1 class="page-hero-title animate-fade-up delay-1">Galería de <span style="color: var(--primary);">Ambientes</span></h1>
         <p class="page-hero-subtitle animate-fade-up delay-2">Visualiza la armonía de colores en espacios reales<br>y elige el estilo que mejor se adapte a ti.</p>
     </div>
 </section>
@@ -20,32 +20,37 @@
 <div class="ambientes-tabs-bar">
     <div class="ambientes-tabs-inner">
         <button class="ambient-tab active" data-filter="all" onclick="filterAmbients('all', this)">
-            <i class="fas fa-th"></i> TODOS
+            <i class="fas fa-th-large"></i>
+            <span>TODOS</span>
         </button>
-        {% set room_icons = {
-            'sala': 'fas fa-couch',
-            'dormitorio': 'fas fa-bed',
-            'cocina': 'fas fa-utensils',
-            'oficina': 'fas fa-briefcase',
-            'fachada': 'fas fa-building',
-            'exterior': 'fas fa-tree',
-            'interior': 'fas fa-home',
-            'baño': 'fas fa-bath',
-            'comedor': 'fas fa-chair'
-        } %}
-        {% for cat in rooms %}
-        {% set cat_key = cat.name.lower().split()[0] %}
-        <button class="ambient-tab" data-filter="{{ cat.slug }}" onclick="filterAmbients('{{ cat.slug }}', this)">
-            <i class="{{ room_icons.get(cat_key, 'fas fa-image') }}"></i>
-            {{ cat.name|upper }}
+        <button class="ambient-tab" data-filter="area-interior" onclick="filterAmbients('area-interior', this)">
+            <i class="fas fa-home"></i>
+            <span>INTERIORES</span>
         </button>
-        {% endfor %}
-        {% for cat in colors %}
-        <button class="ambient-tab" data-filter="color-{{ cat.slug }}" onclick="filterAmbients('color-{{ cat.slug }}', this)">
-            <i class="fas fa-palette"></i>
-            {{ cat.name|upper }}
+        <button class="ambient-tab" data-filter="area-exterior" onclick="filterAmbients('area-exterior', this)">
+            <i class="fas fa-tree"></i>
+            <span>EXTERIORES</span>
         </button>
-        {% endfor %}
+        <button class="ambient-tab" data-filter="sala" onclick="filterAmbients('sala', this)">
+            <i class="fas fa-couch"></i>
+            <span>SALA</span>
+        </button>
+        <button class="ambient-tab" data-filter="dormitorio" onclick="filterAmbients('dormitorio', this)">
+            <i class="fas fa-bed"></i>
+            <span>DORMITORIO</span>
+        </button>
+        <button class="ambient-tab" data-filter="cocina" onclick="filterAmbients('cocina', this)">
+            <i class="fas fa-utensils"></i>
+            <span>COCINA</span>
+        </button>
+        <button class="ambient-tab" data-filter="oficina" onclick="filterAmbients('oficina', this)">
+            <i class="fas fa-briefcase"></i>
+            <span>OFICINA</span>
+        </button>
+        <button class="ambient-tab" data-filter="fachada" onclick="filterAmbients('fachada', this)">
+            <i class="fas fa-building"></i>
+            <span>FACHADAS</span>
+        </button>
     </div>
 </div>
 
@@ -59,7 +64,7 @@
 
         <div class="ambientes-grid" id="ambientesGrid">
             {% for cat in rooms %}
-            <div class="ambiente-card" data-category="{{ cat.slug }}" onclick="openAmbientModal({{ cat.id }})">
+            <div class="ambiente-card animate-fade-up" data-category="{{ cat.slug }}" data-area="area-{{ cat.area or 'interior' }}" onclick="openAmbientModal({{ cat.id }})">
                 <div class="ambiente-card-img">
                     <img src="{{ url_for('static', filename=cat.cover_image or 'assets/hero_bg.png') }}" alt="{{ cat.name }}" loading="lazy">
                     <div class="ambiente-card-overlay">
@@ -67,21 +72,27 @@
                     </div>
                 </div>
                 <div class="ambiente-card-info">
-                    <h4 class="ambiente-card-name">{{ cat.name|upper }}</h4>
+                    <h4 class="ambiente-card-name">{{ cat.name }}</h4>
                     {% if cat.description %}
                     <p class="ambiente-card-desc">{{ cat.description }}</p>
                     {% endif %}
-                    <!-- Color swatches placeholder -->
                     <div class="ambiente-color-swatches">
-                        {% for i in range([cat.images|length, 5]|min) %}
-                        <span class="ambiente-swatch" style="background: hsl({{ loop.index0 * 40 + 20 }}, 30%, {{ 60 + loop.index0 * 5 }}%);"></span>
-                        {% endfor %}
+                        {% if cat.colors %}
+                            {% for color in cat.colors.split(',') %}
+                            <span class="ambiente-swatch" style="background: {{ color.strip() }};" title="{{ color.strip() }}"></span>
+                            {% endfor %}
+                        {% else %}
+                            {% for i in range(3) %}
+                            <span class="ambiente-swatch" style="background: #cccccc;"></span>
+                            {% endfor %}
+                        {% endif %}
                     </div>
                 </div>
             </div>
             {% endfor %}
+
             {% for cat in colors %}
-            <div class="ambiente-card" data-category="color-{{ cat.slug }}" onclick="openAmbientModal({{ cat.id }})">
+            <div class="ambiente-card animate-fade-up" data-category="{{ cat.slug }}" data-area="area-{{ cat.area or 'interior' }}" onclick="openAmbientModal({{ cat.id }})">
                 <div class="ambiente-card-img">
                     <img src="{{ url_for('static', filename=cat.cover_image or 'assets/hero_bg.png') }}" alt="{{ cat.name }}" loading="lazy">
                     <div class="ambiente-card-overlay">
@@ -89,19 +100,26 @@
                     </div>
                 </div>
                 <div class="ambiente-card-info">
-                    <h4 class="ambiente-card-name">{{ cat.name|upper }}</h4>
+                    <h4 class="ambiente-card-name">{{ cat.name }}</h4>
                     {% if cat.description %}
                     <p class="ambiente-card-desc">{{ cat.description }}</p>
                     {% endif %}
                     <div class="ambiente-color-swatches">
-                        {% for i in range([cat.images|length, 5]|min) %}
-                        <span class="ambiente-swatch" style="background: hsl({{ loop.index0 * 30 + 180 }}, 40%, {{ 50 + loop.index0 * 5 }}%);"></span>
-                        {% endfor %}
+                        {% if cat.colors %}
+                            {% for color in cat.colors.split(',') %}
+                            <span class="ambiente-swatch" style="background: {{ color.strip() }};" title="{{ color.strip() }}"></span>
+                            {% endfor %}
+                        {% else %}
+                            {% for i in range(3) %}
+                            <span class="ambiente-swatch" style="background: #cccccc;"></span>
+                            {% endfor %}
+                        {% endif %}
                     </div>
                 </div>
             </div>
             {% endfor %}
         </div>
+
         {% if not rooms and not colors %}
         <div style="text-align: center; padding: 4rem; color: var(--text-muted);">
             <i class="fas fa-images" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
@@ -120,10 +138,34 @@
 <section class="benefits-bar">
     <div class="container">
         <div class="benefits-grid">
-            <div class="benefit-item"><i class="fas fa-shield-alt"></i><div><strong>CALIDAD GARANTIZADA</strong><span>Productos de alta calidad</span></div></div>
-            <div class="benefit-item"><i class="fas fa-headset"></i><div><strong>ASESORÍA PERSONALIZADA</strong><span>Te ayudamos a elegir el color ideal</span></div></div>
-            <div class="benefit-item"><i class="fas fa-truck"></i><div><strong>ENVÍOS A TODO EL PERÚ</strong><span>Llegamos a todas las regiones</span></div></div>
-            <div class="benefit-item"><i class="fas fa-user-tie"></i><div><strong>ATENCIÓN EXPERTA</strong><span>Soporte y asesoría profesional</span></div></div>
+            <div class="benefit-item">
+                <i class="fas fa-shield-alt"></i>
+                <div>
+                    <strong>CALIDAD GARANTIZADA</strong>
+                    <span>Productos de alta calidad</span>
+                </div>
+            </div>
+            <div class="benefit-item">
+                <i class="fas fa-headset"></i>
+                <div>
+                    <strong>ASESORÍA PERSONALIZADA</strong>
+                    <span>Te ayudamos a elegir el color ideal</span>
+                </div>
+            </div>
+            <div class="benefit-item">
+                <i class="fas fa-truck"></i>
+                <div>
+                    <strong>ENVÍOS A TODO EL PERÚ</strong>
+                    <span>Llegamos a todas las regiones</span>
+                </div>
+            </div>
+            <div class="benefit-item">
+                <i class="fas fa-user-tie"></i>
+                <div>
+                    <strong>ATENCIÓN EXPERTA</strong>
+                    <span>Soporte y asesoría profesional</span>
+                </div>
+            </div>
         </div>
     </div>
 </section>
@@ -155,9 +197,22 @@ function filterAmbients(filter, btn) {
     btn.classList.add('active');
     const cards = document.querySelectorAll('.ambiente-card');
     cards.forEach(card => {
-        if (filter === 'all' || card.dataset.category === filter) {
-            card.style.display = 'block';
-            card.style.animation = 'fadeIn 0.3s ease';
+        const category = card.dataset.category || '';
+        const area = card.dataset.area || '';
+        
+        let match = false;
+        if (filter === 'all') {
+            match = true;
+        } else if (filter.startsWith('area-')) {
+            match = (area === filter);
+        } else {
+            // Check if card category matches or contains the filter
+            match = category.includes(filter);
+        }
+
+        if (match) {
+            card.style.display = 'flex';
+            card.style.animation = 'fadeIn 0.4s ease';
         } else {
             card.style.display = 'none';
         }

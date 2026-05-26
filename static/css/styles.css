@@ -2537,48 +2537,68 @@ img {
 
 /* ========== GALERIA AMBIENTES REDESIGN ========== */
 .ambientes-tabs-bar {
-    background: white;
-    border-bottom: 1px solid rgba(0,0,0,0.08);
-    padding: 0;
-    position: sticky;
-    top: 75px;
-    z-index: 100;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    background: #f8f9fc;
+    padding: 2rem 0;
 }
 .ambientes-tabs-inner {
     display: flex;
+    justify-content: space-around;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 25px rgba(0,0,0,0.06);
+    padding: 0.5rem;
+    max-width: 1100px;
+    margin: 0 auto;
     overflow-x: auto;
     scrollbar-width: none;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 1rem;
 }
 .ambientes-tabs-inner::-webkit-scrollbar { display: none; }
 .ambient-tab {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.25rem;
-    padding: 1rem 1.5rem;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1.5rem;
     border: none;
     background: none;
-    color: var(--text-muted);
-    font-size: 0.75rem;
+    color: #1e293b;
+    font-size: 0.72rem;
     font-weight: 700;
     letter-spacing: 0.5px;
     cursor: pointer;
-    border-bottom: 3px solid transparent;
-    transition: var(--transition);
-    white-space: nowrap;
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    min-width: 110px;
+    border-right: 1px solid rgba(0,0,0,0.06);
 }
-.ambient-tab i { font-size: 1.4rem; }
-.ambient-tab:hover { color: var(--secondary); }
-.ambient-tab.active { color: var(--primary); border-bottom-color: var(--primary); background: var(--primary-light); }
+.ambient-tab:last-child {
+    border-right: none;
+}
+.ambient-tab i {
+    font-size: 1.5rem;
+    color: #1e3a8a;
+    transition: all 0.3s ease;
+}
+.ambient-tab:hover {
+    background: rgba(230, 0, 0, 0.05);
+    color: var(--primary);
+}
+.ambient-tab:hover i {
+    color: var(--primary);
+}
+.ambient-tab.active {
+    background: var(--primary) !important;
+    color: white !important;
+}
+.ambient-tab.active i {
+    color: white !important;
+}
 
-.ambientes-gallery-section { padding: 3rem 0 4rem; background: #f8f9fc; }
+.ambientes-gallery-section { padding: 1.5rem 0 4rem; background: #f8f9fc; }
 .ambientes-header { text-align: center; margin-bottom: 2.5rem; }
-.ambientes-grid-title { font-size: 1.75rem; font-weight: 700; color: var(--secondary); margin-bottom: 0.5rem; }
-.ambientes-title-line { width: 50px; height: 3px; background: var(--primary); margin: 0 auto; }
+.ambientes-grid-title { font-size: 1.6rem; font-weight: 800; color: #0f172a; margin-bottom: 0.5rem; }
+.ambientes-title-line { width: 45px; height: 3px; background: var(--primary); margin: 0 auto; }
 .ambientes-grid {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
@@ -2586,16 +2606,31 @@ img {
 }
 .ambiente-card {
     cursor: pointer;
-    border-radius: var(--radius-sm);
+    border-radius: 10px;
     overflow: hidden;
     background: white;
-    border: 1px solid rgba(0,0,0,0.06);
-    box-shadow: var(--shadow-sm);
-    transition: var(--transition);
+    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
 }
-.ambiente-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
-.ambiente-card-img { position: relative; aspect-ratio: 3/4; overflow: hidden; }
-.ambiente-card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s; }
+.ambiente-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+.ambiente-card-img {
+    position: relative;
+    aspect-ratio: 4/3;
+    overflow: hidden;
+    background: #f1f5f9;
+}
+.ambiente-card-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
 .ambiente-card:hover .ambiente-card-img img { transform: scale(1.08); }
 .ambiente-card-overlay {
     position: absolute; inset: 0;
@@ -2605,11 +2640,44 @@ img {
     color: white; font-size: 1.5rem;
 }
 .ambiente-card:hover .ambiente-card-overlay { opacity: 1; }
-.ambiente-card-info { padding: 0.75rem; }
-.ambiente-card-name { font-size: 0.78rem; font-weight: 700; color: var(--secondary); margin-bottom: 0.2rem; }
-.ambiente-card-desc { font-size: 0.72rem; color: var(--text-muted); line-height: 1.3; margin-bottom: 0.5rem; }
-.ambiente-color-swatches { display: flex; gap: 3px; }
-.ambiente-swatch { width: 18px; height: 18px; border-radius: 3px; border: 1px solid rgba(0,0,0,0.08); display: inline-block; }
+.ambiente-card-info {
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    flex-grow: 1;
+}
+.ambiente-card-name {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #0f172a;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.1rem;
+}
+.ambiente-card-desc {
+    font-size: 0.72rem;
+    color: #64748b;
+    line-height: 1.3;
+    margin-bottom: 0.5rem;
+}
+.ambiente-color-swatches {
+    display: flex;
+    gap: 5px;
+    margin-top: auto;
+    padding-top: 0.5rem;
+}
+.ambiente-swatch {
+    flex: 1;
+    height: 12px;
+    border-radius: 3px;
+    border: 1px solid rgba(0,0,0,0.08);
+    display: inline-block;
+    transition: all 0.2s ease;
+}
+.ambiente-swatch:hover {
+    transform: scaleY(1.3);
+}
 .ambientes-note { text-align: center; font-size: 0.8rem; color: var(--text-muted); font-style: italic; margin-top: 2.5rem; }
 
 /* Modal & Slider (reused) */
