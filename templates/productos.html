@@ -119,6 +119,9 @@
                             <h3 class="product-card-name">
                                 <a href="{{ url_for('producto_detalle', product_id=product.id) }}">{{ product.name }}</a>
                             </h3>
+                            {% if product.brand %}
+                            <span class="product-card-brand">{{ product.brand.name }}</span>
+                            {% endif %}
                             {% if product.description %}
                             <p class="product-card-desc">{{ product.description[:80] }}{% if product.description|length > 80 %}...{% endif %}</p>
                             {% endif %}

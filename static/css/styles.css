@@ -2209,6 +2209,7 @@ img {
 .product-card-name { font-size: 0.95rem; font-weight: 700; color: var(--text-main); line-height: 1.3; }
 .product-card-name a { color: inherit; }
 .product-card-name a:hover { color: var(--primary); }
+.product-card-brand { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: -0.2rem; }
 .product-card-desc { font-size: 0.82rem; color: var(--text-muted); line-height: 1.4; }
 .product-card-colors { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
 .product-color-dot { width: 16px; height: 16px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); display: inline-block; }
