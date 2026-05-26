@@ -100,6 +100,10 @@
     <a href="{{ url_for('admin_product_new') }}" class="quick-action-card"><i class="fas fa-plus-circle"></i><span>Nuevo Producto</span></a>
     <a href="{{ url_for('admin_quotes') }}" class="quick-action-card"><i class="fas fa-file-invoice"></i><span>Ver Solicitudes</span></a>
     <a href="{{ url_for('admin_banners') }}" class="quick-action-card"><i class="fas fa-image"></i><span>Gestionar Banners</span></a>
-    <a href="{{ url_for('admin_settings') }}" class="quick-action-card"><i class="fas fa-cog"></i><span>Configuración</span></a>
+    <form action="{{ url_for('admin_sync_colors') }}" method="POST" style="display:inline-block; width:100%; height:100%;">
+        <button type="submit" class="quick-action-card" style="width:100%; height:100%; border:none; background:white; cursor:pointer;">
+            <i class="fas fa-palette" style="color: #3b82f6;"></i><span>Sincronizar Colores HEX</span>
+        </button>
+    </form>
 </div>
 {% endblock %}

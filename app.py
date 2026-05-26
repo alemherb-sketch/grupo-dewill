@@ -378,6 +378,80 @@ def admin_dashboard():
     recent = QuoteRequest.query.order_by(QuoteRequest.created_at.desc()).limit(5).all()
     return render_template('admin/dashboard.html', stats=stats, recent_quotes=recent)
 
+@app.route('/admin/sync-colors', methods=['POST'])
+@login_required
+def admin_sync_colors():
+    # Dictionary of common paint colors in Spanish
+    hex_map = {
+        'blanco': '#ffffff', 'negro': '#000000', 'rojo': '#e60000', 'azul': '#0055a4',
+        'verde': '#2e8b57', 'amarillo': '#ffd700', 'gris': '#808080', 'plomo': '#696969',
+        'naranja': '#ff8c00', 'celeste': '#87ceeb', 'rosado': '#ffc0cb', 'marron': '#8b4513',
+        'marrón': '#8b4513', 'crema': '#fffdd0', 'marfil': '#fffff0', 'arena': '#f4a460',
+        'lila': '#c8a2c8', 'morado': '#800080', 'turquesa': '#40e0d0', 'guinda': '#800000',
+        'pino': '#01796f', 'almendra': '#efdecd', 'maiz': '#fbec5d', 'durazno': '#ffe5b4',
+        'limon': '#fff700', 'limón': '#fff700', 'manzana': '#8db600', 'acero': '#4682b4',
+        'coral': '#ff7f50', 'salmon': '#fa8072', 'salmón': '#fa8072', 'vino': '#722f37',
+        'mostaza': '#ffdb58', 'cielo': '#87ceeb', 'nieve': '#fffafa', 'hueso': '#e3dac9',
+        'perla': '#eae0c8', 'humo': '#738276', 'plata': '#c0c0c0', 'dorado': '#ffd700',
+        'oro': '#ffd700', 'cobre': '#b87333', 'bronce': '#cd7f32', 'caoba': '#c04000',
+        'pardo': '#5c4033', 'magenta': '#ff00ff', 'cyan': '#00ffff', 'cian': '#00ffff',
+        'transparente': '#ffffff'
+    }
+    
+    # Get all unique color names from ProductSpec
+    specs = ProductSpec.query.filter(ProductSpec.key.ilike('color')).all()
+    unique_colors = set(s.value.strip() for s in specs if s.value)
+    
+    added = 0
+    updated = 0
+    
+    for cname in unique_colors:
+        pc = PaintColor.query.filter(PaintColor.name.ilike(cname)).first()
+        
+        # Determine hex
+        hex_code = '#cccccc'
+        lower_name = cname.lower()
+        # Direct match
+        if lower_name in hex_map:
+            hex_code = hex_map[lower_name]
+        else:
+            # Fuzzy match (check if any key is a substring)
+            for key, hx in hex_map.items():
+                if key in lower_name:
+                    hex_code = hx
+                    break
+                    
+        if not pc:
+            pc = PaintColor(name=cname, hex_code=hex_code)
+            db.session.add(pc)
+            added += 1
+        elif pc.hex_code == '#cccccc' or not pc.hex_code:
+            pc.hex_code = hex_code
+            updated += 1
+            
+        # Also retroactively link to presentations if they exist but links don't
+        prods = Product.query.join(ProductSpec).filter(
+            ProductSpec.key.ilike('color'), 
+            ProductSpec.value.ilike(cname)
+        ).all()
+        
+        for p in prods:
+            for pres in p.presentations:
+                exists = ProductPresentationColor.query.filter_by(
+                    product_id=p.id, presentation_id=pres.id, color_name=cname
+                ).first()
+                if not exists:
+                    db.session.add(ProductPresentationColor(
+                        product_id=p.id,
+                        presentation_id=pres.id,
+                        color_name=cname,
+                        hex_code=hex_code
+                    ))
+                    
+    db.session.commit()
+    flash(f'Sincronización completa: {added} colores nuevos, {updated} actualizados. Se reconstruyeron los vínculos de presentación.', 'success')
+    return redirect(url_for('admin_dashboard'))
+
 @app.route('/admin/productos')
 @login_required
 def admin_products():
