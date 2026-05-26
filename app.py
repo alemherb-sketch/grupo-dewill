@@ -381,7 +381,7 @@ def admin_dashboard():
 @app.route('/admin/sync-colors', methods=['POST'])
 @login_required
 def admin_sync_colors():
-    # Dictionary of common paint colors in Spanish
+    # Extended dictionary of common paint colors in Spanish
     hex_map = {
         'blanco': '#ffffff', 'negro': '#000000', 'rojo': '#e60000', 'azul': '#0055a4',
         'verde': '#2e8b57', 'amarillo': '#ffd700', 'gris': '#808080', 'plomo': '#696969',
@@ -395,7 +395,23 @@ def admin_sync_colors():
         'perla': '#eae0c8', 'humo': '#738276', 'plata': '#c0c0c0', 'dorado': '#ffd700',
         'oro': '#ffd700', 'cobre': '#b87333', 'bronce': '#cd7f32', 'caoba': '#c04000',
         'pardo': '#5c4033', 'magenta': '#ff00ff', 'cyan': '#00ffff', 'cian': '#00ffff',
-        'transparente': '#ffffff'
+        'transparente': '#ffffff', 'ostra': '#e3daca', 'champagne': '#f7e7ce',
+        'paja': '#e4d96f', 'tabaco': '#715c3c', 'cemento': '#8c8c8c', 'asfalto': '#595959',
+        'ladrillo': '#b22222', 'arcilla': '#b66a50', 'terracota': '#e2725b', 'menta': '#98ff98',
+        'olivo': '#808000', 'esmeralda': '#50c878', 'jade': '#00a86b', 'marino': '#000080',
+        'cobalto': '#0047ab', 'zafiro': '#0f52ba', 'indigo': '#4b0082', 'índigo': '#4b0082',
+        'violeta': '#ee82ee', 'fucsia': '#ff00ff', 'rosa': '#ffc0cb', 'melocoton': '#ffcba4',
+        'melocotón': '#ffcba4', 'mandarina': '#f28500', 'caramelo': '#c68e17', 'chocolate': '#7b3f00',
+        'cafe': '#6f4e37', 'café': '#6f4e37', 'vainilla': '#f3e5ab', 'almendrado': '#efdecd',
+        'marino': '#120a8f', 'noche': '#0c090a', 'pizarra': '#708090', 'tierra': '#a0522d'
+    }
+    
+    # Advanced fallback base words
+    base_colors = {
+        'blanco': '#f5f5f5', 'nieve': '#fffafa', 'rojo': '#cc0000', 'azul': '#0000cd',
+        'verde': '#3cb371', 'amarillo': '#ffda00', 'naranja': '#ff8c00', 'marron': '#8b4513',
+        'marrón': '#8b4513', 'gris': '#808080', 'rosa': '#ffb6c1', 'morado': '#8a2be2',
+        'crema': '#fffdd0', 'claro': '#e0e0e0', 'oscuro': '#404040'
     }
     
     # Get all unique color names from ProductSpec
@@ -411,45 +427,40 @@ def admin_sync_colors():
         # Determine hex
         hex_code = '#cccccc'
         lower_name = cname.lower()
-        # Direct match
+        
         if lower_name in hex_map:
             hex_code = hex_map[lower_name]
         else:
-            # Fuzzy match (check if any key is a substring)
-            for key, hx in hex_map.items():
-                if key in lower_name:
-                    hex_code = hx
+            # Try to find exact word in hex_map
+            words = lower_name.split()
+            found = False
+            for w in words:
+                if w in hex_map:
+                    hex_code = hex_map[w]
+                    found = True
                     break
+            
+            # If still not found, check base colors substring
+            if not found:
+                for base, hx in base_colors.items():
+                    if base in lower_name:
+                        hex_code = hx
+                        break
                     
         if not pc:
             pc = PaintColor(name=cname, hex_code=hex_code)
             db.session.add(pc)
             added += 1
-        elif pc.hex_code == '#cccccc' or not pc.hex_code:
+        elif pc.hex_code == '#cccccc' or not pc.hex_code or pc.hex_code == '#ffffff' and 'blanco' not in lower_name:
             pc.hex_code = hex_code
             updated += 1
             
-        # Also retroactively link to presentations if they exist but links don't
-        prods = Product.query.join(ProductSpec).filter(
-            ProductSpec.key.ilike('color'), 
-            ProductSpec.value.ilike(cname)
-        ).all()
-        
-        for p in prods:
-            for pres in p.presentations:
-                exists = ProductPresentationColor.query.filter_by(
-                    product_id=p.id, presentation_id=pres.id, color_name=cname
-                ).first()
-                if not exists:
-                    db.session.add(ProductPresentationColor(
-                        product_id=p.id,
-                        presentation_id=pres.id,
-                        color_name=cname,
-                        hex_code=hex_code
-                    ))
+    # Remove all ProductPresentationColor entries to wipe fake links from previous bug
+    # This will force the frontend to show the empty message until Excel is re-imported
+    deleted_links = ProductPresentationColor.query.delete()
                     
     db.session.commit()
-    flash(f'Sincronización completa: {added} colores nuevos, {updated} actualizados. Se reconstruyeron los vínculos de presentación.', 'success')
+    flash(f'Colores analizados: {added} nuevos, {updated} actualizados (Hex mejorado). Se limpiaron {deleted_links} vínculos antiguos. IMPORTANTE: Vuelve a importar tu Excel para reconstruir el filtro de presentaciones.', 'success')
     return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/productos')
