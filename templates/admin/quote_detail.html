@@ -44,8 +44,9 @@
                     <div>
                         <h4 style="margin:0 0 0.25rem 0;">{{ item.product.name }}</h4>
                         <p style="margin:0;font-size:0.85rem;color:var(--text-muted);">
-                            {{ item.product.sku or 'Sin SKU' }} 
+                            SKU: {{ item.product.sku or 'N/A' }} 
                             {% if item.color %} | Color: <strong style="color:var(--primary);">{{ item.color }}</strong> {% endif %}
+                            {% if item.presentation %} | Presentación: <strong style="color:var(--primary);">{{ item.presentation }}</strong> {% endif %}
                             | Cantidad: <strong>{{ item.quantity }}</strong>
                         </p>
                     </div>

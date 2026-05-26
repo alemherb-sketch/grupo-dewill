@@ -153,6 +153,7 @@ class QuoteItem(db.Model):
     product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
     quantity = db.Column(db.Integer, default=1)
     color = db.Column(db.String(100))
+    presentation = db.Column(db.String(100))
 
 
 class PaintColor(db.Model):

@@ -339,6 +339,14 @@ function selectColor(btn, name, hex) {
 function handleAddToCart() {
     const isPaint = {{ 'true' if paint_colors else 'false' }};
     let colorName = null;
+    let presentationName = null;
+    
+    // Get presentation if exists
+    const presInput = document.getElementById('selectedPresentation');
+    if (presInput && presInput.value) {
+        presentationName = presInput.value;
+    }
+    
     if (isPaint) {
         colorName = document.getElementById('selectedColorName').value;
         if (!colorName) {
@@ -346,7 +354,7 @@ function handleAddToCart() {
             return;
         }
     }
-    addToQuote({{ product.id }}, '{{ product.name|e }}', '{{ product.main_image or 'assets/product_paint.png' }}', colorName, currentQty);
+    addToQuote({{ product.id }}, '{{ product.name|e }}', '{{ product.main_image or 'assets/product_paint.png' }}', colorName, currentQty, presentationName);
 }
 </script>
 {% endblock %}

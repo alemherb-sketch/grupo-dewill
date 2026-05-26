@@ -37,6 +37,12 @@ with app.app_context():
             db.session.commit()
         except Exception:
             db.session.rollback()
+        # Add presentation column to quote_items
+        try:
+            db.session.execute(text("ALTER TABLE quote_items ADD COLUMN presentation VARCHAR(100)"))
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
         # Create blog tables if they don't exist
         try:
             db.create_all()
@@ -231,7 +237,7 @@ def api_cotizacion():
     db.session.add(quote)
     db.session.flush()
     for item in data['items']:
-        db.session.add(QuoteItem(quote_id=quote.id, product_id=item['product_id'], quantity=item.get('quantity',1), color=item.get('color')))
+        db.session.add(QuoteItem(quote_id=quote.id, product_id=item['product_id'], quantity=item.get('quantity',1), color=item.get('color'), presentation=item.get('presentation')))
     db.session.commit()
     try:
         # Obtener configuración de correo
@@ -243,7 +249,8 @@ def api_cotizacion():
                 prod = Product.query.get(item['product_id'])
                 if prod:
                     color_info = f" - Color: {item.get('color')}" if item.get('color') else ""
-                    items_text += f"- {prod.name} (SKU: {prod.sku or 'N/A'}){color_info} x {item.get('quantity', 1)}\n"
+                    pres_info = f" - Presentación: {item.get('presentation')}" if item.get('presentation') else ""
+                    items_text += f"- {prod.name} (SKU: {prod.sku or 'N/A'}){color_info}{pres_info} x {item.get('quantity', 1)}\n"
             
             body = (
                 f"Nueva Solicitud de Cotización #{quote.id}\n"

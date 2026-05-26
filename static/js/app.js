@@ -27,14 +27,14 @@ function toggleMobileMenu() {
 }
 
 // ==================== QUOTE SYSTEM ====================
-function addToQuote(id, name, image, color = null) {
-    const cart_id = color ? id + '_' + color : id.toString();
-    const existing = quoteList.find(item => (item.cart_id === cart_id) || (item.product_id === id && item.color == color));
+function addToQuote(id, name, image, color = null, quantity = 1, presentation = null) {
+    const cart_id = id + '_' + (color || 'nc') + '_' + (presentation || 'np');
+    const existing = quoteList.find(item => item.cart_id === cart_id);
     if (existing) {
-        existing.quantity += 1;
+        existing.quantity += quantity;
         showToast(`Cantidad aumentada: ${existing.quantity}`, 'success');
     } else {
-        quoteList.push({ product_id: id, cart_id, name, image, color, quantity: 1 });
+        quoteList.push({ product_id: id, cart_id, name, image, color, presentation, quantity: quantity });
         showToast('Agregado a la lista de cotización', 'success');
     }
     saveQuote();
@@ -91,14 +91,15 @@ function updateQuoteUI() {
 
         itemsContainer.innerHTML = '';
         quoteList.forEach(item => {
-            const colorBadge = item.color ? `<span style="display:inline-block; margin-top:5px; font-size:12px; background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:12px;">Color: ${item.color}</span>` : '';
+            const colorBadge = item.color ? `<span style="display:inline-block; margin-top:5px; margin-right:5px; font-size:12px; background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:12px;">Color: ${item.color}</span>` : '';
+            const presBadge = item.presentation ? `<span style="display:inline-block; margin-top:5px; font-size:12px; background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:12px;">Pres: ${item.presentation}</span>` : '';
             const c_id = typeof item.cart_id === 'string' ? `'${item.cart_id}'` : item.product_id;
             itemsContainer.innerHTML += `
                 <div class="quote-item">
                     <img src="${item.image.startsWith('http') || item.image.startsWith('/') ? item.image : '/static/' + item.image}" class="quote-item-img">
                     <div class="quote-item-info">
                         <h4>${item.name}</h4>
-                        ${colorBadge}
+                        <div>${colorBadge}${presBadge}</div>
                         <div class="quote-item-controls">
                             <div class="quantity-selector">
                                 <button class="qty-btn" onclick="updateQuantity(${c_id}, -1)"><i class="fas fa-minus"></i></button>
@@ -175,7 +176,8 @@ function sendQuoteWhatsApp() {
     msg += "*Productos:*\n";
     quoteList.forEach((item, i) => {
         const colorText = item.color ? ` (Color: ${item.color})` : '';
-        msg += `${i+1}. [Cant: ${item.quantity}] ${item.name}${colorText}\n`;
+        const presText = item.presentation ? ` (Pres: ${item.presentation})` : '';
+        msg += `${i+1}. [Cant: ${item.quantity}] ${item.name}${colorText}${presText}\n`;
     });
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
 }
