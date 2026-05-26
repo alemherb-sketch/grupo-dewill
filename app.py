@@ -165,15 +165,14 @@ def api_product_colors(product_id):
     pres_id = request.args.get('pres_id', type=int)
     
     if pres_id:
-        # Try to get colors specific to this presentation
+        # Strict filtering by presentation
         links = ProductPresentationColor.query.filter_by(
             product_id=product_id,
             presentation_id=pres_id
         ).all()
-        if links:
-            return jsonify([{'name': lk.color_name, 'hex_code': lk.hex_code} for lk in links])
+        return jsonify([{'name': lk.color_name, 'hex_code': lk.hex_code} for lk in links])
     
-    # Fallback: all colors from specs
+    # Fallback if no presentation selected: all colors from specs
     specs = ProductSpec.query.filter(
         ProductSpec.product_id == product_id,
         ProductSpec.key.ilike('color')

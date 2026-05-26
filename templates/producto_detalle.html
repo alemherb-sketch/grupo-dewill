@@ -295,15 +295,19 @@ async function selectPresentation(btn, name, presId) {
             const res = await fetch(`/api/producto/{{ product.id }}/colores?pres_id=${presId}`);
             const colors = await res.json();
             const grid = document.querySelector('.color-swatches-grid');
-            if (grid && colors.length > 0) {
-                grid.innerHTML = colors.map(c => {
-                    const extraStyle = c.hex_code.toLowerCase() === '#ffffff' ? 'border: 2px solid #ddd;' : '';
-                    return `<button class="color-swatch-new" 
-                            data-name="${c.name}" data-hex="${c.hex_code}" title="${c.name}"
-                            onclick="selectColor(this, '${c.name.replace(/'/g, "\\'")}', '${c.hex_code}')"
-                            style="background-color: ${c.hex_code}; ${extraStyle}">
-                    </button>`;
-                }).join('');
+            if (grid) {
+                if (colors.length > 0) {
+                    grid.innerHTML = colors.map(c => {
+                        const extraStyle = c.hex_code.toLowerCase() === '#ffffff' ? 'border: 2px solid #ddd;' : '';
+                        return `<button class="color-swatch-new" 
+                                data-name="${c.name}" data-hex="${c.hex_code}" title="${c.name}"
+                                onclick="selectColor(this, '${c.name.replace(/'/g, "\\'")}', '${c.hex_code}')"
+                                style="background-color: ${c.hex_code}; ${extraStyle}">
+                        </button>`;
+                    }).join('');
+                } else {
+                    grid.innerHTML = '<p class="colors-empty-msg" style="grid-column: 1 / -1; color: #666; font-size: 0.9rem;">⚠️ No hay colores vinculados a esta presentación. Por favor, actualiza el archivo Excel en el panel de administración.</p>';
+                }
                 // Reset selected color
                 document.getElementById('selectedColorName').value = '';
                 document.getElementById('selectedColorDisplay').style.display = 'none';
