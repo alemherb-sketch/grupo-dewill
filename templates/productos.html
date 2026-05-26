@@ -37,7 +37,7 @@
                     </div>
                     <ul class="sidebar-cat-list">
                         <li>
-                            <a href="{{ url_for('productos', marca=current_brand, q=search_query) }}"
+                            <a href="{{ url_for('productos', marca=current_brand) }}"
                                class="sidebar-cat-item {% if not current_cat %}active{% endif %}">
                                 <i class="fas fa-th-large"></i>
                                 <span>Todos los productos</span>
@@ -46,7 +46,7 @@
                         </li>
                         {% for cat in categories %}
                         <li>
-                            <a href="{{ url_for('productos', cat=cat.slug, marca=current_brand, q=search_query) }}"
+                            <a href="{{ url_for('productos', cat=cat.slug, marca=current_brand) }}"
                                class="sidebar-cat-item {% if current_cat == cat.slug %}active{% endif %}">
                                 <i class="{{ cat.icon }}"></i>
                                 <span>{{ cat.name }}</span>
@@ -64,9 +64,9 @@
                     </div>
                     <div class="sidebar-filter-list">
                         <select id="brandFilter" onchange="window.location.href=this.value" class="sidebar-select">
-                            <option value="{{ url_for('productos', cat=current_cat, q=search_query) }}">Todas las marcas</option>
+                            <option value="{{ url_for('productos', cat=current_cat) }}">Todas las marcas</option>
                             {% for brand in brands %}
-                            <option value="{{ url_for('productos', cat=current_cat, marca=brand.slug, q=search_query) }}" {% if current_brand == brand.slug %}selected{% endif %}>{{ brand.name }}</option>
+                            <option value="{{ url_for('productos', cat=current_cat, marca=brand.slug) }}" {% if current_brand == brand.slug %}selected{% endif %}>{{ brand.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -82,6 +82,7 @@
                     <form action="{{ url_for('productos') }}" method="GET" style="display: flex; flex: 1; min-width: 250px;">
                         <input type="text" name="q" placeholder="Buscar producto por nombre..." value="{{ search_query }}" style="flex:1; padding: 0.75rem 1rem; border: 1px solid #e2e8f0; border-radius: 6px 0 0 6px; outline: none;">
                         <input type="hidden" name="cat" value="{{ current_cat }}">
+                        <input type="hidden" name="marca" value="{{ current_brand }}">
                         <button type="submit" style="background: var(--primary); color: white; border: none; padding: 0 1.5rem; border-radius: 0 6px 6px 0; cursor: pointer;"><i class="fas fa-search"></i></button>
                     </form>
                     <div style="font-size: 0.9rem; color: var(--text-muted);">
