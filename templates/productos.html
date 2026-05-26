@@ -3,93 +3,229 @@
 {% block nav_class %}scrolled{% endblock %}
 
 {% block content %}
-<section class="page-hero">
-    <div class="page-hero-bg"><img src="{{ url_for('static', filename='assets/hero_bg.png') }}" alt="Productos" class="hero-bg-img"><div class="hero-overlay"></div></div>
+<!-- PAGE HERO -->
+<section class="page-hero-products">
+    <div class="page-hero-bg">
+        <img src="{{ url_for('static', filename='assets/hero_bg.png') }}" alt="Productos" class="hero-bg-img">
+        <div class="hero-overlay"></div>
+    </div>
     <div class="page-hero-content">
-        <div class="hero-badge animate-fade-up"><i class="fas fa-boxes-stacked"></i> Catálogo Completo</div>
-        <h1 class="page-hero-title animate-fade-up delay-1">Nuestros <span class="gradient-text">Productos</span></h1>
-        <p class="page-hero-subtitle animate-fade-up delay-2">Explora nuestro catálogo completo. Arma tu cotización y envíala directamente.</p>
+        <h1 class="page-hero-title-products">Nuestros <span style="color: var(--primary);">Productos</span></h1>
+        <p class="page-hero-subtitle-products">Pinturas de alta calidad para cada necesidad.</p>
     </div>
 </section>
 
-<section class="section products-section" id="productos">
+<!-- BREADCRUMB -->
+<div class="products-breadcrumb">
     <div class="container">
-        <!-- Search with autocomplete -->
-        <form action="{{ url_for('productos') }}" method="GET" class="product-search-bar animate-fade-up">
-            <i class="fas fa-search"></i>
-            <input type="text" name="q" id="productSearch" placeholder="Buscar productos..." value="{{ search_query }}" autocomplete="off">
-            <button type="submit" style="display:none;"></button>
-            <div class="autocomplete-dropdown" id="autocompleteDropdown"></div>
-        </form>
+        <a href="{{ url_for('index') }}">Inicio</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Productos</span>
+    </div>
+</div>
 
-        <!-- Filters -->
-        <div class="filters-row">
-            <div class="category-filter" id="categoryFilter">
-                <a href="{{ url_for('productos', marca=current_brand, q=search_query) }}" class="filter-btn {% if not current_cat %}active{% endif %}"><i class="fas fa-th-large"></i> Todos</a>
-                {% for cat in categories %}
-                <a href="{{ url_for('productos', cat=cat.slug, marca=current_brand, q=search_query) }}" class="filter-btn {% if current_cat == cat.slug %}active{% endif %}"><i class="{{ cat.icon }}"></i> {{ cat.name }}</a>
-                {% endfor %}
-            </div>
-            <div class="brand-filter">
-                <select id="brandFilter" onchange="window.location.href=this.value" class="filter-select">
-                    <option value="{{ url_for('productos', cat=current_cat, q=search_query) }}">Todas las marcas</option>
-                    {% for brand in brands %}
-                    <option value="{{ url_for('productos', cat=current_cat, marca=brand.slug, q=search_query) }}" {% if current_brand == brand.slug %}selected{% endif %}>{{ brand.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-        </div>
+<section class="products-main-section">
+    <div class="container">
+        <div class="products-layout">
 
-        <div class="products-count"><span>Mostrando <strong>{{ products.total }}</strong> productos</span></div>
-
-        <div class="products-grid" id="productsGrid">
-            {% for product in products.items %}
-            <div class="product-card animate-fade-up">
-                <div class="product-img-wrap">
-                    <img src="{{ url_for('static', filename=product.main_image or 'assets/product_paint.png') }}" alt="{{ product.name }}">
-                    <span class="product-category-tag">{{ product.category.name if product.category else '' }}</span>
-                    {% if product.brand %}<span class="product-brand-tag">{{ product.brand.name }}</span>{% endif %}
+            <!-- SIDEBAR -->
+            <aside class="products-sidebar">
+                <!-- Categorías -->
+                <div class="sidebar-box">
+                    <div class="sidebar-box-title">
+                        <i class="fas fa-th-list"></i> CATEGORÍAS
+                    </div>
+                    <ul class="sidebar-cat-list">
+                        <li>
+                            <a href="{{ url_for('productos', marca=current_brand, q=search_query) }}"
+                               class="sidebar-cat-item {% if not current_cat %}active{% endif %}">
+                                <i class="fas fa-th-large"></i>
+                                <span>Todos los productos</span>
+                                <span class="cat-count">{{ products.total }}</span>
+                            </a>
+                        </li>
+                        {% for cat in categories %}
+                        <li>
+                            <a href="{{ url_for('productos', cat=cat.slug, marca=current_brand, q=search_query) }}"
+                               class="sidebar-cat-item {% if current_cat == cat.slug %}active{% endif %}">
+                                <i class="{{ cat.icon }}"></i>
+                                <span>{{ cat.name }}</span>
+                                <span class="cat-count">{{ cat.products|length }}</span>
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
                 </div>
-                <div class="product-info">
-                    <h3>{{ product.name }}</h3>
-                    <p class="product-desc">{{ product.description }}</p>
-                    <div class="product-actions">
-                        <a href="{{ url_for('producto_detalle', product_id=product.id) }}" class="btn-detail">Ver Detalle</a>
-                        <button class="btn-add" onclick="addToQuote({{ product.id }}, '{{ product.name|e }}', '{{ product.main_image or 'assets/product_paint.png' }}')">
-                            <i class="fas fa-plus"></i> Cotizar
-                        </button>
+
+                <!-- Filtrar por Marca -->
+                <div class="sidebar-box" style="margin-top: 1.5rem;">
+                    <div class="sidebar-box-title">
+                        <i class="fas fa-filter"></i> FILTRAR POR MARCA
+                    </div>
+                    <div class="sidebar-filter-list">
+                        <select id="brandFilter" onchange="window.location.href=this.value" class="sidebar-select">
+                            <option value="{{ url_for('productos', cat=current_cat, q=search_query) }}">Todas las marcas</option>
+                            {% for brand in brands %}
+                            <option value="{{ url_for('productos', cat=current_cat, marca=brand.slug, q=search_query) }}" {% if current_brand == brand.slug %}selected{% endif %}>{{ brand.name }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                 </div>
-            </div>
-            {% endfor %}
-        </div>
 
-        {% if products.pages > 1 %}
-        <div class="pagination">
-            {% if products.has_prev %}
-            <a href="{{ url_for('productos', page=products.prev_num, cat=current_cat, marca=current_brand, q=search_query) }}" class="page-btn"><i class="fas fa-chevron-left"></i></a>
-            {% endif %}
-            {% for p in products.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
-                {% if p %}
-                <a href="{{ url_for('productos', page=p, cat=current_cat, marca=current_brand, q=search_query) }}" class="page-btn {% if p == products.page %}active{% endif %}">{{ p }}</a>
-                {% else %}
-                <span class="page-ellipsis">...</span>
+                <!-- Buscar -->
+                <div class="sidebar-box" style="margin-top: 1.5rem;">
+                    <div class="sidebar-box-title">
+                        <i class="fas fa-search"></i> BUSCAR PRODUCTO
+                    </div>
+                    <form action="{{ url_for('productos') }}" method="GET" class="sidebar-search-form">
+                        <input type="text" name="q" placeholder="Buscar producto..." value="{{ search_query }}" class="sidebar-search-input">
+                        <input type="hidden" name="cat" value="{{ current_cat }}">
+                        <button type="submit" class="sidebar-search-btn"><i class="fas fa-search"></i></button>
+                    </form>
+                </div>
+            </aside>
+
+            <!-- MAIN CONTENT -->
+            <div class="products-main-content">
+                <!-- Results bar -->
+                <div class="products-results-bar">
+                    <span class="products-count-text">
+                        Mostrando <strong>{{ (products.page - 1) * products.per_page + 1 }}–{{ [products.page * products.per_page, products.total]|min }}</strong> de <strong>{{ products.total }}</strong> productos
+                    </span>
+                    <div class="products-sort">
+                        <label>Ordenar por:</label>
+                        <select class="sort-select" onchange="sortProducts(this.value)">
+                            <option value="name">Nombre A–Z</option>
+                            <option value="recent" selected>Más recientes</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Products Grid -->
+                <div class="products-grid-new" id="productsGrid">
+                    {% for product in products.items %}
+                    <div class="product-card-new animate-fade-up">
+                        <div class="product-card-img-wrap">
+                            <a href="{{ url_for('producto_detalle', product_id=product.id) }}">
+                                <img src="{{ url_for('static', filename=product.main_image or 'assets/product_paint.png') }}" alt="{{ product.name }}">
+                            </a>
+                            {% if product.category %}
+                            <span class="product-line-tag">{{ product.category.name }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="product-card-body">
+                            {% if product.category %}
+                            <span class="product-card-category">{{ product.category.name|upper }}</span>
+                            {% endif %}
+                            <h3 class="product-card-name">
+                                <a href="{{ url_for('producto_detalle', product_id=product.id) }}">{{ product.name }}</a>
+                            </h3>
+                            {% if product.description %}
+                            <p class="product-card-desc">{{ product.description[:80] }}{% if product.description|length > 80 %}...{% endif %}</p>
+                            {% endif %}
+                            {% set colors = product.specs | selectattr('key', 'equalto', 'Color') | list %}
+                            {% if colors %}
+                            <div class="product-card-colors">
+                                {% for c in colors[:6] %}
+                                <span class="product-color-dot" title="{{ c.value }}" style="background: #cccccc;"></span>
+                                {% endfor %}
+                                {% if colors|length > 6 %}
+                                <span class="product-more-colors">+{{ colors|length - 6 }}</span>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            {% if product.presentations %}
+                            <div class="product-card-presentations">
+                                {% for pres in product.presentations %}
+                                <span class="pres-chip">{{ pres.name }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="product-card-actions">
+                                <a href="{{ url_for('producto_detalle', product_id=product.id) }}" class="btn-ver-detalle">
+                                    <i class="fas fa-eye"></i> VER DETALLES
+                                </a>
+                                <button class="btn-cotizar-card" onclick="addToQuote({{ product.id }}, '{{ product.name|e }}', '{{ product.main_image or 'assets/product_paint.png' }}')">
+                                    <i class="fas fa-shopping-cart"></i> COTIZAR
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="no-products-msg" style="grid-column: 1/-1; text-align: center; padding: 4rem;">
+                        <i class="fas fa-box-open" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem; display: block;"></i>
+                        <p style="color: var(--text-muted);">No se encontraron productos con los filtros seleccionados.</p>
+                        <a href="{{ url_for('productos') }}" class="btn btn-primary" style="margin-top: 1rem;">Ver todos los productos</a>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Pagination -->
+                {% if products.pages > 1 %}
+                <div class="pagination-new">
+                    {% if products.has_prev %}
+                    <a href="{{ url_for('productos', page=products.prev_num, cat=current_cat, marca=current_brand, q=search_query) }}" class="page-btn-new"><i class="fas fa-chevron-left"></i></a>
+                    {% endif %}
+                    {% for p in products.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                        {% if p %}
+                        <a href="{{ url_for('productos', page=p, cat=current_cat, marca=current_brand, q=search_query) }}" class="page-btn-new {% if p == products.page %}active{% endif %}">{{ p }}</a>
+                        {% else %}
+                        <span class="page-ellipsis">...</span>
+                        {% endif %}
+                    {% endfor %}
+                    {% if products.has_next %}
+                    <a href="{{ url_for('productos', page=products.next_num, cat=current_cat, marca=current_brand, q=search_query) }}" class="page-btn-new"><i class="fas fa-chevron-right"></i></a>
+                    {% endif %}
+                </div>
                 {% endif %}
-            {% endfor %}
-            {% if products.has_next %}
-            <a href="{{ url_for('productos', page=products.next_num, cat=current_cat, marca=current_brand, q=search_query) }}" class="page-btn"><i class="fas fa-chevron-right"></i></a>
-            {% endif %}
+            </div>
         </div>
-        {% endif %}
     </div>
 </section>
 
-<section class="section cta-section">
+<!-- BENEFITS BAR -->
+<section class="benefits-bar">
     <div class="container">
-        <div class="cta-box glass-card">
-            <div class="cta-content"><h2>¿No encuentras lo que buscas?</h2><p>Contáctanos y te ayudamos a encontrar el producto ideal.</p></div>
-            <a href="https://wa.me/{{ site.get('whatsapp','51977585654') }}" target="_blank" class="btn btn-whatsapp btn-lg"><i class="fab fa-whatsapp"></i> Escríbenos Ahora</a>
+        <div class="benefits-grid">
+            <div class="benefit-item">
+                <i class="fas fa-shield-alt"></i>
+                <div>
+                    <strong>CALIDAD GARANTIZADA</strong>
+                    <span>Productos de alta calidad probados y certificados.</span>
+                </div>
+            </div>
+            <div class="benefit-item">
+                <i class="fas fa-headset"></i>
+                <div>
+                    <strong>ASESORÍA PERSONALIZADA</strong>
+                    <span>Te ayudamos a elegir el producto ideal para tu proyecto.</span>
+                </div>
+            </div>
+            <div class="benefit-item">
+                <i class="fas fa-truck"></i>
+                <div>
+                    <strong>ENVÍOS A TODO EL PERÚ</strong>
+                    <span>Llegamos a todas las regiones del país.</span>
+                </div>
+            </div>
+            <div class="benefit-item">
+                <i class="fas fa-lock"></i>
+                <div>
+                    <strong>PAGOS SEGUROS</strong>
+                    <span>Compra con total seguridad y confianza.</span>
+                </div>
+            </div>
         </div>
     </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function sortProducts(val) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('sort', val);
+    window.location.href = url.toString();
+}
+</script>
 {% endblock %}

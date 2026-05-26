@@ -35,8 +35,9 @@
                 <li><a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">INICIO</a></li>
                 <li><a href="{{ url_for('nosotros') }}" class="nav-link {% if request.endpoint == 'nosotros' %}active{% endif %}">NOSOTROS</a></li>
                 <li><a href="{{ url_for('productos') }}" class="nav-link {% if request.endpoint in ['productos','producto_detalle'] %}active{% endif %}">PRODUCTOS</a></li>
-                <li><a href="{{ url_for('galeria') }}" class="nav-link {% if request.endpoint == 'galeria' %}active{% endif %}">MARCAS</a></li>
-                <li><a href="{{ url_for('galeria_ambientes') }}" class="nav-link {% if request.endpoint == 'galeria_ambientes' %}active{% endif %}">SERVICIOS</a></li>
+                <li><a href="{{ url_for('galeria') }}" class="nav-link {% if request.endpoint == 'galeria' %}active{% endif %}">GALERÍA</a></li>
+                <li><a href="{{ url_for('galeria_ambientes') }}" class="nav-link {% if request.endpoint == 'galeria_ambientes' %}active{% endif %}">AMBIENTES</a></li>
+                <li><a href="{{ url_for('blog') }}" class="nav-link {% if request.endpoint in ['blog', 'blog_post'] %}active{% endif %}">BLOG</a></li>
                 <li><a href="{{ url_for('contacto') }}" class="nav-link {% if request.endpoint == 'contacto' %}active{% endif %}">CONTACTO</a></li>
             </ul>
             <div class="nav-actions">
@@ -70,11 +71,13 @@
                     </div>
                 </div>
                 <div class="footer-links-group">
-                    <h4>Enlace Rápidos</h4>
+                    <h4>Navegación</h4>
                     <a href="{{ url_for('index') }}">Inicio</a>
                     <a href="{{ url_for('nosotros') }}">Nosotros</a>
                     <a href="{{ url_for('productos') }}">Productos</a>
                     <a href="{{ url_for('galeria') }}">Galería</a>
+                    <a href="{{ url_for('galeria_ambientes') }}">Ambientes</a>
+                    <a href="{{ url_for('blog') }}">Blog</a>
                     <a href="{{ url_for('contacto') }}">Contacto</a>
                 </div>
                 <div class="footer-links-group">

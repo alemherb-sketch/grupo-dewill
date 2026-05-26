@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}{{ post.title }} | Blog Grupo Dewill{% endblock %}
+{% block nav_class %}scrolled{% endblock %}
+
+{% block content %}
+<section class="blog-post-page section">
+    <div class="container">
+        <div class="blog-layout">
+            <article class="blog-post-main">
+                <!-- Breadcrumb -->
+                <nav class="detail-breadcrumb" style="margin-bottom: 2rem;">
+                    <a href="{{ url_for('index') }}">Inicio</a>
+                    <i class="fas fa-chevron-right"></i>
+                    <a href="{{ url_for('blog') }}">Blog</a>
+                    {% if post.blog_category %}
+                    <i class="fas fa-chevron-right"></i>
+                    <a href="{{ url_for('blog', cat=post.blog_category.slug) }}">{{ post.blog_category.name }}</a>
+                    {% endif %}
+                    <i class="fas fa-chevron-right"></i>
+                    <strong>{{ post.title[:40] }}...</strong>
+                </nav>
+
+                {% if post.blog_category %}
+                <span class="blog-cat-badge" style="background: var(--secondary); color: white; margin-bottom: 1rem; display: inline-block;">{{ post.blog_category.name|upper }}</span>
+                {% endif %}
+
+                <h1 class="blog-post-title">{{ post.title }}</h1>
+                <div class="blog-post-meta">
+                    <span><i class="fas fa-calendar-alt"></i> {{ post.created_at.strftime('%d de %B, %Y') }}</span>
+                    <span><i class="fas fa-clock"></i> {{ post.read_time }} min de lectura</span>
+                </div>
+
+                {% if post.cover_image %}
+                <div class="blog-post-cover">
+                    <img src="{{ url_for('static', filename=post.cover_image) }}" alt="{{ post.title }}">
+                </div>
+                {% endif %}
+
+                <div class="blog-post-content">
+                    {{ post.content | safe }}
+                </div>
+
+                <!-- Share -->
+                <div class="blog-post-share">
+                    <strong>Compartir:</strong>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.url|urlencode }}" target="_blank" class="share-btn fb"><i class="fab fa-facebook-f"></i></a>
+                    <a href="https://twitter.com/intent/tweet?text={{ post.title|urlencode }}&url={{ request.url|urlencode }}" target="_blank" class="share-btn tw"><i class="fab fa-twitter"></i></a>
+                    <a href="https://wa.me/?text={{ post.title|urlencode }}%20{{ request.url|urlencode }}" target="_blank" class="share-btn wa"><i class="fab fa-whatsapp"></i></a>
+                </div>
+
+                <!-- Related Posts -->
+                {% if related %}
+                <div class="blog-related">
+                    <h3>Artículos Relacionados</h3>
+                    <div class="blog-grid" style="grid-template-columns: repeat(3, 1fr);">
+                        {% for rp in related %}
+                        <a href="{{ url_for('blog_post', slug=rp.slug) }}" class="blog-card">
+                            <div class="blog-card-img">
+                                <img src="{{ url_for('static', filename=rp.cover_image or 'assets/hero_bg.png') }}" alt="{{ rp.title }}">
+                                {% if rp.blog_category %}<span class="blog-card-badge">{{ rp.blog_category.name|upper }}</span>{% endif %}
+                            </div>
+                            <div class="blog-card-body">
+                                <h3 class="blog-card-title">{{ rp.title }}</h3>
+                                <div class="blog-card-meta">
+                                    <span><i class="fas fa-calendar-alt"></i> {{ rp.created_at.strftime('%d %b, %Y') }}</span>
+                                </div>
+                                <span class="blog-card-link">Leer más →</span>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </article>
+
+            <!-- SIDEBAR (reused) -->
+            <aside class="blog-sidebar">
+                <div class="blog-sidebar-box">
+                    <h4 class="blog-sidebar-title">Buscar en el blog</h4>
+                    <form action="{{ url_for('blog') }}" method="GET" class="blog-search-form">
+                        <input type="text" name="q" placeholder="Buscar artículos..." class="blog-search-input">
+                        <button type="submit" class="blog-search-btn"><i class="fas fa-search"></i></button>
+                    </form>
+                </div>
+                {% if blog_categories %}
+                <div class="blog-sidebar-box">
+                    <h4 class="blog-sidebar-title">Categorías</h4>
+                    <ul class="blog-cat-list">
+                        {% for bc in blog_categories %}
+                        <li>
+                            <a href="{{ url_for('blog', cat=bc.slug) }}" class="blog-cat-link {% if post.blog_category and post.blog_category.slug == bc.slug %}active{% endif %}">
+                                <i class="{{ bc.icon }}"></i> {{ bc.name }}
+                                <span class="blog-cat-count">{{ bc.posts|length }}</span>
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+                <div class="blog-sidebar-box blog-newsletter-box">
+                    <h4 class="blog-sidebar-title" style="color: white;">Suscríbete a nuestro blog</h4>
+                    <p style="font-size: 0.85rem; color: rgba(255,255,255,0.8); margin-bottom: 1rem;">Recibe consejos y novedades directamente en tu correo.</p>
+                    <div class="newsletter-input-group"><input type="email" placeholder="Tu correo electrónico" class="newsletter-input"></div>
+                    <button class="newsletter-btn"><i class="fas fa-envelope"></i> SUSCRIBIRME</button>
+                </div>
+            </aside>
+        </div>
+    </div>
+</section>
+{% endblock %}

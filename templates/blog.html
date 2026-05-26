@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% block title %}Blog | Consejos, ideas y soluciones | Grupo Dewill{% endblock %}
+{% block nav_class %}scrolled{% endblock %}
+
+{% block content %}
+<!-- HERO -->
+<section class="page-hero blog-hero">
+    <div class="page-hero-bg">
+        <img src="{{ url_for('static', filename='assets/hero_bg.png') }}" alt="Blog" class="hero-bg-img">
+        <div class="hero-overlay"></div>
+    </div>
+    <div class="page-hero-content">
+        <div class="hero-badge"><i class="fas fa-blog"></i> BLOG</div>
+        <h1 class="page-hero-title animate-fade-up delay-1">Consejos, ideas y <span class="gradient-text">soluciones</span></h1>
+        <p class="page-hero-subtitle animate-fade-up delay-2">Encuentra recomendaciones prácticas, inspiración y todo lo que necesitas saber para lograr los mejores acabados.</p>
+    </div>
+</section>
+
+<section class="blog-section section">
+    <div class="container">
+        <div class="blog-layout">
+            <!-- MAIN CONTENT -->
+            <div class="blog-main">
+                {% if featured and not current_cat %}
+                <!-- FEATURED POST -->
+                <div class="blog-featured-section">
+                    <h2 class="blog-section-title">Artículos Destacados</h2>
+                    <a href="{{ url_for('blog_post', slug=featured.slug) }}" class="blog-featured-card">
+                        <div class="blog-featured-img">
+                            <img src="{{ url_for('static', filename=featured.cover_image or 'assets/hero_bg.png') }}" alt="{{ featured.title }}">
+                        </div>
+                        <div class="blog-featured-info">
+                            {% if featured.blog_category %}
+                            <span class="blog-cat-badge" style="background: var(--secondary); color: white;">{{ featured.blog_category.name|upper }}</span>
+                            {% endif %}
+                            <h3 class="blog-featured-title">{{ featured.title }}</h3>
+                            <p class="blog-featured-excerpt">{{ featured.excerpt }}</p>
+                            <div class="blog-featured-meta">
+                                <span><i class="fas fa-calendar-alt"></i> {{ featured.created_at.strftime('%d %b, %Y') }}</span>
+                                <span><i class="fas fa-clock"></i> {{ featured.read_time }} min de lectura</span>
+                            </div>
+                            <span class="blog-read-more">Leer más →</span>
+                        </div>
+                    </a>
+                </div>
+                {% endif %}
+
+                <!-- POSTS GRID -->
+                {% if posts.items %}
+                <div class="blog-grid">
+                    {% for post in posts.items %}
+                    {% if not (featured and post.id == featured.id and not current_cat) %}
+                    <a href="{{ url_for('blog_post', slug=post.slug) }}" class="blog-card">
+                        <div class="blog-card-img">
+                            <img src="{{ url_for('static', filename=post.cover_image or 'assets/hero_bg.png') }}" alt="{{ post.title }}">
+                            {% if post.blog_category %}
+                            <span class="blog-card-badge">{{ post.blog_category.name|upper }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="blog-card-body">
+                            <h3 class="blog-card-title">{{ post.title }}</h3>
+                            <p class="blog-card-excerpt">{{ post.excerpt[:100] if post.excerpt else '' }}{% if post.excerpt and post.excerpt|length > 100 %}...{% endif %}</p>
+                            <div class="blog-card-meta">
+                                <span><i class="fas fa-calendar-alt"></i> {{ post.created_at.strftime('%d %b, %Y') }}</span>
+                                <span><i class="fas fa-clock"></i> {{ post.read_time }} min de lectura</span>
+                            </div>
+                            <span class="blog-card-link">Leer más →</span>
+                        </div>
+                    </a>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+
+                <!-- Pagination -->
+                {% if posts.pages > 1 %}
+                <div class="pagination-new" style="margin-top: 3rem;">
+                    {% if posts.has_prev %}
+                    <a href="{{ url_for('blog', page=posts.prev_num, cat=current_cat) }}" class="page-btn-new"><i class="fas fa-chevron-left"></i></a>
+                    {% endif %}
+                    {% for p in posts.iter_pages() %}
+                        {% if p %}
+                        <a href="{{ url_for('blog', page=p, cat=current_cat) }}" class="page-btn-new {% if p == posts.page %}active{% endif %}">{{ p }}</a>
+                        {% else %}
+                        <span class="page-ellipsis">...</span>
+                        {% endif %}
+                    {% endfor %}
+                    {% if posts.has_next %}
+                    <a href="{{ url_for('blog', page=posts.next_num, cat=current_cat) }}" class="page-btn-new"><i class="fas fa-chevron-right"></i></a>
+                    {% endif %}
+                </div>
+                {% endif %}
+                {% else %}
+                <div style="text-align: center; padding: 4rem; color: var(--text-muted);">
+                    <i class="fas fa-newspaper" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+                    <p>No hay artículos publicados aún.</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- SIDEBAR -->
+            <aside class="blog-sidebar">
+                <!-- Search -->
+                <div class="blog-sidebar-box">
+                    <h4 class="blog-sidebar-title">Buscar en el blog</h4>
+                    <form action="{{ url_for('blog') }}" method="GET" class="blog-search-form">
+                        <input type="text" name="q" placeholder="Buscar artículos..." class="blog-search-input">
+                        <button type="submit" class="blog-search-btn"><i class="fas fa-search"></i></button>
+                    </form>
+                </div>
+
+                <!-- Categories -->
+                {% if blog_categories %}
+                <div class="blog-sidebar-box">
+                    <h4 class="blog-sidebar-title">Categorías</h4>
+                    <ul class="blog-cat-list">
+                        <li>
+                            <a href="{{ url_for('blog') }}" class="blog-cat-link {% if not current_cat %}active{% endif %}">
+                                <i class="fas fa-th-large"></i> Todos los artículos
+                            </a>
+                        </li>
+                        {% for bc in blog_categories %}
+                        <li>
+                            <a href="{{ url_for('blog', cat=bc.slug) }}" class="blog-cat-link {% if current_cat == bc.slug %}active{% endif %}">
+                                <i class="{{ bc.icon }}"></i> {{ bc.name }}
+                                <span class="blog-cat-count">{{ bc.posts|length }}</span>
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                <!-- Popular Posts -->
+                {% if popular %}
+                <div class="blog-sidebar-box">
+                    <h4 class="blog-sidebar-title">Artículos Populares</h4>
+                    <ul class="blog-popular-list">
+                        {% for p in popular[:5] %}
+                        <li>
+                            <a href="{{ url_for('blog_post', slug=p.slug) }}" class="blog-popular-item">
+                                <div class="blog-popular-img">
+                                    <img src="{{ url_for('static', filename=p.cover_image or 'assets/hero_bg.png') }}" alt="{{ p.title }}">
+                                </div>
+                                <div class="blog-popular-info">
+                                    <span class="blog-popular-title">{{ p.title[:50] }}{% if p.title|length > 50 %}...{% endif %}</span>
+                                    <span class="blog-popular-date">{{ p.created_at.strftime('%d %b, %Y') }}</span>
+                                </div>
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                <!-- Newsletter -->
+                <div class="blog-sidebar-box blog-newsletter-box">
+                    <h4 class="blog-sidebar-title" style="color: white;">Suscríbete a nuestro blog</h4>
+                    <p style="font-size: 0.85rem; color: rgba(255,255,255,0.8); margin-bottom: 1rem;">Recibe consejos, novedades y promociones exclusivas directamente en tu correo.</p>
+                    <div class="newsletter-input-group">
+                        <input type="email" placeholder="Tu correo electrónico" class="newsletter-input">
+                    </div>
+                    <button class="newsletter-btn">
+                        <i class="fas fa-envelope"></i> SUSCRIBIRME
+                    </button>
+                </div>
+            </aside>
+        </div>
+    </div>
+</section>
+
+<!-- BENEFITS BAR -->
+<section class="benefits-bar">
+    <div class="container">
+        <div class="benefits-grid">
+            <div class="benefit-item"><i class="fas fa-headset"></i><div><strong>ASESORÍA PERSONALIZADA</strong><span>Contamos con las mejores marcas y tecnología.</span></div></div>
+            <div class="benefit-item"><i class="fas fa-certificate"></i><div><strong>PRODUCTOS DE CALIDAD</strong><span>Contamos con las mejores marcas y tecnología.</span></div></div>
+            <div class="benefit-item"><i class="fas fa-truck"></i><div><strong>ENVÍOS A TODO EL PERÚ</strong><span>Llegamos a todas las regiones del país.</span></div></div>
+            <div class="benefit-item"><i class="fas fa-tools"></i><div><strong>SOPORTE EXPERTO</strong><span>Nuestro equipo está listo para resolver tus dudas.</span></div></div>
+        </div>
+    </div>
+</section>
+{% endblock %}

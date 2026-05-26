@@ -1,0 +1,50 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Categorías del Blog{% endblock %}
+{% block page_title %}Categorías del Blog{% endblock %}
+
+{% block admin_content %}
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+    <!-- Create Form -->
+    <div class="form-section">
+        <h3 style="margin-bottom: 1.5rem;"><i class="fas fa-plus-circle"></i> Nueva Categoría</h3>
+        <form method="POST" class="admin-form">
+            <input type="hidden" name="action" value="create">
+            <div class="form-group"><label>Nombre</label><input type="text" name="name" class="form-input" required placeholder="Ej: Consejos"></div>
+            <div class="form-group"><label>Slug</label><input type="text" name="slug" class="form-input" placeholder="Se genera automáticamente"></div>
+            <div class="form-group"><label>Ícono (FontAwesome)</label><input type="text" name="icon" class="form-input" placeholder="fas fa-lightbulb" value="fas fa-tag"></div>
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Crear Categoría</button>
+        </form>
+    </div>
+
+    <!-- List -->
+    <div>
+        <h3 style="margin-bottom: 1.5rem;"><i class="fas fa-list"></i> Categorías Existentes</h3>
+        {% if categories %}
+        <table class="admin-table">
+            <thead><tr><th>Ícono</th><th>Nombre</th><th>Artículos</th><th>Acciones</th></tr></thead>
+            <tbody>
+                {% for cat in categories %}
+                <tr>
+                    <td><i class="{{ cat.icon }}" style="font-size: 1.2rem; color: var(--primary);"></i></td>
+                    <td><strong>{{ cat.name }}</strong><br><small style="color: var(--text-muted);">{{ cat.slug }}</small></td>
+                    <td>{{ cat.posts|length }}</td>
+                    <td>
+                        <form method="POST" style="display: inline;" onsubmit="return confirm('¿Eliminar esta categoría?')">
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="id" value="{{ cat.id }}">
+                            <button type="submit" class="btn-icon danger" title="Eliminar"><i class="fas fa-trash"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p style="color: var(--text-muted);">No hay categorías aún.</p>
+        {% endif %}
+    </div>
+</div>
+<div style="margin-top: 2rem;">
+    <a href="{{ url_for('admin_blog') }}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Volver al Blog</a>
+</div>
+{% endblock %}

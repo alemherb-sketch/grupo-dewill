@@ -1,0 +1,85 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Blog{% endblock %}
+{% block page_title %}Gestión del Blog{% endblock %}
+
+{% block admin_content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <div>
+        <a href="{{ url_for('admin_blog_categories') }}" class="btn btn-outline" style="font-size: 0.85rem; padding: 0.5rem 1rem;">
+            <i class="fas fa-tags"></i> Gestionar Categorías
+        </a>
+    </div>
+    <a href="{{ url_for('admin_blog_new') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Nuevo Artículo
+    </a>
+</div>
+
+<div class="admin-table-wrap">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Imagen</th>
+                <th>Título</th>
+                <th>Categoría</th>
+                <th>Destacado</th>
+                <th>Estado</th>
+                <th>Fecha</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for post in posts.items %}
+            <tr>
+                <td>
+                    {% if post.cover_image %}
+                    <img src="{{ url_for('static', filename=post.cover_image) }}" style="width: 60px; height: 40px; object-fit: cover; border-radius: 6px;">
+                    {% else %}
+                    <div style="width: 60px; height: 40px; background: var(--bg-surface); border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-image" style="color: var(--text-muted);"></i>
+                    </div>
+                    {% endif %}
+                </td>
+                <td><strong>{{ post.title[:60] }}{% if post.title|length > 60 %}...{% endif %}</strong></td>
+                <td>{{ post.blog_category.name if post.blog_category else '—' }}</td>
+                <td>
+                    {% if post.is_featured %}
+                    <span class="badge-yes">Sí</span>
+                    {% else %}
+                    <span style="color: var(--text-muted);">No</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if post.is_published %}
+                    <span class="badge-yes">Publicado</span>
+                    {% else %}
+                    <span class="badge-no">Borrador</span>
+                    {% endif %}
+                </td>
+                <td style="font-size: 0.85rem; color: var(--text-muted);">{{ post.created_at.strftime('%d/%m/%Y') }}</td>
+                <td>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <a href="{{ url_for('blog_post', slug=post.slug) }}" target="_blank" class="btn-icon" title="Ver artículo"><i class="fas fa-external-link-alt"></i></a>
+                        <a href="{{ url_for('admin_blog_edit', pid=post.id) }}" class="btn-icon" title="Editar"><i class="fas fa-edit"></i></a>
+                        <form method="POST" action="{{ url_for('admin_blog_delete', pid=post.id) }}" style="display:inline;" onsubmit="return confirm('¿Eliminar este artículo?')">
+                            <button type="submit" class="btn-icon danger" title="Eliminar"><i class="fas fa-trash"></i></button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="7" style="text-align: center; padding: 3rem; color: var(--text-muted);">No hay artículos creados aún. <a href="{{ url_for('admin_blog_new') }}">Crear el primero</a></td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if posts.pages > 1 %}
+<div class="pagination" style="margin-top: 2rem;">
+    {% if posts.has_prev %}<a href="{{ url_for('admin_blog', page=posts.prev_num) }}" class="page-btn"><i class="fas fa-chevron-left"></i></a>{% endif %}
+    {% for p in posts.iter_pages() %}
+        {% if p %}<a href="{{ url_for('admin_blog', page=p) }}" class="page-btn {% if p == posts.page %}active{% endif %}">{{ p }}</a>{% else %}<span class="page-ellipsis">...</span>{% endif %}
+    {% endfor %}
+    {% if posts.has_next %}<a href="{{ url_for('admin_blog', page=posts.next_num) }}" class="page-btn"><i class="fas fa-chevron-right"></i></a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

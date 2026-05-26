@@ -3,200 +3,313 @@
 {% block nav_class %}scrolled{% endblock %}
 
 {% block content %}
-<section class="product-detail-section">
-    <div class="container">
-        <div class="breadcrumb">
-            <a href="{{ url_for('index') }}">Inicio</a> <i class="fas fa-chevron-right"></i>
-            <a href="{{ url_for('productos') }}">Productos</a> <i class="fas fa-chevron-right"></i>
-            {% if product.category %}
-                <a href="{{ url_for('productos', cat=product.category.slug) }}">{{ product.category.name }}</a> <i class="fas fa-chevron-right"></i>
-                {% if product.subcategory %}
-                    <span style="color: var(--text-muted);">{{ product.subcategory.name }}</span> <i class="fas fa-chevron-right"></i>
-                {% endif %}
-            {% endif %}
-            <span>{{ product.name }}</span>
-        </div>
+<section class="product-detail-page">
+    <div class="product-detail-container">
 
-        <div class="product-detail-grid">
-            <!-- Image Gallery -->
-            <div class="product-gallery">
-                <div class="gallery-main" style="position: relative;">
-                    <img id="mainImage" src="{{ url_for('static', filename=product.main_image or 'assets/product_paint.png') }}" alt="{{ product.name }}">
-                    {% if paint_colors %}
-                    <!-- Color Overlay Indicator -->
-                    <div id="colorOverlay" class="color-overlay-circle" style="display:none;"></div>
-                    {% endif %}
-                </div>
-                {% if product.images %}
-                <div class="gallery-thumbs">
-                    <div class="thumb active" onclick="changeMainImage(this)" data-src="{{ url_for('static', filename=product.main_image or 'assets/product_paint.png') }}">
-                        <img src="{{ url_for('static', filename=product.main_image or 'assets/product_paint.png') }}" alt="Principal">
-                    </div>
-                    {% for img in product.images %}
-                    <div class="thumb" onclick="changeMainImage(this)" data-src="{{ url_for('static', filename=img.image_url) }}">
-                        <img src="{{ url_for('static', filename=img.image_url) }}" alt="Imagen {{ loop.index }}">
-                    </div>
+        <!-- LEFT SIDEBAR: CATEGORIES -->
+        <aside class="detail-sidebar">
+            <div class="sidebar-box">
+                <div class="sidebar-box-title"><i class="fas fa-th-list"></i> CATEGORÍAS</div>
+                <ul class="sidebar-cat-list">
+                    {% for cat in categories %}
+                    <li>
+                        <a href="{{ url_for('productos', cat=cat.slug) }}"
+                           class="sidebar-cat-item {% if product.category and product.category.slug == cat.slug %}active{% endif %}">
+                            <i class="{{ cat.icon }}"></i>
+                            <span>{{ cat.name }}</span>
+                        </a>
+                    </li>
                     {% endfor %}
-                </div>
+                </ul>
+            </div>
+            <div class="sidebar-box" style="margin-top: 1.5rem; background: linear-gradient(135deg, var(--secondary) 0%, #1a3a6b 100%); color: white;">
+                <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem; opacity: 0.8;">¿NECESITAS ASESORÍA?</div>
+                <p style="font-size: 0.85rem; margin-bottom: 1rem; opacity: 0.9;">Nuestro equipo está listo para ayudarte a elegir el producto ideal para tu proyecto.</p>
+                <a href="https://wa.me/{{ site.get('whatsapp', '51977585654') }}" target="_blank" class="btn btn-primary" style="font-size: 0.8rem; padding: 0.6rem 1rem; width: 100%; justify-content: center;">
+                    <i class="fab fa-whatsapp"></i> CONTÁCTANOS
+                </a>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <div class="detail-main">
+            <!-- Breadcrumb -->
+            <nav class="detail-breadcrumb">
+                <a href="{{ url_for('index') }}">Inicio</a>
+                <i class="fas fa-chevron-right"></i>
+                <a href="{{ url_for('productos') }}">Productos</a>
+                {% if product.category %}
+                <i class="fas fa-chevron-right"></i>
+                <a href="{{ url_for('productos', cat=product.category.slug) }}">{{ product.category.name }}</a>
                 {% endif %}
+                {% if product.subcategory %}
+                <i class="fas fa-chevron-right"></i>
+                <span>{{ product.subcategory.name }}</span>
+                {% endif %}
+                <i class="fas fa-chevron-right"></i>
+                <strong>{{ product.name }}</strong>
+            </nav>
+
+            <!-- Share bar -->
+            <div class="detail-share-bar">
+                <span>COMPARTIR:</span>
+                <a href="https://wa.me/?text={{ product.name|urlencode }}" target="_blank" class="share-btn wa"><i class="fab fa-whatsapp"></i></a>
+                <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.url|urlencode }}" target="_blank" class="share-btn fb"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://twitter.com/intent/tweet?text={{ product.name|urlencode }}" target="_blank" class="share-btn tw"><i class="fab fa-twitter"></i></a>
+                <a href="https://pinterest.com/pin/create/button/?description={{ product.name|urlencode }}" target="_blank" class="share-btn pt"><i class="fab fa-pinterest-p"></i></a>
             </div>
 
-            <!-- Product Info -->
-            <div class="product-detail-info">
-                {% if product.category %}
-                <span class="detail-category">
-                    <i class="{{ product.category.icon }}"></i> {{ product.category.name }}
-                    {% if product.subcategory %}
-                     &rsaquo; {{ product.subcategory.name }}
-                    {% endif %}
-                </span>
-                {% endif %}
-                {% if product.brand %}<span class="detail-brand">{{ product.brand.name }}</span>{% endif %}
-                <h1>{{ product.name }}</h1>
-                {% if product.sku %}<p class="detail-sku">SKU: {{ product.sku }}</p>{% endif %}
-                <p class="detail-description">{{ product.description }}</p>
-
-                {% if product.technical_description %}
-                <div class="detail-tech">
-                    <h3><i class="fas fa-info-circle"></i> Descripción Técnica</h3>
-                    <p>{{ product.technical_description }}</p>
-                </div>
-                {% endif %}
-
-                {% if product.specs %}
-                <div class="detail-specs">
-                    <h3><i class="fas fa-list-check"></i> Especificaciones</h3>
-                    <table class="specs-table">
-                        {% for spec in product.specs %}
-                        <tr><td class="spec-key">{{ spec.key }}</td><td class="spec-value">{{ spec.value }}</td></tr>
-                        {% endfor %}
-                    </table>
-                </div>
-                {% endif %}
-
-                {% if product.presentations %}
-                <div class="detail-presentations" style="margin-top: 1.5rem; margin-bottom: 1.5rem;">
-                    <h3 style="font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 0.5rem; font-weight: 600;"><i class="fas fa-box-open" style="color: var(--primary); margin-right: 0.3rem;"></i> Presentaciones</h3>
-                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                        {% for pres in product.presentations %}
-                        <span class="presentation-badge" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.3rem 0.8rem; border-radius: 6px; font-size: 0.85rem; font-weight: 500; color: var(--text-light);">{{ pres.name }}</span>
+            <div class="detail-product-grid">
+                <!-- Left: Gallery -->
+                <div class="detail-gallery">
+                    <div class="gallery-main-new" id="mainImgWrap">
+                        <img id="mainImage" src="{{ url_for('static', filename=product.main_image or 'assets/product_paint.png') }}" alt="{{ product.name }}">
+                    </div>
+                    {% if product.images %}
+                    <div class="gallery-thumbs-new">
+                        <div class="thumb-new active" onclick="setMainImg(this, '{{ url_for('static', filename=product.main_image or 'assets/product_paint.png') }}')">
+                            <img src="{{ url_for('static', filename=product.main_image or 'assets/product_paint.png') }}" alt="">
+                        </div>
+                        {% for img in product.images %}
+                        <div class="thumb-new" onclick="setMainImg(this, '{{ url_for('static', filename=img.image_url) }}')">
+                            <img src="{{ url_for('static', filename=img.image_url) }}" alt="">
+                        </div>
                         {% endfor %}
                     </div>
-                </div>
-                {% endif %}
-
-                <div class="detail-docs">
-                    {% if product.pdf_url %}
-                    <a href="{{ url_for('static', filename=product.pdf_url) }}" target="_blank" class="doc-link"><i class="fas fa-file-pdf"></i> Descargar Ficha Técnica</a>
                     {% endif %}
                 </div>
 
-                <div class="detail-actions">
-                    {% if paint_colors %}
-                    <div class="color-selection-panel">
-                        <h3><i class="fas fa-palette"></i> Seleccionar Color</h3>
-                        <p class="color-selection-hint">Por favor selecciona un color para tu cotización.</p>
-                        
-                        <div class="color-grid">
-                            {% for color in paint_colors %}
-                            <button class="color-swatch" data-name="{{ color.name }}" data-hex="{{ color.hex_code }}" title="{{ color.name }}" onclick="selectProductColor(this, '{{ color.name|e }}', '{{ color.hex_code }}')">
-                                <span class="swatch-fill" style="background-color: {{ color.hex_code }};"></span>
-                                <span class="swatch-name">{{ color.name }}</span>
+                <!-- Right: Info -->
+                <div class="detail-info-panel">
+                    <h1 class="detail-product-name">{{ product.name|upper }}</h1>
+                    {% if product.sku %}
+                    <p class="detail-sku-text">SKU: {{ product.sku }}</p>
+                    {% endif %}
+                    {% if product.description %}
+                    <p class="detail-product-desc">{{ product.description }}</p>
+                    {% endif %}
+
+                    <!-- PRESENTACIÓN -->
+                    {% if product.presentations %}
+                    <div class="detail-section">
+                        <div class="detail-section-label">PRESENTACIÓN</div>
+                        <p class="detail-section-hint">Elige la presentación:</p>
+                        <div class="presentation-buttons" id="presentationBtns">
+                            {% for pres in product.presentations %}
+                            <button class="pres-btn {% if loop.first %}selected{% endif %}"
+                                    onclick="selectPresentation(this, '{{ pres.name|e }}')">
+                                {{ pres.name }}
                             </button>
                             {% endfor %}
                         </div>
-                        
-                        <!-- Hidden input to store selected color -->
-                        <input type="hidden" id="selectedColorName" value="">
-                        
-                        <div id="selectedColorDisplay" class="selected-color-display" style="display:none;">
-                            <strong>Color Seleccionado:</strong> <span id="selectedColorText"></span>
-                        </div>
+                        <input type="hidden" id="selectedPresentation" value="{{ product.presentations[0].name if product.presentations else '' }}">
                     </div>
                     {% endif %}
 
-                    <button class="btn btn-primary btn-lg" onclick="handleAddToCart()">
-                        <i class="fas fa-clipboard-list"></i> Agregar a Cotización
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        {% if product.video_url %}
-        <div class="product-video">
-            <h3><i class="fas fa-play-circle"></i> Video del Producto</h3>
-            <div class="video-wrapper">
-                <iframe src="{{ product.video_url }}" frameborder="0" allowfullscreen></iframe>
-            </div>
-        </div>
-        {% endif %}
-
-        {% if related %}
-        <div class="related-products">
-            <h3><i class="fas fa-layer-group"></i> Productos Relacionados</h3>
-            <div class="products-grid">
-                {% for rp in related %}
-                <div class="product-card">
-                    <div class="product-img-wrap">
-                        <img src="{{ url_for('static', filename=rp.main_image or 'assets/product_paint.png') }}" alt="{{ rp.name }}">
-                        <span class="product-category-tag">{{ rp.category.name if rp.category else '' }}</span>
+                    <!-- COLOR -->
+                    {% if paint_colors %}
+                    <div class="detail-section">
+                        <div class="detail-section-label">COLOR</div>
+                        <p class="detail-section-hint">Elige un color:</p>
+                        <div class="color-swatches-grid">
+                            {% for color in paint_colors %}
+                            <button class="color-swatch-new"
+                                    data-name="{{ color.name }}"
+                                    data-hex="{{ color.hex_code }}"
+                                    title="{{ color.name }}"
+                                    onclick="selectColor(this, '{{ color.name|e }}', '{{ color.hex_code }}')"
+                                    style="background-color: {{ color.hex_code }};"
+                                    {% if color.hex_code|lower == '#ffffff' %}style="background-color: {{ color.hex_code }}; border: 2px solid #ddd;"{% endif %}>
+                            </button>
+                            {% endfor %}
+                        </div>
+                        <p class="colors-note">Los colores mostrados son referenciales. Puede haber variaciones según la pantalla.</p>
+                        <div id="selectedColorDisplay" class="selected-color-info" style="display:none;">
+                            <span class="color-preview-dot" id="colorPreviewDot"></span>
+                            Color seleccionado: <strong id="selectedColorText"></strong>
+                        </div>
+                        <input type="hidden" id="selectedColorName" value="">
                     </div>
-                    <div class="product-info">
-                        <h3>{{ rp.name }}</h3>
-                        <p class="product-desc">{{ rp.description }}</p>
-                        <div class="product-actions">
-                            <a href="{{ url_for('producto_detalle', product_id=rp.id) }}" class="btn-detail">Ver Detalle</a>
-                            <button class="btn-add" onclick="addToQuote({{ rp.id }}, '{{ rp.name|e }}', '{{ rp.main_image or 'assets/product_paint.png' }}')"><i class="fas fa-plus"></i> Cotizar</button>
+                    {% endif %}
+
+                    <!-- SPECS TABLE -->
+                    {% if product.specs %}
+                    {% set non_color_specs = product.specs | rejectattr('key', 'equalto', 'Color') | list %}
+                    {% if non_color_specs %}
+                    <div class="detail-section">
+                        <div class="detail-section-label">ESPECIFICACIONES</div>
+                        <table class="specs-table-new">
+                            {% for spec in non_color_specs %}
+                            <tr>
+                                <td class="spec-key-new">{{ spec.key }}</td>
+                                <td class="spec-val-new">{{ spec.value }}</td>
+                            </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                    {% endif %}
+                    {% endif %}
+
+                    <!-- CANTIDAD + ADD TO QUOTE -->
+                    <div class="detail-section">
+                        <div class="detail-section-label">CANTIDAD</div>
+                        <div class="detail-add-row">
+                            <div class="quantity-control">
+                                <button onclick="changeQty(-1)" class="qty-btn">−</button>
+                                <span id="qtyDisplay">1</span>
+                                <button onclick="changeQty(1)" class="qty-btn">+</button>
+                            </div>
+                            <button class="btn-add-to-quote" onclick="handleAddToCart()">
+                                <i class="fas fa-shopping-cart"></i> AGREGAR AL COTIZADOR
+                            </button>
                         </div>
                     </div>
+
+                    <!-- DOWNLOAD BUTTONS -->
+                    <div class="detail-download-row">
+                        {% if product.pdf_url %}
+                        <a href="{{ url_for('static', filename=product.pdf_url) }}" target="_blank" class="download-btn">
+                            <i class="fas fa-file-pdf"></i> DESCARGAR FICHA TÉCNICA
+                        </a>
+                        {% endif %}
+                        <a href="https://wa.me/{{ site.get('whatsapp', '51977585654') }}?text=Hola, necesito información sobre: {{ product.name|urlencode }}" target="_blank" class="download-btn">
+                            <i class="fab fa-whatsapp"></i> CONSULTAR POR WHATSAPP
+                        </a>
+                    </div>
                 </div>
-                {% endfor %}
             </div>
+
+            <!-- Technical Description -->
+            {% if product.technical_description %}
+            <div class="detail-tech-section">
+                <h3><i class="fas fa-info-circle"></i> Descripción Técnica</h3>
+                <p>{{ product.technical_description }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Video -->
+            {% if product.video_url %}
+            <div class="detail-tech-section">
+                <h3><i class="fas fa-play-circle"></i> Video del Producto</h3>
+                <div class="video-wrapper">
+                    <iframe src="{{ product.video_url }}" frameborder="0" allowfullscreen></iframe>
+                </div>
+            </div>
+            {% endif %}
         </div>
-        {% endif %}
     </div>
 </section>
-{% if paint_colors %}
+
+<!-- BENEFITS BAR -->
+<section class="benefits-bar">
+    <div class="container">
+        <div class="benefits-grid">
+            <div class="benefit-item">
+                <i class="fas fa-certificate"></i>
+                <div>
+                    <strong>PRODUCTOS DE CALIDAD</strong>
+                    <span>Trabajamos con los más altos estándares para garantizar resultados duraderos.</span>
+                </div>
+            </div>
+            <div class="benefit-item">
+                <i class="fas fa-truck"></i>
+                <div>
+                    <strong>ENVÍOS A TODO EL PERÚ</strong>
+                    <span>Llegamos a todas las regiones del país.</span>
+                </div>
+            </div>
+            <div class="benefit-item">
+                <i class="fas fa-headset"></i>
+                <div>
+                    <strong>ATENCIÓN PERSONALIZADA</strong>
+                    <span>Asesoría experta para tu proyecto.</span>
+                </div>
+            </div>
+            <div class="benefit-item">
+                <i class="fas fa-shield-alt"></i>
+                <div>
+                    <strong>PRODUCTOS GARANTIZADOS</strong>
+                    <span>Calidad que construye confianza.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- RELATED PRODUCTS -->
+{% if related %}
+<section class="related-section">
+    <div class="container">
+        <h3 class="related-title"><i class="fas fa-layer-group"></i> Productos Relacionados</h3>
+        <div class="products-grid-new">
+            {% for rp in related %}
+            <div class="product-card-new">
+                <div class="product-card-img-wrap">
+                    <a href="{{ url_for('producto_detalle', product_id=rp.id) }}">
+                        <img src="{{ url_for('static', filename=rp.main_image or 'assets/product_paint.png') }}" alt="{{ rp.name }}">
+                    </a>
+                    {% if rp.category %}<span class="product-line-tag">{{ rp.category.name }}</span>{% endif %}
+                </div>
+                <div class="product-card-body">
+                    <h3 class="product-card-name"><a href="{{ url_for('producto_detalle', product_id=rp.id) }}">{{ rp.name }}</a></h3>
+                    <p class="product-card-desc">{{ rp.description[:80] if rp.description else '' }}{% if rp.description and rp.description|length > 80 %}...{% endif %}</p>
+                    <div class="product-card-actions">
+                        <a href="{{ url_for('producto_detalle', product_id=rp.id) }}" class="btn-ver-detalle"><i class="fas fa-eye"></i> VER DETALLES</a>
+                        <button class="btn-cotizar-card" onclick="addToQuote({{ rp.id }}, '{{ rp.name|e }}', '{{ rp.main_image or 'assets/product_paint.png' }}')">
+                            <i class="fas fa-shopping-cart"></i> COTIZAR
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
 <script>
-function selectProductColor(btn, name, hex) {
-    // Update active state on buttons
-    document.querySelectorAll('.color-swatch').forEach(el => el.classList.remove('active'));
-    btn.classList.add('active');
-    
-    // Store selected color
+let currentQty = 1;
+
+function changeQty(delta) {
+    currentQty = Math.max(1, currentQty + delta);
+    document.getElementById('qtyDisplay').textContent = currentQty;
+}
+
+function setMainImg(thumb, src) {
+    document.getElementById('mainImage').src = src;
+    document.querySelectorAll('.thumb-new').forEach(t => t.classList.remove('active'));
+    thumb.classList.add('active');
+}
+
+function selectPresentation(btn, name) {
+    document.querySelectorAll('.pres-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    document.getElementById('selectedPresentation').value = name;
+}
+
+function selectColor(btn, name, hex) {
+    document.querySelectorAll('.color-swatch-new').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
     document.getElementById('selectedColorName').value = name;
-    
-    // Show selected color text
-    document.getElementById('selectedColorDisplay').style.display = 'block';
-    document.getElementById('selectedColorText').innerText = name;
-    
-    // Update visual overlay
-    const overlay = document.getElementById('colorOverlay');
-    overlay.style.display = 'block';
-    overlay.style.backgroundColor = hex;
+    const display = document.getElementById('selectedColorDisplay');
+    display.style.display = 'flex';
+    document.getElementById('selectedColorText').textContent = name;
+    document.getElementById('colorPreviewDot').style.backgroundColor = hex;
 }
 
 function handleAddToCart() {
     const isPaint = {{ 'true' if paint_colors else 'false' }};
     let colorName = null;
-    
     if (isPaint) {
         colorName = document.getElementById('selectedColorName').value;
         if (!colorName) {
-            alert("Por favor selecciona un color para la pintura.");
+            alert('Por favor selecciona un color para la cotización.');
             return;
         }
     }
-    
-    addToQuote({{ product.id }}, '{{ product.name|e }}', '{{ product.main_image or 'assets/product_paint.png' }}', colorName);
+    addToQuote({{ product.id }}, '{{ product.name|e }}', '{{ product.main_image or 'assets/product_paint.png' }}', colorName, currentQty);
 }
 </script>
-{% else %}
-<script>
-function handleAddToCart() {
-    addToQuote({{ product.id }}, '{{ product.name|e }}', '{{ product.main_image or 'assets/product_paint.png' }}', null);
-}
-</script>
-{% endif %}
-
 {% endblock %}

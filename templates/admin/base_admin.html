@@ -31,6 +31,7 @@
             <a href="{{ url_for('admin_banners') }}" class="sidebar-link {% if request.endpoint == 'admin_banners' %}active{% endif %}"><i class="fas fa-image"></i> Banners</a>
             <a href="{{ url_for('admin_gallery') }}" class="sidebar-link {% if request.endpoint == 'admin_gallery' %}active{% endif %}"><i class="fas fa-images"></i> Galería</a>
             <a href="{{ url_for('admin_ambientes') }}" class="sidebar-link {% if request.endpoint in ['admin_ambientes','admin_ambient_new','admin_ambient_edit'] %}active{% endif %}"><i class="fas fa-paint-roller"></i> Ambientes</a>
+            <a href="/admin/blog" class="sidebar-link {% if request.endpoint in ['admin_blog', 'admin_blog_new', 'admin_blog_edit', 'admin_blog_categories'] %}active{% endif %}"><i class="fas fa-blog"></i> Blog</a>
             <span class="sidebar-section-title">Sistema</span>
             <a href="{{ url_for('admin_settings') }}" class="sidebar-link {% if request.endpoint == 'admin_settings' %}active{% endif %}"><i class="fas fa-cog"></i> Configuración</a>
             <a href="{{ url_for('index') }}" class="sidebar-link" target="_blank"><i class="fas fa-external-link-alt"></i> Ver Sitio</a>

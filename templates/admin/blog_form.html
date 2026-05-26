@@ -1,0 +1,80 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}{{ 'Editar' if post else 'Nuevo' }} Artículo{% endblock %}
+{% block page_title %}{{ 'Editar Artículo' if post else 'Nuevo Artículo' }}{% endblock %}
+
+{% block admin_content %}
+<form method="POST" enctype="multipart/form-data" class="admin-form">
+    <div class="form-grid-2">
+        <div class="form-section" style="grid-column: 1 / -1;">
+            <div class="form-group">
+                <label>Título del Artículo *</label>
+                <input type="text" name="title" value="{{ post.title if post else '' }}" class="form-input" required placeholder="Ej: Cómo preparar tus paredes antes de pintar">
+            </div>
+            <div class="form-group">
+                <label>Slug (URL) <small style="color: var(--text-muted);">Se genera automáticamente si lo dejas vacío</small></label>
+                <input type="text" name="slug" value="{{ post.slug if post else '' }}" class="form-input" placeholder="como-preparar-paredes">
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="form-group">
+                <label>Categoría</label>
+                <select name="category_id" class="form-input">
+                    <option value="">Sin categoría</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if post and post.category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Tiempo de lectura (minutos)</label>
+                <input type="number" name="read_time" value="{{ post.read_time if post else 5 }}" class="form-input" min="1" max="60">
+            </div>
+            <div class="form-group">
+                <label>Imagen de portada</label>
+                <input type="file" name="cover_image" class="form-input" accept="image/*">
+                {% if post and post.cover_image %}
+                <div style="margin-top: 0.5rem;">
+                    <img src="{{ url_for('static', filename=post.cover_image) }}" style="max-height: 100px; border-radius: 8px;">
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">Imagen actual. Sube una nueva para reemplazarla.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="form-group">
+                <label>Extracto / Resumen</label>
+                <textarea name="excerpt" rows="4" class="form-input" placeholder="Breve descripción del artículo que aparece en el listado...">{{ post.excerpt if post else '' }}</textarea>
+            </div>
+            <div class="form-group" style="display: flex; gap: 2rem; align-items: center;">
+                <label class="checkbox-label">
+                    <input type="checkbox" name="is_featured" {% if post and post.is_featured %}checked{% endif %} style="width: auto; margin-right: 0.5rem;">
+                    <strong>Artículo Destacado</strong> (aparece en la parte superior del blog)
+                </label>
+            </div>
+            <div class="form-group" style="display: flex; gap: 2rem; align-items: center;">
+                <label class="checkbox-label">
+                    <input type="checkbox" name="is_published" {% if not post or post.is_published %}checked{% endif %} style="width: auto; margin-right: 0.5rem;">
+                    <strong>Publicado</strong> (visible en el sitio web)
+                </label>
+            </div>
+        </div>
+
+        <div class="form-section" style="grid-column: 1 / -1;">
+            <div class="form-group">
+                <label>Contenido del Artículo</label>
+                <textarea name="content" id="blogContent" rows="20" class="form-input" placeholder="Escribe el contenido completo del artículo aquí. Puedes usar HTML básico para dar formato.">{{ post.content if post else '' }}</textarea>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">Puedes usar HTML básico: &lt;p&gt;, &lt;h2&gt;, &lt;h3&gt;, &lt;strong&gt;, &lt;ul&gt;, &lt;li&gt;, &lt;img&gt;, etc.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-actions" style="display: flex; gap: 1rem; margin-top: 2rem;">
+        <button type="submit" class="btn btn-primary btn-lg">
+            <i class="fas fa-save"></i> {{ 'Actualizar Artículo' if post else 'Publicar Artículo' }}
+        </button>
+        <a href="{{ url_for('admin_blog') }}" class="btn btn-outline">Cancelar</a>
+    </div>
+</form>
+{% endblock %}

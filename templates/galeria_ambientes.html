@@ -3,69 +3,132 @@
 {% block nav_class %}scrolled{% endblock %}
 
 {% block content %}
+<!-- HERO -->
 <section class="page-hero">
-    <div class="page-hero-bg"><img src="{{ url_for('static', filename='assets/hero_bg.png') }}" alt="Galería" class="hero-bg-img"><div class="hero-overlay"></div></div>
+    <div class="page-hero-bg">
+        <img src="{{ url_for('static', filename='assets/hero_bg.png') }}" alt="Galería de Ambientes" class="hero-bg-img">
+        <div class="hero-overlay"></div>
+    </div>
     <div class="page-hero-content">
-        <div class="hero-badge animate-fade-up"><i class="fas fa-paint-roller"></i> Inspiración Real</div>
+        <div class="hero-badge animate-fade-up"><i class="fas fa-paint-roller"></i> INSPIRACIÓN REAL</div>
         <h1 class="page-hero-title animate-fade-up delay-1">Galería de <span class="gradient-text">Ambientes</span></h1>
-        <p class="page-hero-subtitle animate-fade-up delay-2">Visualiza la armonía de colores en espacios reales y elige el estilo que mejor se adapte a ti.</p>
+        <p class="page-hero-subtitle animate-fade-up delay-2">Visualiza la armonía de colores en espacios reales<br>y elige el estilo que mejor se adapte a ti.</p>
     </div>
 </section>
 
-<section class="section ambient-gallery-section">
+<!-- TABS BAR -->
+<div class="ambientes-tabs-bar">
+    <div class="ambientes-tabs-inner">
+        <button class="ambient-tab active" data-filter="all" onclick="filterAmbients('all', this)">
+            <i class="fas fa-th"></i> TODOS
+        </button>
+        {% set room_icons = {
+            'sala': 'fas fa-couch',
+            'dormitorio': 'fas fa-bed',
+            'cocina': 'fas fa-utensils',
+            'oficina': 'fas fa-briefcase',
+            'fachada': 'fas fa-building',
+            'exterior': 'fas fa-tree',
+            'interior': 'fas fa-home',
+            'baño': 'fas fa-bath',
+            'comedor': 'fas fa-chair'
+        } %}
+        {% for cat in rooms %}
+        {% set cat_key = cat.name.lower().split()[0] %}
+        <button class="ambient-tab" data-filter="{{ cat.slug }}" onclick="filterAmbients('{{ cat.slug }}', this)">
+            <i class="{{ room_icons.get(cat_key, 'fas fa-image') }}"></i>
+            {{ cat.name|upper }}
+        </button>
+        {% endfor %}
+        {% for cat in colors %}
+        <button class="ambient-tab" data-filter="color-{{ cat.slug }}" onclick="filterAmbients('color-{{ cat.slug }}', this)">
+            <i class="fas fa-palette"></i>
+            {{ cat.name|upper }}
+        </button>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- GALLERY GRID -->
+<section class="ambientes-gallery-section">
     <div class="container">
-        
-        <!-- BY COLORS -->
-        <div class="section-header animate-fade-up">
-            <span class="section-badge">Psicología del Color</span>
-            <h2>Explora por <span class="gradient-text">Colores</span></h2>
-            <p>Selecciona un color para ver cómo transforma diferentes espacios.</p>
+        <div class="ambientes-header">
+            <h2 class="ambientes-grid-title">Explora ambientes y colores</h2>
+            <div class="ambientes-title-line"></div>
         </div>
 
-        <div class="ambient-categories-grid">
-            {% for cat in colors %}
-            <div class="ambient-card animate-fade-up" onclick="openAmbientModal({{ cat.id }})">
-                <div class="ambient-card-img">
-                    <img src="{{ url_for('static', filename=cat.cover_image or 'assets/hero_bg.png') }}" alt="{{ cat.name }}">
-                    <div class="ambient-card-overlay">
-                        <div class="ambient-card-info">
-                            <h3>{{ cat.name }}</h3>
-                            <span>{{ cat.images|length }} Ambientes</span>
-                        </div>
-                        <i class="fas fa-plus"></i>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-
-        <!-- BY ROOMS -->
-        <div class="section-header animate-fade-up" style="margin-top: 6rem;">
-            <span class="section-badge">Espacios del Hogar</span>
-            <h2>Explora por <span class="gradient-text">Habitación</span></h2>
-            <p>Encuentra inspiración para cada rincón de tu casa o negocio.</p>
-        </div>
-
-        <div class="ambient-categories-grid">
+        <div class="ambientes-grid" id="ambientesGrid">
             {% for cat in rooms %}
-            <div class="ambient-card animate-fade-up" onclick="openAmbientModal({{ cat.id }})">
-                <div class="ambient-card-img">
-                    <img src="{{ url_for('static', filename=cat.cover_image or 'assets/hero_bg.png') }}" alt="{{ cat.name }}">
-                    <div class="ambient-card-overlay">
-                        <div class="ambient-card-info">
-                            <h3>{{ cat.name }}</h3>
-                            <span>{{ cat.images|length }} Ambientes</span>
-                        </div>
-                        <i class="fas fa-plus"></i>
+            <div class="ambiente-card" data-category="{{ cat.slug }}" onclick="openAmbientModal({{ cat.id }})">
+                <div class="ambiente-card-img">
+                    <img src="{{ url_for('static', filename=cat.cover_image or 'assets/hero_bg.png') }}" alt="{{ cat.name }}" loading="lazy">
+                    <div class="ambiente-card-overlay">
+                        <i class="fas fa-search-plus"></i>
+                    </div>
+                </div>
+                <div class="ambiente-card-info">
+                    <h4 class="ambiente-card-name">{{ cat.name|upper }}</h4>
+                    {% if cat.description %}
+                    <p class="ambiente-card-desc">{{ cat.description }}</p>
+                    {% endif %}
+                    <!-- Color swatches placeholder -->
+                    <div class="ambiente-color-swatches">
+                        {% for i in range([cat.images|length, 5]|min) %}
+                        <span class="ambiente-swatch" style="background: hsl({{ loop.index0 * 40 + 20 }}, 30%, {{ 60 + loop.index0 * 5 }}%);"></span>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
             {% endfor %}
+            {% for cat in colors %}
+            <div class="ambiente-card" data-category="color-{{ cat.slug }}" onclick="openAmbientModal({{ cat.id }})">
+                <div class="ambiente-card-img">
+                    <img src="{{ url_for('static', filename=cat.cover_image or 'assets/hero_bg.png') }}" alt="{{ cat.name }}" loading="lazy">
+                    <div class="ambiente-card-overlay">
+                        <i class="fas fa-search-plus"></i>
+                    </div>
+                </div>
+                <div class="ambiente-card-info">
+                    <h4 class="ambiente-card-name">{{ cat.name|upper }}</h4>
+                    {% if cat.description %}
+                    <p class="ambiente-card-desc">{{ cat.description }}</p>
+                    {% endif %}
+                    <div class="ambiente-color-swatches">
+                        {% for i in range([cat.images|length, 5]|min) %}
+                        <span class="ambiente-swatch" style="background: hsl({{ loop.index0 * 30 + 180 }}, 40%, {{ 50 + loop.index0 * 5 }}%);"></span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% if not rooms and not colors %}
+        <div style="text-align: center; padding: 4rem; color: var(--text-muted);">
+            <i class="fas fa-images" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+            <p>No hay ambientes cargados aún. Agrégalos desde el panel de administración.</p>
+        </div>
+        {% endif %}
+
+        <p class="ambientes-note">
+            <i class="fas fa-info-circle"></i>
+            Los colores mostrados son referenciales. Puede haber variaciones según la pantalla y la iluminación del ambiente.
+        </p>
+    </div>
+</section>
+
+<!-- BENEFITS BAR -->
+<section class="benefits-bar">
+    <div class="container">
+        <div class="benefits-grid">
+            <div class="benefit-item"><i class="fas fa-shield-alt"></i><div><strong>CALIDAD GARANTIZADA</strong><span>Productos de alta calidad</span></div></div>
+            <div class="benefit-item"><i class="fas fa-headset"></i><div><strong>ASESORÍA PERSONALIZADA</strong><span>Te ayudamos a elegir el color ideal</span></div></div>
+            <div class="benefit-item"><i class="fas fa-truck"></i><div><strong>ENVÍOS A TODO EL PERÚ</strong><span>Llegamos a todas las regiones</span></div></div>
+            <div class="benefit-item"><i class="fas fa-user-tie"></i><div><strong>ATENCIÓN EXPERTA</strong><span>Soporte y asesoría profesional</span></div></div>
         </div>
     </div>
 </section>
 
-<!-- Ambient Modal / Slider -->
+<!-- AMBIENT MODAL / SLIDER -->
 <div class="ambient-modal" id="ambientModal">
     <div class="ambient-modal-overlay" onclick="closeAmbientModal()"></div>
     <div class="ambient-modal-content glass-card">
@@ -75,195 +138,53 @@
             <p id="modalCount">X Ambientes</p>
         </div>
         <div class="ambient-slider-container">
-            <div class="ambient-slider" id="ambientSlider">
-                <!-- Images will be injected here -->
-            </div>
+            <div class="ambient-slider" id="ambientSlider"></div>
             <button class="slider-nav prev" onclick="moveSlider(-1)"><i class="fas fa-chevron-left"></i></button>
             <button class="slider-nav next" onclick="moveSlider(1)"><i class="fas fa-chevron-right"></i></button>
         </div>
     </div>
 </div>
-
-<style>
-.ambient-gallery-section { padding-bottom: 8rem; }
-
-.ambient-categories-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 2rem;
-    margin-top: 3rem;
-}
-
-.ambient-card {
-    cursor: pointer;
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    position: relative;
-    background: var(--bg-surface);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    transition: var(--transition);
-}
-
-.ambient-card-img {
-    aspect-ratio: 1/1;
-    overflow: hidden;
-    position: relative;
-}
-
-.ambient-card-img img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.6s ease;
-}
-
-.ambient-card-overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%);
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    padding: 2rem;
-    opacity: 0.9;
-    transition: var(--transition);
-}
-
-.ambient-card-info h3 { font-size: 1.25rem; margin-bottom: 0.25rem; color: #fff; }
-.ambient-card-info span { font-size: 0.85rem; color: var(--primary); font-weight: 600; text-transform: uppercase; }
-
-.ambient-card i {
-    width: 40px;
-    height: 40px;
-    background: var(--primary);
-    color: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transform: translateY(10px);
-    opacity: 0;
-    transition: var(--transition);
-}
-
-.ambient-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); }
-.ambient-card:hover img { transform: scale(1.1); }
-.ambient-card:hover .ambient-card-overlay { opacity: 1; }
-.ambient-card:hover i { transform: translateY(0); opacity: 1; }
-
-/* Modal & Slider Styles */
-.ambient-modal {
-    position: fixed;
-    inset: 0;
-    z-index: 2000;
-    display: block; /* Changed from flex to block to allow vertical scrolling */
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-    overflow-y: auto; /* Allow scrolling the modal if content is too tall */
-    padding: 4rem 1rem;
-}
-
-.ambient-modal.active { opacity: 1; visibility: visible; }
-.ambient-modal-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); }
-
-.ambient-modal-content {
-    position: relative;
-    width: 95%;
-    max-width: 1000px;
-    margin: 0 auto; /* Center horizontally in block mode */
-    padding: 3rem;
-    z-index: 2001;
-    transform: scale(0.9);
-    transition: all 0.3s ease;
-}
-
-.ambient-modal.active .ambient-modal-content { transform: scale(1); }
-
-.modal-close {
-    position: absolute;
-    top: 1.5rem;
-    right: 1.5rem;
-    background: rgba(255,255,255,0.1);
-    border: none;
-    color: white;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: var(--transition);
-}
-
-.modal-close:hover { background: var(--danger); }
-
-.modal-header { margin-bottom: 2rem; text-align: center; }
-.modal-header h2 { font-size: 2rem; margin-bottom: 0.5rem; }
-.modal-header p { color: var(--primary); font-weight: 600; }
-
-.ambient-slider-container { position: relative; overflow: hidden; border-radius: var(--radius-lg); }
-.ambient-slider { display: flex; transition: transform 0.5s ease; }
-.ambient-slide { flex: 0 0 100%; aspect-ratio: 16/9; overflow: hidden; }
-.ambient-slide img { width: 100%; height: 100%; object-fit: cover; }
-
-.slider-nav {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: rgba(0,0,0,0.5);
-    color: white;
-    border: none;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: var(--transition);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.slider-nav:hover { background: var(--primary); }
-.slider-nav.prev { left: 1rem; }
-.slider-nav.next { right: 1rem; }
-
-@media (max-width: 768px) {
-    .ambient-modal-content { padding: 2rem 1rem; width: 95%; }
-    .ambient-slide { aspect-ratio: 4/3; }
-}
-</style>
 {% endblock %}
 
 {% block extra_js %}
 <script>
 let currentAmbientIdx = 0;
-let ambientData = {};
+
+function filterAmbients(filter, btn) {
+    document.querySelectorAll('.ambient-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    const cards = document.querySelectorAll('.ambiente-card');
+    cards.forEach(card => {
+        if (filter === 'all' || card.dataset.category === filter) {
+            card.style.display = 'block';
+            card.style.animation = 'fadeIn 0.3s ease';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
 
 async function openAmbientModal(catId) {
     const modal = document.getElementById('ambientModal');
     const slider = document.getElementById('ambientSlider');
     const title = document.getElementById('modalTitle');
     const count = document.getElementById('modalCount');
-    
     try {
         const res = await fetch(`/api/ambientes/${catId}`);
         const data = await res.json();
-        
         title.textContent = data.name;
-        count.textContent = `${data.images.length} Ambientes`;
-        
+        count.textContent = `${data.images.length} imágenes`;
         slider.innerHTML = data.images.map(img => `
             <div class="ambient-slide">
                 <img src="/static/${img.image_url}" alt="">
             </div>
         `).join('');
-        
         currentAmbientIdx = 0;
-        slider.style.transform = `translateX(0)`;
-        
+        slider.style.transform = 'translateX(0)';
         modal.classList.add('active');
         document.body.style.overflow = 'hidden';
-    } catch (e) {
-        console.error("Error fetching ambient data", e);
+    } catch(e) {
+        console.error(e);
     }
 }
 
@@ -276,7 +197,6 @@ function moveSlider(dir) {
     const slider = document.getElementById('ambientSlider');
     const total = slider.children.length;
     if (total <= 1) return;
-    
     currentAmbientIdx = (currentAmbientIdx + dir + total) % total;
     slider.style.transform = `translateX(-${currentAmbientIdx * 100}%)`;
 }

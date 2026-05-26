@@ -205,6 +205,31 @@ class AmbientImage(db.Model):
     order = db.Column(db.Integer, default=0)
 
 
+class BlogCategory(db.Model):
+    __tablename__ = 'blog_categories'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    slug = db.Column(db.String(100), unique=True, nullable=False)
+    icon = db.Column(db.String(50), default='fas fa-tag')
+    posts = db.relationship('BlogPost', backref='blog_category', lazy=True)
+
+
+class BlogPost(db.Model):
+    __tablename__ = 'blog_posts'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(300), nullable=False)
+    slug = db.Column(db.String(300), unique=True, nullable=False)
+    excerpt = db.Column(db.Text)
+    content = db.Column(db.Text)
+    cover_image = db.Column(db.String(300))
+    category_id = db.Column(db.Integer, db.ForeignKey('blog_categories.id'))
+    read_time = db.Column(db.Integer, default=5)  # minutes
+    is_featured = db.Column(db.Boolean, default=False)
+    is_published = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
 class SiteConfig(db.Model):
     __tablename__ = 'site_config'
     id = db.Column(db.Integer, primary_key=True)

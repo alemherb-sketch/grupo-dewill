@@ -8,7 +8,7 @@ from flask_mail import Mail, Message
 from werkzeug.utils import secure_filename
 from config import Config
 from models import db, AdminUser, Category, SubCategory, Brand, Product, ProductImage, ProductSpec, Presentation
-from models import QuoteRequest, QuoteItem, Banner, GalleryCategory, GalleryImage, AmbientCategory, AmbientImage, SiteConfig, PaintColor
+from models import QuoteRequest, QuoteItem, Banner, GalleryCategory, GalleryImage, AmbientCategory, AmbientImage, SiteConfig, PaintColor, BlogCategory, BlogPost
 import time
 import threading
 import resend
@@ -37,6 +37,11 @@ with app.app_context():
             db.session.commit()
         except Exception:
             db.session.rollback()
+        # Create blog tables if they don't exist
+        try:
+            db.create_all()
+        except Exception:
+            pass
     except Exception as e:
         print(f"Migration error: {e}")
 
@@ -176,7 +181,8 @@ def producto_detalle(product_id):
         all_colors = PaintColor.query.filter_by(is_active=True).all()
         paint_colors = [{'name': c.name, 'hex_code': c.hex_code} for c in all_colors]
         
-    return render_template('producto_detalle.html', product=product, related=related, paint_colors=paint_colors)
+    categories = Category.query.order_by(Category.order).all()
+    return render_template('producto_detalle.html', product=product, related=related, paint_colors=paint_colors, categories=categories)
 
 @app.route('/api/cotizacion', methods=['POST'])
 def api_cotizacion():
@@ -230,6 +236,33 @@ def api_cotizacion():
 @app.route('/nosotros')
 def nosotros():
     return render_template('nosotros.html')
+
+@app.route('/blog')
+def blog():
+    cat_slug = request.args.get('cat', '')
+    page = request.args.get('page', 1, type=int)
+    blog_categories = BlogCategory.query.order_by(BlogCategory.name).all()
+    query = BlogPost.query.filter_by(is_published=True)
+    if cat_slug:
+        bc = BlogCategory.query.filter_by(slug=cat_slug).first()
+        if bc:
+            query = query.filter_by(category_id=bc.id)
+    featured = BlogPost.query.filter_by(is_featured=True, is_published=True).order_by(BlogPost.created_at.desc()).first()
+    posts = query.order_by(BlogPost.created_at.desc()).paginate(page=page, per_page=9, error_out=False)
+    popular = BlogPost.query.filter_by(is_published=True).order_by(BlogPost.created_at.desc()).limit(5).all()
+    return render_template('blog.html', posts=posts, blog_categories=blog_categories,
+                           featured=featured, popular=popular, current_cat=cat_slug)
+
+@app.route('/blog/<slug>')
+def blog_post(slug):
+    post = BlogPost.query.filter_by(slug=slug, is_published=True).first_or_404()
+    blog_categories = BlogCategory.query.order_by(BlogCategory.name).all()
+    related = BlogPost.query.filter(
+        BlogPost.category_id == post.category_id,
+        BlogPost.id != post.id,
+        BlogPost.is_published == True
+    ).limit(3).all()
+    return render_template('blog_post.html', post=post, blog_categories=blog_categories, related=related)
 
 @app.route('/contacto')
 def contacto():
@@ -751,6 +784,104 @@ def admin_settings():
         return redirect(url_for('admin_settings'))
     return render_template('admin/settings.html')
 
+
+@app.route('/admin/blog')
+@login_required
+def admin_blog():
+    page = request.args.get('page', 1, type=int)
+    posts = BlogPost.query.order_by(BlogPost.created_at.desc()).paginate(page=page, per_page=20, error_out=False)
+    return render_template('admin/blog.html', posts=posts)
+
+@app.route('/admin/blog/nuevo', methods=['GET', 'POST'])
+@login_required
+def admin_blog_new():
+    categories = BlogCategory.query.order_by(BlogCategory.name).all()
+    if request.method == 'POST':
+        title = request.form['title']
+        slug_val = request.form.get('slug') or slugify(title)
+        # Ensure unique slug
+        base_slug = slug_val
+        counter = 1
+        while BlogPost.query.filter_by(slug=slug_val).first():
+            slug_val = f"{base_slug}-{counter}"
+            counter += 1
+        post = BlogPost(
+            title=title,
+            slug=slug_val,
+            excerpt=request.form.get('excerpt', ''),
+            content=request.form.get('content', ''),
+            category_id=request.form.get('category_id', type=int) or None,
+            read_time=request.form.get('read_time', 5, type=int),
+            is_featured='is_featured' in request.form,
+            is_published='is_published' in request.form
+        )
+        if 'cover_image' in request.files and request.files['cover_image'].filename:
+            post.cover_image = save_upload(request.files['cover_image'], 'blog')
+        db.session.add(post)
+        db.session.commit()
+        flash('Artículo creado exitosamente', 'success')
+        return redirect(url_for('admin_blog'))
+    return render_template('admin/blog_form.html', post=None, categories=categories)
+
+@app.route('/admin/blog/<int:pid>/editar', methods=['GET', 'POST'])
+@login_required
+def admin_blog_edit(pid):
+    post = BlogPost.query.get_or_404(pid)
+    categories = BlogCategory.query.order_by(BlogCategory.name).all()
+    if request.method == 'POST':
+        post.title = request.form['title']
+        post.slug = request.form.get('slug') or slugify(post.title)
+        post.excerpt = request.form.get('excerpt', '')
+        post.content = request.form.get('content', '')
+        post.category_id = request.form.get('category_id', type=int) or None
+        post.read_time = request.form.get('read_time', 5, type=int)
+        post.is_featured = 'is_featured' in request.form
+        post.is_published = 'is_published' in request.form
+        if 'cover_image' in request.files and request.files['cover_image'].filename:
+            post.cover_image = save_upload(request.files['cover_image'], 'blog')
+        db.session.commit()
+        flash('Artículo actualizado', 'success')
+        return redirect(url_for('admin_blog'))
+    return render_template('admin/blog_form.html', post=post, categories=categories)
+
+@app.route('/admin/blog/<int:pid>/eliminar', methods=['POST'])
+@login_required
+def admin_blog_delete(pid):
+    db.session.delete(BlogPost.query.get_or_404(pid))
+    db.session.commit()
+    flash('Artículo eliminado', 'success')
+    return redirect(url_for('admin_blog'))
+
+@app.route('/admin/blog-categorias', methods=['GET', 'POST'])
+@login_required
+def admin_blog_categories():
+    if request.method == 'POST':
+        action = request.form.get('action')
+        if action == 'create':
+            name = request.form['name']
+            slug = request.form.get('slug') or slugify(name)
+            db.session.add(BlogCategory(name=name, slug=slug, icon=request.form.get('icon', 'fas fa-tag')))
+            db.session.commit()
+            flash('Categoría de blog creada', 'success')
+        elif action == 'update':
+            bc = BlogCategory.query.get(request.form['id'])
+            if bc:
+                bc.name = request.form['name']
+                bc.slug = request.form.get('slug') or slugify(bc.name)
+                bc.icon = request.form.get('icon', 'fas fa-tag')
+                db.session.commit()
+                flash('Categoría actualizada', 'success')
+        elif action == 'delete':
+            bc = BlogCategory.query.get(request.form['id'])
+            if bc and not bc.posts:
+                db.session.delete(bc)
+                db.session.commit()
+                flash('Categoría eliminada', 'success')
+            else:
+                flash('No se puede eliminar: tiene artículos asociados', 'error')
+        return redirect(url_for('admin_blog_categories'))
+    categories = BlogCategory.query.order_by(BlogCategory.name).all()
+    return render_template('admin/blog_categories.html', categories=categories)
 
 @app.route('/admin/seed-db', methods=['POST'])
 @login_required
