@@ -550,8 +550,22 @@ def admin_product_import():
                         
                     prod_name = str(row['Producto']).strip() if not pd.isna(row['Producto']) else 'Sin Nombre'
                     
-                    # Group products by name to avoid duplicate rows for the same product name
-                    product = Product.query.filter(Product.name.ilike(prod_name)).first()
+                    # 1. Handle Brand FIRST so we can group by brand
+                    brand = None
+                    if not pd.isna(row['Marca']):
+                        marca_name = str(row['Marca']).strip()
+                        if marca_name:
+                            brand = Brand.query.filter(Brand.name.ilike(marca_name)).first()
+                            if not brand:
+                                brand = Brand(name=marca_name, slug=slugify(marca_name))
+                                db.session.add(brand)
+                                db.session.flush()
+                                
+                    # 2. Group products by name AND brand to avoid mixing brands for generic names
+                    if brand:
+                        product = Product.query.filter(Product.name.ilike(prod_name), Product.brand_id == brand.id).first()
+                    else:
+                        product = Product.query.filter(Product.name.ilike(prod_name), Product.brand_id.is_(None)).first()
                     
                     if product and product.id not in cleared_products:
                         # Clear old presentation links to ensure Excel is source of truth
@@ -560,22 +574,10 @@ def admin_product_import():
                         db.session.flush()
                     
                     if not product:
-                        # If product name does not exist, check if SKU already exists to avoid conflict
+                        # If product name+brand does not exist, check if SKU already exists to avoid conflict
                         if Product.query.filter_by(sku=codigo).first():
                             skipped += 1
                             continue
-
-                        # Handle Brand
-                        brand = None
-                        if not pd.isna(row['Marca']):
-                            marca_name = str(row['Marca']).strip()
-                            if marca_name:
-                                brand = Brand.query.filter(Brand.name.ilike(marca_name)).first()
-                                if not brand:
-                                    brand = Brand(name=marca_name, slug=slugify(marca_name))
-                                    db.session.add(brand)
-                                    db.session.flush()
-                                
                         # Handle Category
                         category = None
                         if not pd.isna(row['Categoria']):
