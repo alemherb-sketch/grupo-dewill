@@ -97,7 +97,8 @@ class Product(db.Model):
                              cascade='all, delete-orphan', order_by='ProductImage.order')
     specs = db.relationship('ProductSpec', backref='product', lazy=True,
                             cascade='all, delete-orphan')
-    quote_items = db.relationship('QuoteItem', backref='product', lazy=True)
+    quote_items = db.relationship('QuoteItem', backref='product', lazy=True, cascade='all, delete-orphan')
+    presentation_colors = db.relationship('ProductPresentationColor', backref='product_rel', lazy=True, cascade='all, delete-orphan')
 
     def to_dict(self):
         return {
