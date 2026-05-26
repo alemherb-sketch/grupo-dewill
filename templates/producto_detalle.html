@@ -97,7 +97,7 @@
                         <div class="presentation-buttons" id="presentationBtns">
                             {% for pres in product.presentations %}
                             <button class="pres-btn {% if loop.first %}selected{% endif %}"
-                                    onclick="selectPresentation(this, '{{ pres.name|e }}')">
+                                    onclick="selectPresentation(this, '{{ pres.name|e }}', {{ pres.id }})">
                                 {{ pres.name }}
                             </button>
                             {% endfor %}
@@ -283,11 +283,44 @@ function setMainImg(thumb, src) {
     thumb.classList.add('active');
 }
 
-function selectPresentation(btn, name) {
+async function selectPresentation(btn, name, presId) {
     document.querySelectorAll('.pres-btn').forEach(b => b.classList.remove('selected'));
     btn.classList.add('selected');
     document.getElementById('selectedPresentation').value = name;
+    
+    // Fetch available colors for this presentation
+    const isPaint = {{ 'true' if paint_colors else 'false' }};
+    if (isPaint) {
+        try {
+            const res = await fetch(`/api/producto/{{ product.id }}/colores?pres_id=${presId}`);
+            const colors = await res.json();
+            const grid = document.querySelector('.color-swatches-grid');
+            if (grid && colors.length > 0) {
+                grid.innerHTML = colors.map(c => {
+                    const extraStyle = c.hex_code.toLowerCase() === '#ffffff' ? 'border: 2px solid #ddd;' : '';
+                    return `<button class="color-swatch-new" 
+                            data-name="${c.name}" data-hex="${c.hex_code}" title="${c.name}"
+                            onclick="selectColor(this, '${c.name.replace(/'/g, "\\'")}', '${c.hex_code}')"
+                            style="background-color: ${c.hex_code}; ${extraStyle}">
+                    </button>`;
+                }).join('');
+                // Reset selected color
+                document.getElementById('selectedColorName').value = '';
+                document.getElementById('selectedColorDisplay').style.display = 'none';
+            }
+        } catch(e) {
+            console.error(e);
+        }
+    }
 }
+
+// Initial load colors for first presentation
+document.addEventListener('DOMContentLoaded', () => {
+    const firstPresBtn = document.querySelector('.pres-btn.selected');
+    if (firstPresBtn) {
+        firstPresBtn.click();
+    }
+});
 
 function selectColor(btn, name, hex) {
     document.querySelectorAll('.color-swatch-new').forEach(b => b.classList.remove('selected'));

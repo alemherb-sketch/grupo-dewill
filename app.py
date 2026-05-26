@@ -8,7 +8,7 @@ from flask_mail import Mail, Message
 from werkzeug.utils import secure_filename
 from config import Config
 from models import db, AdminUser, Category, SubCategory, Brand, Product, ProductImage, ProductSpec, Presentation
-from models import QuoteRequest, QuoteItem, Banner, GalleryCategory, GalleryImage, AmbientCategory, AmbientImage, SiteConfig, PaintColor, BlogCategory, BlogPost
+from models import QuoteRequest, QuoteItem, Banner, GalleryCategory, GalleryImage, AmbientCategory, AmbientImage, SiteConfig, PaintColor, BlogCategory, BlogPost, ProductPresentationColor
 import time
 import threading
 import resend
@@ -158,6 +158,44 @@ def api_search():
     results = Product.query.filter(Product.is_active == True,
         db.or_(Product.name.ilike(f'%{search_term}%'), Product.description.ilike(f'%{search_term}%'))).limit(8).all()
     return jsonify([p.to_dict() for p in results])
+
+@app.route('/api/producto/<int:product_id>/colores')
+def api_product_colors(product_id):
+    """Returns colors available for a product, optionally filtered by presentation_id."""
+    pres_id = request.args.get('pres_id', type=int)
+    
+    if pres_id:
+        # Try to get colors specific to this presentation
+        links = ProductPresentationColor.query.filter_by(
+            product_id=product_id,
+            presentation_id=pres_id
+        ).all()
+        if links:
+            return jsonify([{'name': lk.color_name, 'hex_code': lk.hex_code} for lk in links])
+    
+    # Fallback: all colors from specs
+    specs = ProductSpec.query.filter(
+        ProductSpec.product_id == product_id,
+        ProductSpec.key.ilike('color')
+    ).all()
+    seen = set()
+    result = []
+    for s in specs:
+        if s.value.lower() not in seen:
+            pc = PaintColor.query.filter(PaintColor.name.ilike(s.value)).first()
+            result.append({'name': s.value, 'hex_code': pc.hex_code if pc else '#cccccc'})
+            seen.add(s.value.lower())
+    
+    # If still empty and it's a paint product, return all PaintColors
+    if not result:
+        product = Product.query.get(product_id)
+        if product and product.category and 'pintura' in product.category.name.lower():
+            all_colors = PaintColor.query.filter_by(is_active=True).order_by(PaintColor.name).all()
+            result = [{'name': c.name, 'hex_code': c.hex_code} for c in all_colors]
+    
+    return jsonify(result)
+
+
 
 @app.route('/producto/<int:product_id>')
 def producto_detalle(product_id):
@@ -454,15 +492,20 @@ def admin_product_import():
                         pass
                         
                     # Handle Color
+                    color_val = None
                     if 'Color' in df.columns and not pd.isna(row['Color']):
-                        color_val = str(row['Color']).strip()
+                        color_val = str(row['Color']).strip() or None
                         if color_val:
-                            existing_spec = ProductSpec.query.filter(ProductSpec.product_id == product.id, ProductSpec.key == 'Color', ProductSpec.value.ilike(color_val)).first()
+                            existing_spec = ProductSpec.query.filter(
+                                ProductSpec.product_id == product.id,
+                                ProductSpec.key == 'Color',
+                                ProductSpec.value.ilike(color_val)
+                            ).first()
                             if not existing_spec:
-                                spec = ProductSpec(product_id=product.id, key='Color', value=color_val)
-                                db.session.add(spec)
+                                db.session.add(ProductSpec(product_id=product.id, key='Color', value=color_val))
                             
                     # Handle Presentation
+                    pres = None
                     if 'Presentacion' in df.columns and not pd.isna(row['Presentacion']):
                         pres_name = str(row['Presentacion']).strip()
                         if pres_name:
@@ -471,8 +514,26 @@ def admin_product_import():
                                 pres = Presentation(name=pres_name, slug=slugify(pres_name))
                                 db.session.add(pres)
                                 db.session.flush()
-                            product.presentations.append(pres)
-                            
+                            if pres not in product.presentations:
+                                product.presentations.append(pres)
+
+                    # Link color to presentation (so frontend can filter colors by selected presentation)
+                    if pres and color_val:
+                        pc = PaintColor.query.filter(PaintColor.name.ilike(color_val)).first()
+                        hex_code = pc.hex_code if pc else '#cccccc'
+                        exists_link = ProductPresentationColor.query.filter_by(
+                            product_id=product.id,
+                            presentation_id=pres.id,
+                            color_name=color_val
+                        ).first()
+                        if not exists_link:
+                            db.session.add(ProductPresentationColor(
+                                product_id=product.id,
+                                presentation_id=pres.id,
+                                color_name=color_val,
+                                hex_code=hex_code
+                            ))
+
                     imported += 1
                     
                 db.session.commit()

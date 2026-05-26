@@ -56,6 +56,17 @@ product_presentations = db.Table('product_presentations',
 )
 
 
+class ProductPresentationColor(db.Model):
+    """Links specific colors to a presentation of a product (from Excel import)."""
+    __tablename__ = 'product_presentation_colors'
+    id = db.Column(db.Integer, primary_key=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('products.id', ondelete='CASCADE'), nullable=False)
+    presentation_id = db.Column(db.Integer, db.ForeignKey('presentations.id', ondelete='CASCADE'), nullable=False)
+    color_name = db.Column(db.String(200), nullable=False)
+    hex_code = db.Column(db.String(10), default='#cccccc')
+    __table_args__ = (db.UniqueConstraint('product_id', 'presentation_id', 'color_name'),)
+
+
 class Presentation(db.Model):
     __tablename__ = 'presentations'
     id = db.Column(db.Integer, primary_key=True)
