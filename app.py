@@ -763,6 +763,63 @@ def admin_seed_db():
     return redirect(url_for('admin_settings'))
 
 
+@app.route('/admin/limpiar-duplicados', methods=['POST'])
+@login_required
+def admin_clean_duplicates():
+    """Merge duplicate products (same name) into one, consolidating colors."""
+    try:
+        products = Product.query.order_by(Product.id).all()
+
+        # Group products by normalized name
+        name_map = {}
+        for p in products:
+            key = p.name.strip().lower()
+            if key not in name_map:
+                name_map[key] = []
+            name_map[key].append(p)
+
+        deleted_count = 0
+        merged_colors = 0
+
+        for key, prod_list in name_map.items():
+            if len(prod_list) <= 1:
+                continue
+
+            base_prod = prod_list[0]
+            duplicates = prod_list[1:]
+
+            base_colors = [s.value.lower() for s in base_prod.specs if s.key.lower() == 'color']
+            base_pres_ids = [pr.id for pr in base_prod.presentations]
+
+            for dup in duplicates:
+                # Merge colors
+                for spec in list(dup.specs):
+                    if spec.key.lower() == 'color' and spec.value.lower() not in base_colors:
+                        db.session.add(ProductSpec(product_id=base_prod.id, key='Color', value=spec.value))
+                        base_colors.append(spec.value.lower())
+                        merged_colors += 1
+
+                # Merge presentations
+                for pres in list(dup.presentations):
+                    if pres.id not in base_pres_ids:
+                        base_prod.presentations.append(pres)
+                        base_pres_ids.append(pres.id)
+
+                # Merge main image if base doesn't have one
+                if not base_prod.main_image and dup.main_image:
+                    base_prod.main_image = dup.main_image
+
+                db.session.delete(dup)
+                deleted_count += 1
+
+        db.session.commit()
+        flash(f'Limpieza completada: {deleted_count} productos duplicados eliminados, {merged_colors} colores combinados.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error durante la limpieza: {str(e)}', 'error')
+    return redirect(url_for('admin_settings'))
+
+
 @app.route('/admin/ambientes')
 @login_required
 def admin_ambientes():
