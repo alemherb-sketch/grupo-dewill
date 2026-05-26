@@ -72,26 +72,24 @@
                     </div>
                 </div>
 
-                <!-- Buscar -->
-                <div class="sidebar-box" style="margin-top: 1.5rem;">
-                    <div class="sidebar-box-title">
-                        <i class="fas fa-search"></i> BUSCAR PRODUCTO
-                    </div>
-                    <form action="{{ url_for('productos') }}" method="GET" class="sidebar-search-form">
-                        <input type="text" name="q" placeholder="Buscar producto..." value="{{ search_query }}" class="sidebar-search-input">
-                        <input type="hidden" name="cat" value="{{ current_cat }}">
-                        <button type="submit" class="sidebar-search-btn"><i class="fas fa-search"></i></button>
-                    </form>
-                </div>
+
             </aside>
 
             <!-- MAIN CONTENT -->
             <div class="products-main-content">
-                <!-- Results bar -->
-                <div class="products-results-bar">
-                    <span class="products-count-text">
-                        Mostrando <strong>{{ (products.page - 1) * products.per_page + 1 }}–{{ [products.page * products.per_page, products.total]|min }}</strong> de <strong>{{ products.total }}</strong> productos
-                    </span>
+                <!-- Results bar and Search -->
+                <div class="products-top-controls" style="display: flex; justify-content: space-between; align-items: center; background: white; padding: 1rem; border-radius: 8px; border: 1px solid rgba(0,0,0,0.05); margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                    <form action="{{ url_for('productos') }}" method="GET" style="display: flex; flex: 1; min-width: 250px;">
+                        <input type="text" name="q" placeholder="Buscar producto por nombre..." value="{{ search_query }}" style="flex:1; padding: 0.75rem 1rem; border: 1px solid #e2e8f0; border-radius: 6px 0 0 6px; outline: none;">
+                        <input type="hidden" name="cat" value="{{ current_cat }}">
+                        <button type="submit" style="background: var(--primary); color: white; border: none; padding: 0 1.5rem; border-radius: 0 6px 6px 0; cursor: pointer;"><i class="fas fa-search"></i></button>
+                    </form>
+                    <div style="font-size: 0.9rem; color: var(--text-muted);">
+                        Mostrando <strong>{{ (products.page - 1) * products.per_page + 1 }}–{{ [products.page * products.per_page, products.total]|min }}</strong> de <strong>{{ products.total }}</strong>
+                    </div>
+                </div>
+
+                <div class="products-results-bar" style="margin-bottom: 1.5rem;">
                     <div class="products-sort">
                         <label>Ordenar por:</label>
                         <select class="sort-select" onchange="sortProducts(this.value)">
