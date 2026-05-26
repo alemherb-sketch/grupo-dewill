@@ -446,6 +446,30 @@ def admin_sync_colors():
                     if base in lower_name:
                         hex_code = hx
                         break
+            
+            # If STILL not found, generate a stable, readable random hex color from the hash of the string
+            # to avoid grey boxes! We generate HSL and convert to HEX to ensure it's a nice paint color.
+            if hex_code == '#cccccc' and lower_name.strip() != '':
+                import hashlib
+                h = int(hashlib.md5(cname.encode()).hexdigest(), 16)
+                hue = h % 360
+                sat = 50 + (h % 30) # 50-80%
+                light = 40 + (h % 40) # 40-80%
+                
+                # Convert HSL to RGB to HEX
+                s = sat / 100.0
+                l = light / 100.0
+                c = (1 - abs(2 * l - 1)) * s
+                x = c * (1 - abs((hue / 60.0) % 2 - 1))
+                m = l - c / 2.0
+                if hue < 60: r,g,b = c,x,0
+                elif hue < 120: r,g,b = x,c,0
+                elif hue < 180: r,g,b = 0,c,x
+                elif hue < 240: r,g,b = 0,x,c
+                elif hue < 300: r,g,b = x,0,c
+                else: r,g,b = c,0,x
+                
+                hex_code = '#{:02x}{:02x}{:02x}'.format(int((r+m)*255), int((g+m)*255), int((b+m)*255))
                     
         if not pc:
             pc = PaintColor(name=cname, hex_code=hex_code)
@@ -505,6 +529,7 @@ def admin_product_import():
                         
                 imported = 0
                 skipped = 0
+                cleared_products = set()
                 
                 for index, row in df.iterrows():
                     # Safely handle missing/nan values
@@ -520,6 +545,12 @@ def admin_product_import():
                     
                     # Group products by name to avoid duplicate rows for the same product name
                     product = Product.query.filter(Product.name.ilike(prod_name)).first()
+                    
+                    if product and product.id not in cleared_products:
+                        # Clear old presentation links to ensure Excel is source of truth
+                        ProductPresentationColor.query.filter_by(product_id=product.id).delete()
+                        cleared_products.add(product.id)
+                        db.session.flush()
                     
                     if not product:
                         # If product name does not exist, check if SKU already exists to avoid conflict
