@@ -159,9 +159,23 @@ def producto_detalle(product_id):
     product = Product.query.get_or_404(product_id)
     related = Product.query.filter(Product.category_id == product.category_id,
         Product.id != product.id, Product.is_active == True).limit(4).all()
+        
+    product_color_specs = list(set([spec.value for spec in product.specs if spec.key.lower() == 'color']))
+    
     paint_colors = []
-    if product.category and 'pintura' in product.category.name.lower():
-        paint_colors = PaintColor.query.filter_by(is_active=True).all()
+    if product_color_specs:
+        for cname in product_color_specs:
+            pc = PaintColor.query.filter(PaintColor.name.ilike(cname)).first()
+            if pc:
+                paint_colors.append({'name': pc.name, 'hex_code': pc.hex_code})
+            else:
+                # Add a fallback hex code for unknown imported colors
+                paint_colors.append({'name': cname, 'hex_code': '#cccccc'})
+    elif product.category and 'pintura' in product.category.name.lower():
+        # Fallback to all active paint colors
+        all_colors = PaintColor.query.filter_by(is_active=True).all()
+        paint_colors = [{'name': c.name, 'hex_code': c.hex_code} for c in all_colors]
+        
     return render_template('producto_detalle.html', product=product, related=related, paint_colors=paint_colors)
 
 @app.route('/api/cotizacion', methods=['POST'])
@@ -345,65 +359,75 @@ def admin_product_import():
                         skipped += 1
                         continue
                         
-                    # Check if SKU exists
-                    if Product.query.filter_by(sku=codigo).first():
-                        skipped += 1
-                        continue
-                        
-                    # Handle Brand
-                    brand = None
-                    if not pd.isna(row['Marca']):
-                        marca_name = str(row['Marca']).strip()
-                        if marca_name:
-                            brand = Brand.query.filter(Brand.name.ilike(marca_name)).first()
-                            if not brand:
-                                brand = Brand(name=marca_name, slug=slugify(marca_name))
-                                db.session.add(brand)
-                                db.session.flush()
-                            
-                    # Handle Category
-                    category = None
-                    if not pd.isna(row['Categoria']):
-                        cat_name = str(row['Categoria']).strip()
-                        if cat_name:
-                            category = Category.query.filter(Category.name.ilike(cat_name)).first()
-                            if not category:
-                                category = Category(name=cat_name, slug=slugify(cat_name), order=0)
-                                db.session.add(category)
-                                db.session.flush()
-                            
-                    # Handle Sub Category
-                    subcategory = None
-                    if category and not pd.isna(row['Sub Categoria']):
-                        subcat_name = str(row['Sub Categoria']).strip()
-                        if subcat_name:
-                            subcategory = SubCategory.query.filter(SubCategory.name.ilike(subcat_name), SubCategory.category_id == category.id).first()
-                            if not subcategory:
-                                subcategory = SubCategory(name=subcat_name, slug=slugify(subcat_name), category_id=category.id)
-                                db.session.add(subcategory)
-                                db.session.flush()
-                            
-                    # Create Product
                     prod_name = str(row['Producto']).strip() if not pd.isna(row['Producto']) else 'Sin Nombre'
                     
-                    product = Product(
-                        name=prod_name,
-                        sku=codigo,
-                        category_id=category.id if category else None,
-                        subcategory_id=subcategory.id if subcategory else None,
-                        brand_id=brand.id if brand else None,
-                        is_active=True,
-                        is_featured=False
-                    )
-                    db.session.add(product)
-                    db.session.flush()
+                    # Group products by name to avoid duplicate rows for the same product name
+                    product = Product.query.filter(Product.name.ilike(prod_name)).first()
                     
+                    if not product:
+                        # If product name does not exist, check if SKU already exists to avoid conflict
+                        if Product.query.filter_by(sku=codigo).first():
+                            skipped += 1
+                            continue
+
+                        # Handle Brand
+                        brand = None
+                        if not pd.isna(row['Marca']):
+                            marca_name = str(row['Marca']).strip()
+                            if marca_name:
+                                brand = Brand.query.filter(Brand.name.ilike(marca_name)).first()
+                                if not brand:
+                                    brand = Brand(name=marca_name, slug=slugify(marca_name))
+                                    db.session.add(brand)
+                                    db.session.flush()
+                                
+                        # Handle Category
+                        category = None
+                        if not pd.isna(row['Categoria']):
+                            cat_name = str(row['Categoria']).strip()
+                            if cat_name:
+                                category = Category.query.filter(Category.name.ilike(cat_name)).first()
+                                if not category:
+                                    category = Category(name=cat_name, slug=slugify(cat_name), order=0)
+                                    db.session.add(category)
+                                    db.session.flush()
+                                
+                        # Handle Sub Category
+                        subcategory = None
+                        if category and not pd.isna(row['Sub Categoria']):
+                            subcat_name = str(row['Sub Categoria']).strip()
+                            if subcat_name:
+                                subcategory = SubCategory.query.filter(SubCategory.name.ilike(subcat_name), SubCategory.category_id == category.id).first()
+                                if not subcategory:
+                                    subcategory = SubCategory(name=subcat_name, slug=slugify(subcat_name), category_id=category.id)
+                                    db.session.add(subcategory)
+                                    db.session.flush()
+                                
+                        # Create Product
+                        product = Product(
+                            name=prod_name,
+                            sku=codigo,
+                            category_id=category.id if category else None,
+                            subcategory_id=subcategory.id if subcategory else None,
+                            brand_id=brand.id if brand else None,
+                            is_active=True,
+                            is_featured=False
+                        )
+                        db.session.add(product)
+                        db.session.flush()
+                        imported += 1
+                    else:
+                        # Product with the same name already exists. We just append the color to it later.
+                        pass
+                        
                     # Handle Color
                     if 'Color' in df.columns and not pd.isna(row['Color']):
                         color_val = str(row['Color']).strip()
                         if color_val:
-                            spec = ProductSpec(product_id=product.id, key='Color', value=color_val)
-                            db.session.add(spec)
+                            existing_spec = ProductSpec.query.filter(ProductSpec.product_id == product.id, ProductSpec.key == 'Color', ProductSpec.value.ilike(color_val)).first()
+                            if not existing_spec:
+                                spec = ProductSpec(product_id=product.id, key='Color', value=color_val)
+                                db.session.add(spec)
                             
                     # Handle Presentation
                     if 'Presentacion' in df.columns and not pd.isna(row['Presentacion']):
