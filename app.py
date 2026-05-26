@@ -455,12 +455,14 @@ def admin_sync_colors():
             pc.hex_code = hex_code
             updated += 1
             
-    # Remove all ProductPresentationColor entries to wipe fake links from previous bug
-    # This will force the frontend to show the empty message until Excel is re-imported
-    deleted_links = ProductPresentationColor.query.delete()
+        # Update existing ProductPresentationColor links with the correct hex
+        links = ProductPresentationColor.query.filter(ProductPresentationColor.color_name.ilike(cname)).all()
+        for link in links:
+            if link.hex_code != hex_code:
+                link.hex_code = hex_code
                     
     db.session.commit()
-    flash(f'Colores analizados: {added} nuevos, {updated} actualizados (Hex mejorado). Se limpiaron {deleted_links} vínculos antiguos. IMPORTANTE: Vuelve a importar tu Excel para reconstruir el filtro de presentaciones.', 'success')
+    flash(f'Colores analizados: {added} nuevos, {updated} actualizados (Hex mejorado). Los vínculos de presentación se han preservado.', 'success')
     return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/productos')
