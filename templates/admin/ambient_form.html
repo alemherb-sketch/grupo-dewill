@@ -36,8 +36,14 @@
                 <input type="text" name="description" value="{{ ambient.description if ambient else '' }}" class="form-input" placeholder="Ej: Colores neutros cálidos">
             </div>
             <div class="form-group">
-                <label>Colores (Hexadecimales, separados por coma)</label>
-                <input type="text" name="colors" value="{{ ambient.colors if ambient else '' }}" class="form-input" placeholder="Ej: #f2ebdd, #d7cbb6, #a39171">
+                <label>Colores (Selecciona y agrega a la paleta)</label>
+                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                    <input type="color" id="colorPicker" class="form-input" style="width: 50px; height: 40px; padding: 2px; cursor: pointer;">
+                    <button type="button" class="btn btn-outline" onclick="addColor()" style="padding: 0 1rem;"><i class="fas fa-plus"></i> Agregar Color</button>
+                </div>
+                <div id="colorPalette" style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; min-height: 42px; padding: 5px; background: #f8fafc; border-radius: var(--radius); border: 1px dashed var(--admin-border);">
+                </div>
+                <input type="hidden" name="colors" id="colorsInput" value="{{ ambient.colors if ambient else '' }}">
                 <small style="color: var(--text-muted); font-size: 0.8rem;">Se mostrarán como muestras de color en la tarjeta del ambiente.</small>
             </div>
         </div>
@@ -85,6 +91,52 @@
 
 {% block admin_js %}
 <script>
+let selectedColors = document.getElementById('colorsInput').value ? document.getElementById('colorsInput').value.split(',').map(c => c.trim()).filter(c => c) : [];
+
+function renderPalette() {
+    const palette = document.getElementById('colorPalette');
+    palette.innerHTML = '';
+    if (selectedColors.length === 0) {
+        palette.innerHTML = '<span style="color: #94a3b8; font-size: 0.85rem; padding: 5px; display: flex; align-items: center;">Sin colores agregados</span>';
+    }
+    selectedColors.forEach((color, index) => {
+        const swatch = document.createElement('div');
+        swatch.style.cssText = `width: 32px; height: 32px; border-radius: 4px; background-color: ${color}; position: relative; border: 1px solid rgba(0,0,0,0.1); box-shadow: 0 2px 4px rgba(0,0,0,0.05);`;
+        swatch.title = color;
+        
+        const removeBtn = document.createElement('span');
+        removeBtn.innerHTML = '&times;';
+        removeBtn.title = "Eliminar color";
+        removeBtn.style.cssText = `position: absolute; top: -6px; right: -6px; background: var(--admin-danger, #ef4444); color: white; border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; line-height: 1; box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index: 10;`;
+        removeBtn.onclick = () => {
+            selectedColors.splice(index, 1);
+            updateColorsInput();
+            renderPalette();
+        };
+        
+        swatch.appendChild(removeBtn);
+        palette.appendChild(swatch);
+    });
+}
+
+function addColor() {
+    const colorPicker = document.getElementById('colorPicker');
+    const newColor = colorPicker.value.toLowerCase();
+    if (!selectedColors.includes(newColor)) {
+        selectedColors.push(newColor);
+        updateColorsInput();
+        renderPalette();
+    } else {
+        alert("El color ya está en la paleta");
+    }
+}
+
+function updateColorsInput() {
+    document.getElementById('colorsInput').value = selectedColors.join(',');
+}
+
+document.addEventListener('DOMContentLoaded', renderPalette);
+
 function deleteAmbientImage(imgId) {
     if (confirm('¿Estás seguro de eliminar esta imagen de la galería?')) {
         const form = document.getElementById('deleteImageForm');
