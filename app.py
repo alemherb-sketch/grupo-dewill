@@ -147,25 +147,68 @@ def index():
 def productos():
     categories = Category.query.order_by(Category.order).all()
     brands = Brand.query.order_by(Brand.name).all()
-    cat_slug = request.args.get('cat', '')
-    brand_slug = request.args.get('marca', '')
+    
+    # Handle multiple selections
+    cat_slugs = request.args.getlist('cat')
+    if not cat_slugs and request.args.get('cat'):
+        cat_slugs = [request.args.get('cat')]
+        
+    brand_slugs = request.args.getlist('marca')
+    if not brand_slugs and request.args.get('marca'):
+        brand_slugs = [request.args.get('marca')]
+        
     q = request.args.get('q', '')
     page = request.args.get('page', 1, type=int)
+    
+    # Selected specs
+    selected_specs = {}
+    for key in request.args.keys():
+        if key.startswith('spec_'):
+            spec_name = key[5:]
+            selected_specs[spec_name] = request.args.getlist(key)
+            
     query = Product.query.filter_by(is_active=True)
-    if cat_slug:
-        cat = Category.query.filter_by(slug=cat_slug).first()
-        if cat:
-            query = query.filter_by(category_id=cat.id)
-    if brand_slug:
-        brand = Brand.query.filter_by(slug=brand_slug).first()
-        if brand:
-            query = query.filter_by(brand_id=brand.id)
+    
+    if cat_slugs:
+        cat_ids = [c.id for c in Category.query.filter(Category.slug.in_(cat_slugs)).all()]
+        if cat_ids:
+            query = query.filter(Product.category_id.in_(cat_ids))
+            
+    if brand_slugs:
+        brand_ids = [b.id for b in Brand.query.filter(Brand.slug.in_(brand_slugs)).all()]
+        if brand_ids:
+            query = query.filter(Product.brand_id.in_(brand_ids))
+            
     if q:
         search_term = ''.join(['_' if c.lower() in 'aeiouáéíóú' else c for c in q])
         query = query.filter(db.or_(Product.name.ilike(f'%{search_term}%'), Product.description.ilike(f'%{search_term}%')))
+        
+    # Filter by specs
+    for spec_name, spec_vals in selected_specs.items():
+        if spec_vals:
+            query = query.filter(Product.specs.any(db.and_(
+                ProductSpec.key == spec_name,
+                ProductSpec.value.in_(spec_vals)
+            )))
+            
     prods = query.order_by(Product.name).paginate(page=page, per_page=12, error_out=False)
+    
+    # Gather distinct specs for sidebar
+    allowed_spec_keys = ['Acabado', 'Tipo', 'Uso', 'Base', 'Superficies']
+    spec_filters = {}
+    for k in allowed_spec_keys:
+        vals = db.session.query(ProductSpec.value).join(Product).filter(
+            Product.is_active == True,
+            ProductSpec.key == k
+        ).distinct().all()
+        clean_vals = sorted([v[0].strip() for v in vals if v[0] and v[0].strip()])
+        if clean_vals:
+            # removing duplicates that might only differ in spaces
+            spec_filters[k] = sorted(list(set(clean_vals)))
+
     return render_template('productos.html', products=prods, categories=categories, brands=brands,
-                           current_cat=cat_slug, current_brand=brand_slug, search_query=q)
+                           current_cats=cat_slugs, current_brands=brand_slugs, 
+                           search_query=q, spec_filters=spec_filters, selected_specs=selected_specs)
 
 @app.route('/api/productos/search')
 def api_search():

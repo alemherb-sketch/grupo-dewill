@@ -30,71 +30,68 @@
 
             <!-- SIDEBAR -->
             <aside class="products-sidebar">
-                <!-- Categorías -->
-                <div class="sidebar-box">
-                    <div class="sidebar-box-title">
-                        <i class="fas fa-th-list"></i> CATEGORÍAS
-                    </div>
-                    <ul class="sidebar-cat-list">
-                        <li>
-                            <a href="{{ url_for('productos', marca=current_brand) }}"
-                               class="sidebar-cat-item {% if not current_cat %}active{% endif %}">
-                                <i class="fas fa-th-large"></i>
-                                <span>Todos los productos</span>
-                                <span class="cat-count">{{ products.total }}</span>
-                            </a>
-                        </li>
-                        {% for cat in categories %}
-                        <li>
-                            <a href="{{ url_for('productos', cat=cat.slug, marca=current_brand) }}"
-                               class="sidebar-cat-item {% if current_cat == cat.slug %}active{% endif %}">
-                                <i class="{{ cat.icon }}"></i>
-                                <span>{{ cat.name }}</span>
+                <form id="filterForm" action="{{ url_for('productos') }}" method="GET">
+                    <!-- Categorías -->
+                    <div class="sidebar-box">
+                        <div class="sidebar-box-title">
+                            <i class="fas fa-th-list"></i> CATEGORÍAS
+                        </div>
+                        <div class="sidebar-filter-scroll">
+                            {% for cat in categories %}
+                            <label class="filter-checkbox-label">
+                                <input type="checkbox" name="cat" value="{{ cat.slug }}" {% if cat.slug in current_cats %}checked{% endif %} onchange="document.getElementById('filterForm').submit();">
+                                <span class="custom-checkbox"><i class="fas fa-check"></i></span>
+                                <span class="filter-text">{{ cat.name }}</span>
                                 <span class="cat-count">{{ cat.products|length }}</span>
-                            </a>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-
-                <!-- Filtrar por Marca -->
-                <div class="sidebar-box" style="margin-top: 1.5rem;">
-                    <div class="sidebar-box-title">
-                        <i class="fas fa-filter"></i> FILTRAR POR MARCA
+                            </label>
+                            {% endfor %}
+                        </div>
                     </div>
-                    <ul class="sidebar-cat-list">
-                        <li>
-                            <a href="{{ url_for('productos', cat=current_cat) }}"
-                               class="sidebar-cat-item {% if not current_brand %}active{% endif %}">
-                                <i class="fas fa-check-double"></i>
-                                <span>Todas las marcas</span>
-                            </a>
-                        </li>
-                        {% for brand in brands %}
-                        <li>
-                            <a href="{{ url_for('productos', cat=current_cat, marca=brand.slug) }}"
-                               class="sidebar-cat-item {% if current_brand == brand.slug %}active{% endif %}">
-                                <i class="fas fa-tag"></i>
-                                <span>{{ brand.name }}</span>
-                            </a>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
 
-
+                    <!-- Marcas -->
+                    <div class="sidebar-box" style="margin-top: 1.5rem;">
+                        <div class="sidebar-box-title">
+                            <i class="fas fa-filter"></i> FILTRAR POR MARCA
+                        </div>
+                        <div class="sidebar-filter-scroll">
+                            {% for brand in brands %}
+                            <label class="filter-checkbox-label">
+                                <input type="checkbox" name="marca" value="{{ brand.slug }}" {% if brand.slug in current_brands %}checked{% endif %} onchange="document.getElementById('filterForm').submit();">
+                                <span class="custom-checkbox"><i class="fas fa-check"></i></span>
+                                <span class="filter-text">{{ brand.name }}</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Filtros Dinámicos -->
+                    {% for spec_name, spec_vals in spec_filters.items() %}
+                    <div class="sidebar-box" style="margin-top: 1.5rem;">
+                        <div class="sidebar-box-title">
+                            <i class="fas fa-sliders-h"></i> FILTRAR POR {{ spec_name|upper }}
+                        </div>
+                        <div class="sidebar-filter-scroll">
+                            {% for val in spec_vals %}
+                            <label class="filter-checkbox-label">
+                                <input type="checkbox" name="spec_{{ spec_name }}" value="{{ val }}" {% if selected_specs.get(spec_name) and val in selected_specs[spec_name] %}checked{% endif %} onchange="document.getElementById('filterForm').submit();">
+                                <span class="custom-checkbox"><i class="fas fa-check"></i></span>
+                                <span class="filter-text">{{ val }}</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </form>
             </aside>
 
             <!-- MAIN CONTENT -->
             <div class="products-main-content">
                 <!-- Results bar and Search -->
                 <div class="products-top-controls" style="display: flex; justify-content: space-between; align-items: center; background: white; padding: 1rem; border-radius: 8px; border: 1px solid rgba(0,0,0,0.05); margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
-                    <form action="{{ url_for('productos') }}" method="GET" style="display: flex; flex: 1; min-width: 250px;">
-                        <input type="text" name="q" placeholder="Buscar producto por nombre..." value="{{ search_query }}" style="flex:1; padding: 0.75rem 1rem; border: 1px solid #e2e8f0; border-radius: 6px 0 0 6px; outline: none;">
-                        <input type="hidden" name="cat" value="{{ current_cat }}">
-                        <input type="hidden" name="marca" value="{{ current_brand }}">
-                        <button type="submit" style="background: var(--primary); color: white; border: none; padding: 0 1.5rem; border-radius: 0 6px 6px 0; cursor: pointer;"><i class="fas fa-search"></i></button>
-                    </form>
+                    <div style="display: flex; flex: 1; min-width: 250px;">
+                        <input type="text" form="filterForm" name="q" placeholder="Buscar producto por nombre..." value="{{ search_query }}" style="flex:1; padding: 0.75rem 1rem; border: 1px solid #e2e8f0; border-radius: 6px 0 0 6px; outline: none;">
+                        <button type="submit" form="filterForm" style="background: var(--primary); color: white; border: none; padding: 0 1.5rem; border-radius: 0 6px 6px 0; cursor: pointer;"><i class="fas fa-search"></i></button>
+                    </div>
                     <div style="font-size: 0.9rem; color: var(--text-muted);">
                         Mostrando <strong>{{ (products.page - 1) * products.per_page + 1 }}–{{ [products.page * products.per_page, products.total]|min }}</strong> de <strong>{{ products.total }}</strong>
                     </div>
