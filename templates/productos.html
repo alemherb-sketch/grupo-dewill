@@ -48,6 +48,24 @@
                         </div>
                     </div>
 
+                    <!-- Subcategorías -->
+                    {% if subcategories %}
+                    <div class="sidebar-box" style="margin-top: 1.5rem;">
+                        <div class="sidebar-box-title">
+                            <i class="fas fa-list-ul"></i> SUBCATEGORÍAS
+                        </div>
+                        <div class="sidebar-filter-scroll">
+                            {% for subcat in subcategories %}
+                            <label class="filter-checkbox-label">
+                                <input type="checkbox" name="subcat" value="{{ subcat.slug }}" {% if subcat.slug in current_subcats %}checked{% endif %} onchange="document.getElementById('filterForm').submit();">
+                                <span class="custom-checkbox"><i class="fas fa-check"></i></span>
+                                <span class="filter-text">{{ subcat.name }}</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
                     <!-- Marcas -->
                     <div class="sidebar-box" style="margin-top: 1.5rem;">
                         <div class="sidebar-box-title">
@@ -63,6 +81,24 @@
                             {% endfor %}
                         </div>
                     </div>
+                    
+                    <!-- Presentaciones -->
+                    {% if presentations %}
+                    <div class="sidebar-box" style="margin-top: 1.5rem;">
+                        <div class="sidebar-box-title">
+                            <i class="fas fa-box-open"></i> PRESENTACIÓN
+                        </div>
+                        <div class="sidebar-filter-scroll">
+                            {% for pres in presentations %}
+                            <label class="filter-checkbox-label">
+                                <input type="checkbox" name="pres" value="{{ pres.slug }}" {% if pres.slug in current_pres %}checked{% endif %} onchange="document.getElementById('filterForm').submit();">
+                                <span class="custom-checkbox"><i class="fas fa-check"></i></span>
+                                <span class="filter-text">{{ pres.name }}</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
                     
                     <!-- Filtros Dinámicos -->
                     {% for spec_name, spec_vals in spec_filters.items() %}

@@ -146,16 +146,26 @@ def index():
 @app.route('/productos')
 def productos():
     categories = Category.query.order_by(Category.order).all()
+    subcategories = SubCategory.query.order_by(SubCategory.name).all()
     brands = Brand.query.order_by(Brand.name).all()
+    presentations = Presentation.query.order_by(Presentation.name).all()
     
     # Handle multiple selections
     cat_slugs = request.args.getlist('cat')
     if not cat_slugs and request.args.get('cat'):
         cat_slugs = [request.args.get('cat')]
         
+    subcat_slugs = request.args.getlist('subcat')
+    if not subcat_slugs and request.args.get('subcat'):
+        subcat_slugs = [request.args.get('subcat')]
+        
     brand_slugs = request.args.getlist('marca')
     if not brand_slugs and request.args.get('marca'):
         brand_slugs = [request.args.get('marca')]
+        
+    pres_slugs = request.args.getlist('pres')
+    if not pres_slugs and request.args.get('pres'):
+        pres_slugs = [request.args.get('pres')]
         
     q = request.args.get('q', '')
     page = request.args.get('page', 1, type=int)
@@ -174,10 +184,18 @@ def productos():
         if cat_ids:
             query = query.filter(Product.category_id.in_(cat_ids))
             
+    if subcat_slugs:
+        subcat_ids = [s.id for s in SubCategory.query.filter(SubCategory.slug.in_(subcat_slugs)).all()]
+        if subcat_ids:
+            query = query.filter(Product.subcategory_id.in_(subcat_ids))
+            
     if brand_slugs:
         brand_ids = [b.id for b in Brand.query.filter(Brand.slug.in_(brand_slugs)).all()]
         if brand_ids:
             query = query.filter(Product.brand_id.in_(brand_ids))
+            
+    if pres_slugs:
+        query = query.filter(Product.presentations.any(Presentation.slug.in_(pres_slugs)))
             
     if q:
         search_term = ''.join(['_' if c.lower() in 'aeiouáéíóú' else c for c in q])
@@ -194,20 +212,23 @@ def productos():
     prods = query.order_by(Product.name).paginate(page=page, per_page=12, error_out=False)
     
     # Gather distinct specs for sidebar
-    allowed_spec_keys = ['Acabado', 'Tipo', 'Uso', 'Base', 'Superficies']
+    exclude_keys = ['Norma', 'Durabilidad', 'Descripción', 'Resistencia', 'Calidad']
+    all_keys = db.session.query(ProductSpec.key).distinct().all()
     spec_filters = {}
-    for k in allowed_spec_keys:
-        vals = db.session.query(ProductSpec.value).join(Product).filter(
-            Product.is_active == True,
-            ProductSpec.key == k
-        ).distinct().all()
-        clean_vals = sorted([v[0].strip() for v in vals if v[0] and v[0].strip()])
-        if clean_vals:
-            # removing duplicates that might only differ in spaces
-            spec_filters[k] = sorted(list(set(clean_vals)))
+    for (k,) in all_keys:
+        if k and k not in exclude_keys:
+            vals = db.session.query(ProductSpec.value).join(Product).filter(
+                Product.is_active == True,
+                ProductSpec.key == k
+            ).distinct().all()
+            clean_vals = sorted(list(set([v[0].strip() for v in vals if v[0] and v[0].strip() and len(v[0].strip()) < 50])))
+            if clean_vals:
+                spec_filters[k] = clean_vals
 
     return render_template('productos.html', products=prods, categories=categories, brands=brands,
+                           subcategories=subcategories, presentations=presentations,
                            current_cats=cat_slugs, current_brands=brand_slugs, 
+                           current_subcats=subcat_slugs, current_pres=pres_slugs,
                            search_query=q, spec_filters=spec_filters, selected_specs=selected_specs)
 
 @app.route('/api/productos/search')
