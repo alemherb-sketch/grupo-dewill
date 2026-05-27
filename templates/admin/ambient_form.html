@@ -20,13 +20,25 @@
                     </select>
                 </div>
                 <div class="form-group">
+                    <label>Área *</label>
+                    <select name="area" required class="form-input">
+                        <option value="interior" {% if ambient and ambient.area == 'interior' %}selected{% endif %}>Interior</option>
+                        <option value="exterior" {% if ambient and ambient.area == 'exterior' %}selected{% endif %}>Exterior</option>
+                    </select>
+                </div>
+                <div class="form-group">
                     <label>Orden</label>
                     <input type="number" name="order" value="{{ ambient.order if ambient else 0 }}" class="form-input">
                 </div>
             </div>
             <div class="form-group">
-                <label>Descripción / Nota</label>
-                <textarea name="description" rows="4" class="form-input">{{ ambient.description if ambient else '' }}</textarea>
+                <label>Subtítulo / Descripción</label>
+                <input type="text" name="description" value="{{ ambient.description if ambient else '' }}" class="form-input" placeholder="Ej: Colores neutros cálidos">
+            </div>
+            <div class="form-group">
+                <label>Colores (Hexadecimales, separados por coma)</label>
+                <input type="text" name="colors" value="{{ ambient.colors if ambient else '' }}" class="form-input" placeholder="Ej: #f2ebdd, #d7cbb6, #a39171">
+                <small style="color: var(--text-muted); font-size: 0.8rem;">Se mostrarán como muestras de color en la tarjeta del ambiente.</small>
             </div>
         </div>
 

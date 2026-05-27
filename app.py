@@ -1167,6 +1167,8 @@ def admin_ambient_new():
             slug=slugify(name),
             type=request.form['type'],
             description=request.form.get('description', ''),
+            colors=request.form.get('colors', ''),
+            area=request.form.get('area', 'interior'),
             order=int(request.form.get('order', 0))
         )
         if 'cover_image' in request.files and request.files['cover_image'].filename:
@@ -1195,6 +1197,8 @@ def admin_ambient_edit(id):
         a.slug = slugify(a.name)
         a.type = request.form['type']
         a.description = request.form.get('description', '')
+        a.colors = request.form.get('colors', '')
+        a.area = request.form.get('area', 'interior')
         a.order = int(request.form.get('order', 0))
 
         if 'cover_image' in request.files and request.files['cover_image'].filename:

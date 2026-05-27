@@ -23,6 +23,8 @@
                     <th>Imagen</th>
                     <th>Nombre</th>
                     <th>Tipo</th>
+                    <th>Área</th>
+                    <th>Colores</th>
                     <th>Imágenes</th>
                     <th>Orden</th>
                     <th>Acciones</th>
@@ -38,11 +40,32 @@
                         <div class="table-thumb-empty"><i class="fas fa-image"></i></div>
                         {% endif %}
                     </td>
-                    <td><strong>{{ a.name }}</strong></td>
+                    <td>
+                        <strong>{{ a.name }}</strong>
+                        {% if a.description %}
+                        <div style="font-size: 0.75rem; color: #64748b;">{{ a.description }}</div>
+                        {% endif %}
+                    </td>
                     <td>
                         <span class="status-badge {{ 'status-en_proceso' if a.type == 'color' else 'status-active' }}">
                             {{ 'Color' if a.type == 'color' else 'Habitación' }}
                         </span>
+                    </td>
+                    <td>
+                        <span class="status-badge" style="background: #e2e8f0; color: #475569;">
+                            {{ 'Exterior' if a.area == 'exterior' else 'Interior' }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if a.colors %}
+                        <div style="display: flex; gap: 4px;">
+                            {% for c in a.colors.split(',') %}
+                            <span style="display: inline-block; width: 16px; height: 16px; border-radius: 4px; background-color: {{ c.strip() }}; border: 1px solid rgba(0,0,0,0.1);" title="{{ c.strip() }}"></span>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <span style="color: #94a3b8; font-size: 0.8rem;">-</span>
+                        {% endif %}
                     </td>
                     <td><i class="fas fa-images"></i> {{ a.images|length }}</td>
                     <td>{{ a.order }}</td>
