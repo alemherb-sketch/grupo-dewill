@@ -62,14 +62,24 @@
                     <div class="sidebar-box-title">
                         <i class="fas fa-filter"></i> FILTRAR POR MARCA
                     </div>
-                    <div class="sidebar-filter-list">
-                        <select id="brandFilter" onchange="window.location.href=this.value" class="sidebar-select">
-                            <option value="{{ url_for('productos', cat=current_cat) }}">Todas las marcas</option>
-                            {% for brand in brands %}
-                            <option value="{{ url_for('productos', cat=current_cat, marca=brand.slug) }}" {% if current_brand == brand.slug %}selected{% endif %}>{{ brand.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
+                    <ul class="sidebar-cat-list">
+                        <li>
+                            <a href="{{ url_for('productos', cat=current_cat) }}"
+                               class="sidebar-cat-item {% if not current_brand %}active{% endif %}">
+                                <i class="fas fa-check-double"></i>
+                                <span>Todas las marcas</span>
+                            </a>
+                        </li>
+                        {% for brand in brands %}
+                        <li>
+                            <a href="{{ url_for('productos', cat=current_cat, marca=brand.slug) }}"
+                               class="sidebar-cat-item {% if current_brand == brand.slug %}active{% endif %}">
+                                <i class="fas fa-tag"></i>
+                                <span>{{ brand.name }}</span>
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
                 </div>
 
 
