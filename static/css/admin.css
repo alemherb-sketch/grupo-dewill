@@ -223,7 +223,7 @@ a { text-decoration: none; color: var(--admin-primary); }
     height: 200px;
     margin-bottom: 1rem;
     border-radius: var(--radius);
-    overflow: hidden;
+    overflow: visible;
     border: 1px solid var(--admin-border);
     background: white;
     display: flex;

@@ -1214,6 +1214,15 @@ def admin_ambient_edit(id):
         return redirect(url_for('admin_ambientes'))
     return render_template('admin/ambient_form.html', ambient=a)
 
+@app.route('/admin/ambientes/<int:id>/eliminar_portada', methods=['POST'])
+@login_required
+def admin_ambient_delete_cover(id):
+    a = AmbientCategory.query.get_or_404(id)
+    a.cover_image = None
+    db.session.commit()
+    flash('Imagen de portada eliminada')
+    return redirect(url_for('admin_ambient_edit', id=id))
+
 
 @app.route('/admin/ambientes/<int:id>/eliminar', methods=['POST'])
 @login_required

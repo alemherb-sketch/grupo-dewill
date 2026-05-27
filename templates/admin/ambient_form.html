@@ -53,8 +53,11 @@
             <div class="form-group">
                 <label>Imagen de Portada (Card)</label>
                 {% if ambient and ambient.cover_image %}
-                <div class="current-image">
+                <div class="current-image" style="position: relative; display: inline-block;">
                     <img src="{{ url_for('static', filename=ambient.cover_image) }}" alt="">
+                    <button type="button" class="thumb-delete" title="Eliminar Portada" onclick="deleteAmbientCover({{ ambient.id }})" style="top: -8px; right: -8px;">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
                 {% endif %}
                 <input type="file" name="cover_image" accept="image/*" class="form-input-file">
@@ -141,6 +144,14 @@ function deleteAmbientImage(imgId) {
     if (confirm('¿Estás seguro de eliminar esta imagen de la galería?')) {
         const form = document.getElementById('deleteImageForm');
         form.action = `/admin/ambientes/imagen/${imgId}/eliminar`;
+        form.submit();
+    }
+}
+
+function deleteAmbientCover(id) {
+    if (confirm('¿Estás seguro de eliminar la imagen de portada?')) {
+        const form = document.getElementById('deleteImageForm');
+        form.action = `/admin/ambientes/${id}/eliminar_portada`;
         form.submit();
     }
 }
