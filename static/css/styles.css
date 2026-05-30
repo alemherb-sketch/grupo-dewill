@@ -152,17 +152,17 @@ img {
     position: absolute;
     top: 0;
     left: 0;
-    width: 180px;
+    width: 140px;
     height: 180px;
     background: var(--primary);
     clip-path: polygon(0 0, 100% 0, 0 100%);
 }
 .shape-blue-triangle {
     position: absolute;
-    top: 180px;
+    top: 220px;
     left: 0;
     bottom: 0;
-    width: 250px;
+    width: 300px;
     background: var(--secondary);
     clip-path: polygon(0 0, 100% 40%, 0 100%);
 }
