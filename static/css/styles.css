@@ -3461,3 +3461,31 @@ img {
 .map-popup-btn {
     display: none !important;
 }
+
+/* Ultimate fix for store card squished layout */
+.store-card {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+    gap: 0 !important;
+}
+.store-image-col {
+    width: 100% !important;
+    height: 100% !important;
+}
+.store-image-col img {
+    height: 100% !important;
+    min-height: 250px !important;
+}
+.store-info-col {
+    width: 100% !important;
+    padding: 1.5rem 1rem !important;
+}
+.store-map-col {
+    width: 100% !important;
+    min-height: 250px !important;
+    padding: 0 !important;
+}
+.map-wrapper {
+    height: 100% !important;
+    border-radius: 0 !important;
+}
