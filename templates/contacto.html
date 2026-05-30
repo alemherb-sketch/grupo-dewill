@@ -69,33 +69,36 @@
                     </div>
                     <div class="store-info-col">
                         <span class="store-badge">TIENDA PRINCIPAL</span>
-                        <h3 class="store-title">Av. Guillermo Dansey N° 595<br>Cercado de Lima</h3>
+                        <h3 class="store-title">Av. Guillermo<br>Dansey N° 595<br>Cercado de Lima</h3>
                         <div class="store-detail">
                             <i class="fas fa-map-marker-alt"></i>
-                            <p>Av. Guillermo Dansey N° 595<br>Cercado de Lima</p>
+                            <p>Av. Guillermo<br>Dansey N° 595<br>Cercado de Lima</p>
                         </div>
                         <div class="store-detail">
                             <i class="fas fa-phone-alt"></i>
-                            <p><strong>{{ site.get('phone', '01 123 4567') }}</strong></p>
+                            <p></p>
                         </div>
                         <div class="store-detail">
                             <i class="fas fa-clock"></i>
-                            <p>Lunes a Sábado: 08:00 AM a 06:00 PM<br>Domingo: 08:00 AM - 02:00 PM</p>
+                            <p>Lunes a Sábado:<br>08:00 AM a 06:00<br>PM<br>Domingo: 08:00<br>AM - 02:00 PM</p>
                         </div>
                     </div>
                     <div class="store-map-col">
-                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3901.8152501062973!2d-77.04639912408992!3d-12.049386343419084!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105c8c9359e358b%3A0xc3cf3f9ebc7e2b34!2sAv.%20Guillermo%20Dansey%20595%2C%20Lima%2015082!5e0!3m2!1ses!2spe!4v1717081515228!5m2!1ses!2spe" width="100%" height="100%" style="border:0; border-radius: 8px;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                        <div class="map-wrapper">
+                            <a href="https://maps.google.com" target="_blank" class="map-popup-btn">Maps <i class="fas fa-external-link-alt"></i></a>
+                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3901.8152501062973!2d-77.04639912408992!3d-12.049386343419084!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105c8c9359e358b%3A0xc3cf3f9ebc7e2b34!2sAv.%20Guillermo%20Dansey%20595%2C%20Lima%2015082!5e0!3m2!1ses!2spe!4v1717081515228!5m2!1ses!2spe" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Banner Shipping -->
                 <div class="shipping-banner">
-                    <div class="shipping-icon"><i class="fas fa-truck-moving"></i></div>
+                    <div class="shipping-icon"><i class="fas fa-truck"></i></div>
                     <div class="shipping-text">
                         <h4>Envíos a todo Lima y Provincias</h4>
-                        <p>Contamos con envíos seguros y rápidos a todo el Perú.<br>Consulta por costo y tiempo de entrega.</p>
+                        <p>Contamos con envíos seguros y rápidos a<br>todo el Perú.<br>Consulta por costo y tiempo de entrega.</p>
                     </div>
-                    <a href="https://wa.me/{{ site.get('whatsapp','51977585654') }}" target="_blank" class="btn btn-outline-primary">MÁS INFORMACIÓN</a>
+                    <a href="https://wa.me/{{ site.get('whatsapp','51977585654') }}" target="_blank" class="btn-shipping">MÁS INFORMACIÓN</a>
                 </div>
                 
                 <!-- Bottom features inside stores section -->
@@ -169,7 +172,7 @@
                         <div class="oc-icon email"><i class="fas fa-envelope"></i></div>
                         <div class="oc-text">
                             <span>Correo Electrónico</span>
-                            <strong>{{ site.get('email', 'ventas@grupodewill.com') }}</strong>
+                            <strong>ventas@grupodewill.com</strong>
                         </div>
                     </div>
                     <div class="other-contact-item social">
