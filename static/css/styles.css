@@ -129,6 +129,176 @@ img {
 }
 
 /* ========== NAVBAR ========== */
+.contact-hero-banner {
+    position: relative;
+    background: #ffffff;
+    display: flex;
+    align-items: stretch;
+    min-height: 400px;
+    overflow: hidden;
+    padding: 0;
+    margin-top: -1px; /* seamless connection with nav */
+}
+.hero-shapes {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 250px;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+}
+.shape-red-triangle {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    border-top: 150px solid var(--primary);
+    border-right: 150px solid transparent;
+}
+.shape-blue-triangle {
+    position: absolute;
+    top: 150px;
+    left: 0;
+    width: 0;
+    height: 0;
+    border-left: 80px solid var(--secondary);
+    border-bottom: 150px solid transparent;
+}
+.shape-blue-bottom {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    border-bottom: 250px solid var(--secondary);
+    border-right: 150px solid transparent;
+}
+
+.contact-hero-container {
+    position: relative;
+    z-index: 2;
+    padding: 5rem 0;
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+.contact-hero-content {
+    max-width: 800px;
+    padding-left: 5rem;
+}
+.contact-hero-title {
+    font-size: 4rem;
+    color: var(--secondary);
+    font-weight: 800;
+    margin-bottom: 1rem;
+    letter-spacing: -1px;
+}
+.contact-hero-subtitle {
+    font-size: 1.1rem;
+    color: var(--secondary);
+    font-weight: 600;
+    line-height: 1.6;
+    margin-bottom: 3rem;
+}
+
+.contact-hero-features {
+    display: flex;
+    align-items: stretch;
+    gap: 2rem;
+}
+.hero-feature {
+    flex: 1;
+    text-align: center;
+    position: relative;
+}
+.hero-feature:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: -1rem;
+    top: 10%;
+    height: 80%;
+    width: 1px;
+    background: rgba(0,0,0,0.1);
+}
+
+.h-feature-icon {
+    font-size: 2rem;
+    color: var(--secondary);
+    margin-bottom: 1rem;
+}
+.hero-feature h4 {
+    font-size: 0.95rem;
+    color: var(--secondary);
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+}
+.hero-feature p {
+    font-size: 0.8rem;
+    color: var(--secondary);
+    opacity: 0.8;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.contact-hero-image {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 35%;
+    height: 100%;
+    z-index: 1;
+}
+.hero-image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to right, #ffffff 0%, transparent 100%);
+    z-index: 1;
+}
+.contact-hero-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+@media (max-width: 1200px) {
+    .contact-hero-content {
+        padding-left: 2rem;
+        max-width: 600px;
+    }
+    .contact-hero-features {
+        flex-wrap: wrap;
+    }
+    .hero-feature {
+        flex: 1 1 40%;
+        margin-bottom: 1.5rem;
+    }
+    .hero-feature:not(:last-child)::after {
+        display: none;
+    }
+}
+@media (max-width: 992px) {
+    .contact-hero-banner {
+        flex-direction: column;
+    }
+    .contact-hero-image {
+        position: relative;
+        width: 100%;
+        height: 300px;
+    }
+    .hero-shapes {
+        display: none;
+    }
+    .contact-hero-content {
+        padding: 3rem 1rem;
+        margin: 0 auto;
+        text-align: center;
+    }
+}
 .navbar {
     position: sticky;
     top: 0;
@@ -3186,3 +3356,8 @@ img {
         grid-template-columns: 1fr;
     }
 }
+ 
+ . h e r o - b g - p i c   {   w i d t h :   1 0 0 % ;   h e i g h t :   1 0 0 % ;   o b j e c t - f i t :   c o v e r ;   }  
+ . h e r o - l o g o - o v e r l a y   {   p o s i t i o n :   a b s o l u t e ;   t o p :   3 0 % ;   l e f t :   5 0 % ;   t r a n s f o r m :   t r a n s l a t e ( - 5 0 % ,   - 5 0 % ) ;   z - i n d e x :   2 ;   w i d t h :   6 0 % ;   m a x - w i d t h :   2 0 0 p x ;   }  
+ . h e r o - l o g o - o v e r l a y   i m g   {   w i d t h :   1 0 0 % ;   h e i g h t :   a u t o ;   f i l t e r :   b r i g h t n e s s ( 0 )   i n v e r t ( 1 ) ;   }  
+ 

@@ -4,44 +4,49 @@
 
 {% block content %}
 <!-- Top Header Section -->
-<section class="contact-header-section">
-    <div class="container">
-        <div class="contact-header-content">
-            <div class="contact-header-text animate-fade-up">
-                <h1>Contáctanos</h1>
-                <p>Estamos para ayudarte a hacer realidad tus proyectos. Visítanos en cualquiera de nuestras tiendas o escríbenos.</p>
-            </div>
-            <div class="contact-header-image animate-fade-up delay-1">
-                <img src="{{ url_for('static', filename='assets/ambiente_oficina.png') }}" alt="Oficina Grupo Dewill">
+<section class="contact-hero-banner">
+    <!-- Left Geometric Shapes -->
+    <div class="hero-shapes">
+        <div class="shape-red-triangle"></div>
+        <div class="shape-blue-triangle"></div>
+        <div class="shape-blue-bottom"></div>
+    </div>
+    
+    <div class="container contact-hero-container">
+        <div class="contact-hero-content animate-fade-up">
+            <h1 class="contact-hero-title">Contácta<span class="text-primary">nos</span></h1>
+            <p class="contact-hero-subtitle">Estamos para ayudarte a hacer realidad tus proyectos.<br>Visítanos en cualquiera de nuestras tiendas o escríbenos.</p>
+            
+            <div class="contact-hero-features">
+                <div class="hero-feature">
+                    <div class="h-feature-icon"><i class="fas fa-headset"></i></div>
+                    <h4>Atención Personalizada</h4>
+                    <p>Te asesoramos en<br>cada paso de tu proyecto.</p>
+                </div>
+                <div class="hero-feature">
+                    <div class="h-feature-icon"><i class="fas fa-phone-alt"></i></div>
+                    <h4>Respuesta Rápida</h4>
+                    <p>Nos comunicamos<br>contigo a la brevedad.</p>
+                </div>
+                <div class="hero-feature">
+                    <div class="h-feature-icon"><i class="fas fa-truck"></i></div>
+                    <h4>Envíos a Todo el Perú</h4>
+                    <p>Llevamos nuestros productos<br>a donde los necesites.</p>
+                </div>
+                <div class="hero-feature">
+                    <div class="h-feature-icon"><i class="fas fa-shield-alt"></i></div>
+                    <h4>Calidad Garantizada</h4>
+                    <p>Productos de alta calidad<br>para resultados duraderos.</p>
+                </div>
             </div>
         </div>
     </div>
-</section>
-
-<!-- Feature Cards Section -->
-<section class="contact-features-section">
-    <div class="container">
-        <div class="contact-features-grid">
-            <div class="feature-card animate-fade-up delay-2">
-                <div class="feature-icon"><i class="fas fa-headset"></i></div>
-                <h4>Atención Personalizada</h4>
-                <p>Te asesoramos en cada paso de tu proyecto.</p>
-            </div>
-            <div class="feature-card animate-fade-up delay-3">
-                <div class="feature-icon"><i class="fas fa-phone-alt"></i></div>
-                <h4>Respuesta Rápida</h4>
-                <p>Nos comunicamos contigo a la brevedad.</p>
-            </div>
-            <div class="feature-card animate-fade-up delay-4">
-                <div class="feature-icon"><i class="fas fa-truck"></i></div>
-                <h4>Envíos a Todo el Perú</h4>
-                <p>Llevamos nuestros productos a donde los necesites.</p>
-            </div>
-            <div class="feature-card animate-fade-up delay-4">
-                <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
-                <h4>Calidad Garantizada</h4>
-                <p>Productos de alta calidad para resultados duraderos.</p>
-            </div>
+    
+    <div class="contact-hero-image">
+        <div class="hero-image-overlay"></div>
+        <img src="{{ url_for('static', filename='assets/ambiente_oficina.png') }}" alt="Oficina Grupo Dewill" class="hero-bg-pic">
+        <div class="hero-logo-overlay">
+            <img src="{{ url_for('static', filename='assets/logo.png') }}" alt="Grupo Dewill Logo">
         </div>
     </div>
 </section>
