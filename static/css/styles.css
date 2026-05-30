@@ -173,7 +173,7 @@ img {
 .contact-hero-container {
     position: relative;
     z-index: 2;
-    padding: 5rem 0;
+    padding: 3rem 0; /* Reduced from 5rem to compact height */
     flex: 1;
     display: flex;
     align-items: center;
@@ -182,26 +182,28 @@ img {
     padding-left: 250px !important;
     padding-right: 35% !important;
     margin: 0 !important;
+    box-sizing: border-box; /* Prevent width from overflowing screen */
 }
 .contact-hero-content {
     max-width: 800px;
     width: 100%;
     text-align: center;
-    padding: 0 2rem;
+    padding: 0 1rem;
+    box-sizing: border-box;
 }
 .contact-hero-title {
-    font-size: 4rem;
+    font-size: 3.5rem; /* Slightly smaller */
     color: var(--secondary);
     font-weight: 800;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem; /* Tighter margin */
     letter-spacing: -1px;
 }
 .contact-hero-subtitle {
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     color: var(--secondary);
     font-weight: 600;
-    line-height: 1.6;
-    margin-bottom: 3rem;
+    line-height: 1.5;
+    margin-bottom: 2rem; /* Reduced margin */
 }
 
 .contact-hero-features {
