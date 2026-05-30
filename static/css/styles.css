@@ -152,28 +152,22 @@ img {
     position: absolute;
     top: 0;
     left: 0;
-    width: 0;
-    height: 0;
-    border-top: 150px solid var(--primary);
-    border-right: 150px solid transparent;
+    width: 180px;
+    height: 180px;
+    background: var(--primary);
+    clip-path: polygon(0 0, 100% 0, 0 100%);
 }
 .shape-blue-triangle {
     position: absolute;
-    top: 150px;
+    top: 180px;
     left: 0;
-    width: 0;
-    height: 0;
-    border-left: 80px solid var(--secondary);
-    border-bottom: 150px solid transparent;
+    bottom: 0;
+    width: 250px;
+    background: var(--secondary);
+    clip-path: polygon(0 0, 100% 40%, 0 100%);
 }
 .shape-blue-bottom {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 0;
-    height: 0;
-    border-bottom: 250px solid var(--secondary);
-    border-right: 150px solid transparent;
+    display: none;
 }
 
 .contact-hero-container {

@@ -44,10 +44,7 @@
     
     <div class="contact-hero-image">
         <div class="hero-image-overlay"></div>
-        <img src="{{ url_for('static', filename='assets/ambiente_oficina.png') }}" alt="Oficina Grupo Dewill" class="hero-bg-pic">
-        <div class="hero-logo-overlay">
-            <img src="{{ url_for('static', filename='assets/logo.png') }}" alt="Grupo Dewill Logo">
-        </div>
+        <img src="{{ url_for('static', filename='assets/banner_contacto.jpg') }}" alt="Oficina Grupo Dewill" class="hero-bg-pic" onerror="this.src='{{ url_for('static', filename='assets/ambiente_oficina.png') }}'">
     </div>
 </section>
 
