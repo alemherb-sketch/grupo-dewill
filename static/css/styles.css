@@ -152,19 +152,19 @@ img {
     position: absolute;
     top: 0;
     left: 0;
-    width: 140px;
-    height: 180px;
+    width: 250px;
+    height: 150px;
     background: var(--primary);
     clip-path: polygon(0 0, 100% 0, 0 100%);
 }
 .shape-blue-triangle {
     position: absolute;
-    top: 220px;
+    top: 0;
     left: 0;
     bottom: 0;
-    width: 300px;
+    width: 250px;
     background: var(--secondary);
-    clip-path: polygon(0 0, 100% 40%, 0 100%);
+    clip-path: polygon(0 250px, 100% 100px, 0 100%);
 }
 .shape-blue-bottom {
     display: none;
@@ -177,10 +177,17 @@ img {
     flex: 1;
     display: flex;
     align-items: center;
+    justify-content: center;
+    max-width: 100% !important;
+    padding-left: 250px !important;
+    padding-right: 35% !important;
+    margin: 0 !important;
 }
 .contact-hero-content {
     max-width: 800px;
-    padding-left: 5rem;
+    width: 100%;
+    text-align: center;
+    padding: 0 2rem;
 }
 .contact-hero-title {
     font-size: 4rem;
