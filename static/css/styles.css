@@ -3450,3 +3450,14 @@ img {
 .btn-shipping:hover {
     color: var(--primary);
 }
+
+/* Responsive layout override for contact layout */
+@media (max-width: 1300px) {
+    .contact-layout {
+        grid-template-columns: 1fr !important;
+    }
+}
+/* Hide redundant custom Maps button */
+.map-popup-btn {
+    display: none !important;
+}
