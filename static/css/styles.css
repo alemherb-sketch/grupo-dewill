@@ -854,31 +854,42 @@ img {
     overflow: visible;
 }
 /* This pseudo-element is the blue paint covering the right side of the banner */
+.hero-image::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    bottom: -50%;
+    left: calc(58% - 4px);
+    width: 4px;
+    background: var(--primary);
+    z-index: 0;
+    box-shadow: -5px 0 15px rgba(217, 32, 39, 0.5);
+}
 .hero-image::after {
     content: '';
     position: absolute;
     top: -50%;
     bottom: -50%;
-    left: 60%; /* Hidden behind the painter's opaque body */
-    right: -100vw; /* Extend infinitely to the right */
-    background: #021847;
+    left: 58%;
+    right: -100vw;
+    background: linear-gradient(135deg, #021847 0%, #0b2559 100%);
     z-index: 1;
+    box-shadow: -15px 0 30px rgba(2, 24, 71, 0.2);
 }
 .hero-bg-shapes {
-    display: none; /* Removed the old diagonal lines */
+    display: none;
 }
 .hero-image img {
     position: absolute;
     z-index: 2;
-    height: 125%;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-35%);
+    height: 130%;
+    bottom: -5%;
+    left: 58%;
+    transform: translateX(-68%);
     object-fit: contain;
     width: auto;
     max-width: none;
-    filter: drop-shadow(-20px 20px 30px rgba(0, 0, 0, 0.25)) 
-            drop-shadow(0 0 50px rgba(8, 28, 59, 0.2));
+    filter: drop-shadow(-25px 20px 40px rgba(0, 0, 0, 0.35));
 }
 
 
