@@ -452,20 +452,45 @@ function filterProducts(category, btn) {
 }
 
 // ========== QUOTE LOGIC ==========
-function addToQuote(productId) {
-    const product = products.find(p => p.id === productId);
+function addToQuote(productId, productName = null, productImage = null, color = null, quantity = 1, presentation = null) {
+    // Try to find in static products array if available
+    let product = typeof products !== 'undefined' ? products.find(p => p.id === productId) : null;
+    
+    // Construct dynamic product object if not found in static list (e.g. from Flask DB)
+    if (!product && productName) {
+        product = {
+            id: productId,
+            name: productName,
+            image: productImage || 'static/assets/product_paint.png',
+            category: 'general',
+            description: ''
+        };
+    }
+    
     if (!product) return;
 
-    const exists = quoteList.find(item => item.id === productId);
+    // Match by ID, color, and presentation to support distinct variants
+    const exists = quoteList.find(item => item.id === productId && item.color === color && item.presentation === presentation);
     if (exists) {
-        exists.quantity = (exists.quantity || 1) + 1;
+        exists.quantity = (exists.quantity || 1) + (quantity || 1);
         saveQuote();
         updateQuoteUI();
         showToast(`Cantidad aumentada: ${exists.quantity}`, 'success');
         return;
     }
 
-    const newItem = { ...product, quantity: 1 };
+    const newItem = { 
+        ...product, 
+        quantity: quantity || 1,
+        color: color,
+        presentation: presentation
+    };
+
+    // Keep image paths relative to static folder neat under Flask
+    if (newItem.image && !newItem.image.startsWith('/') && !newItem.image.startsWith('http') && !newItem.image.startsWith('static/')) {
+        newItem.image = 'static/' + newItem.image;
+    }
+
     quoteList.push(newItem);
     saveQuote();
     updateQuoteUI();
@@ -633,6 +658,91 @@ function sendQuoteToWhatsApp() {
 
     const encodedMessage = encodeURIComponent(message);
     window.open(`https://wa.me/51977585654?text=${encodedMessage}`, '_blank');
+}
+
+function submitQuoteRequest() {
+    if (quoteList.length === 0) {
+        showToast('La lista de cotización está vacía.', 'error');
+        return;
+    }
+
+    const clientName = document.getElementById('clientName')?.value.trim();
+    const clientCompany = document.getElementById('clientCompany')?.value.trim();
+    const clientEmail = document.getElementById('clientEmail')?.value.trim();
+    const clientPhone = document.getElementById('clientPhone')?.value.trim();
+    const clientMessage = document.getElementById('clientMessage')?.value.trim();
+
+    if (!clientName || !clientEmail || !clientPhone) {
+        showToast('Por favor, complete los campos obligatorios (*).', 'error');
+        return;
+    }
+
+    // Prepare JSON payload
+    const payload = {
+        name: clientName,
+        company: clientCompany || '',
+        email: clientEmail,
+        phone: clientPhone,
+        message: clientMessage || '',
+        items: quoteList.map(item => ({
+            product_id: parseInt(item.id),
+            quantity: parseInt(item.quantity) || 1,
+            color: item.color || null,
+            presentation: item.presentation || null
+        }))
+    };
+
+    // Show loading state or disable button
+    const btn = document.querySelector('.quote-footer button');
+    let originalText = '';
+    if (btn) {
+        originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+    }
+
+    fetch('/api/cotizacion', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Error al enviar la cotización');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            showToast('¡Solicitud de cotización enviada con éxito!', 'success');
+            
+            setTimeout(() => {
+                if (confirm('¿Desea enviar también una copia de su cotización por WhatsApp para acelerar la atención?')) {
+                    sendQuoteToWhatsApp();
+                }
+                
+                // Clear the quote
+                quoteList = [];
+                saveQuote();
+                updateQuoteUI();
+                toggleQuotePanel();
+            }, 500);
+        } else {
+            showToast('Ocurrió un error. Inténtelo de nuevo.', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error submitting quote:', error);
+        showToast('Error de conexión. Inténtelo más tarde.', 'error');
+    })
+    .finally(() => {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    });
 }
 
 // ========== MODAL LOGIC ==========
@@ -863,14 +973,65 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-// Featured Products Slider
+// Featured Products Slider (Sequential Movement)
 function scrollFeaturedSlider(direction) {
     const slider = document.getElementById('featuredSlider');
     if (slider) {
-        const scrollAmount = 300;
-        slider.scrollBy({
-            left: direction * scrollAmount,
-            behavior: 'smooth'
-        });
+        const card = slider.querySelector('.product-card');
+        if (card) {
+            const cardWidth = card.offsetWidth;
+            const style = window.getComputedStyle(card);
+            const marginRight = parseFloat(style.marginRight) || 0;
+            const marginLeft = parseFloat(style.marginLeft) || 0;
+            const gap = parseFloat(window.getComputedStyle(slider).gap) || 0;
+            const step = cardWidth + gap + marginRight + marginLeft;
+            
+            slider.scrollBy({
+                left: direction * step,
+                behavior: 'smooth'
+            });
+        } else {
+            slider.scrollBy({
+                left: direction * 324,
+                behavior: 'smooth'
+            });
+        }
     }
 }
+
+// Auto scroll variables for featured carousel
+let featuredInterval;
+function startFeaturedAutoScroll() {
+    const slider = document.getElementById('featuredSlider');
+    if (!slider) return;
+    
+    clearInterval(featuredInterval);
+    featuredInterval = setInterval(() => {
+        const maxScroll = slider.scrollWidth - slider.clientWidth;
+        if (slider.scrollLeft >= maxScroll - 10) {
+            slider.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+            scrollFeaturedSlider(1);
+        }
+    }, 4000); // Auto scroll every 4 seconds
+}
+
+// Initialize scroll behaviors and event handlers
+document.addEventListener('DOMContentLoaded', () => {
+    const slider = document.getElementById('featuredSlider');
+    if (slider) {
+        startFeaturedAutoScroll();
+        slider.addEventListener('mouseenter', () => clearInterval(featuredInterval));
+        slider.addEventListener('mouseleave', startFeaturedAutoScroll);
+        
+        // Also pause auto scroll when manual arrows are clicked
+        const btns = document.querySelectorAll('.product-slider-container .slider-btn');
+        btns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                clearInterval(featuredInterval);
+                // Resume auto-scroll after 10 seconds of user inactivity
+                setTimeout(startFeaturedAutoScroll, 10000);
+            });
+        });
+    }
+});
