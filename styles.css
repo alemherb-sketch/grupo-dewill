@@ -548,7 +548,7 @@ img {
 .feature i {
     font-size: 1.8rem;
     color: var(--secondary);
-    background: rgba(8, 28, 59, 0.07);
+    background: #ffffff;
     width: 52px;
     height: 52px;
     border-radius: 50%;
@@ -556,30 +556,31 @@ img {
     align-items: center;
     justify-content: center;
     margin-bottom: 0.25rem;
-    border: 2px solid rgba(8, 28, 59, 0.12);
+    border: 1px solid #d1d5db;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
 }
 
 /* ========== 20 YEARS BADGE ========== */
 .hero-badge-20y {
     position: absolute;
-    top: 1.5rem;
-    right: calc(40% - 90px);
+    top: -2rem;
+    right: 42%;
     z-index: 10;
-    width: 180px;
-    height: 200px;
+    width: 170px;
+    height: 170px;
     display: flex;
     align-items: center;
     justify-content: center;
-    filter: drop-shadow(0 6px 18px rgba(0,0,0,0.22));
+    filter: drop-shadow(0 8px 16px rgba(0,0,0,0.15));
 }
 
 .badge-sun {
     position: absolute;
-    top: 0;
+    top: 50%;
     left: 50%;
-    transform: translateX(-50%);
-    width: 160px;
-    height: 160px;
+    transform: translate(-50%, -50%);
+    width: 146px;
+    height: 146px;
     z-index: 1;
 }
 
@@ -587,66 +588,82 @@ img {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
     background: #0A1931;
-    border-radius: 14px;
+    border-radius: 12px;
 }
 .sun-ray:nth-child(1) { transform: rotate(0deg); }
 .sun-ray:nth-child(2) { transform: rotate(30deg); }
 .sun-ray:nth-child(3) { transform: rotate(60deg); }
-.sun-ray:nth-child(4) { transform: rotate(90deg); }
-.sun-ray:nth-child(5) { transform: rotate(120deg); }
-.sun-ray:nth-child(6) { transform: rotate(150deg); }
+.sun-ray:nth-child(4) { display: none; }
+.sun-ray:nth-child(5) { display: none; }
+.sun-ray:nth-child(6) { display: none; }
 
 .badge-inner {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -38%);
+    transform: translate(-50%, -50%);
     z-index: 3;
-    width: 132px;
-    height: 132px;
+    width: 124px;
+    height: 124px;
     background: #ffffff;
     border-radius: 50%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    /* Double ring effect */
-    box-shadow:
-        0 0 0 3px #ffffff,
-        0 0 0 7px #0A1931,
-        0 0 0 9px #ffffff;
-    padding: 8px;
+    border: 2px solid #0A1931;
+    box-shadow: inset 0 0 0 4px #ffffff, inset 0 0 0 5px #0A1931;
+    padding: 0;
 }
 
 .badge-ribbon {
     position: absolute;
-    bottom: 0;
+    bottom: -8px;
     left: 50%;
     transform: translateX(-50%);
-    width: 70px;
-    height: 70px;
+    width: 45px;
+    height: 35px;
     background: #D90000;
     z-index: 2;
-    clip-path: polygon(10% 0%, 90% 0%, 100% 100%, 50% 78%, 0% 100%);
-    filter: drop-shadow(0 3px 6px rgba(180,0,0,0.4));
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 70%, 0 100%);
 }
 
-.badge-top, .badge-bot {
-    font-size: 0.72rem;
+.badge-top {
+    font-size: 0.65rem;
     font-weight: 800;
     color: #0A1931;
-    line-height: 1.1;
+    line-height: 1;
     text-align: center;
     letter-spacing: 0.5px;
+    margin-bottom: 2px;
+    margin-top: 4px;
+}
+.badge-bot {
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: #0A1931;
+    line-height: 1;
+    text-align: center;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
 }
 
 .badge-mid {
-    font-size: 2.5rem;
+    font-size: 2.8rem;
     font-weight: 900;
     color: #D90000;
-    line-height: 1;
-    margin: 1px 0;
-    letter-spacing: -1px;
+    line-height: 0.85;
+    margin: 0;
+    letter-spacing: -2px;
+}
+
+.badge-mid2 {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: #D90000;
+    line-height: 0.9;
+    margin: 0 0 2px 0;
+    letter-spacing: -0.5px;
 }
 
 .badge-stars {
@@ -843,12 +860,12 @@ img {
 .hero-bg-shapes::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: 8%;
-    width: 25px;
-    height: 100%;
+    top: -10%;
+    left: 60%;
+    width: 38px;
+    height: 120%;
     background: var(--primary);
-    transform: skewX(-18deg);
+    transform: skewX(-22deg);
     opacity: 1;
 }
 .hero-image img {
