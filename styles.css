@@ -1986,7 +1986,7 @@ img {
 @media (max-width: 768px) {
     .top-header-info span:not(:first-child) { display: none; }
     .top-header-container { justify-content: center; gap: 1rem; flex-wrap: wrap;}
-    .hero-title { font-size: 2.5rem; }
+    .hero-title, .hero-content h1 { font-size: 2.2rem; }
     .hero-subtitle { font-size: 1rem; }
     .hero-stats { flex-direction: column; gap: 1.5rem; align-items: center; border-top: none; }
     .stat-divider { width: 100%; height: 1px; }
@@ -1994,6 +1994,15 @@ img {
     .nav-search { display: none; } /* Ocultar buscador en navbar muy pequeña */
     .about-stat-item { width: 100%; justify-content: center; }
     .section-title { font-size: 2rem; }
+    
+    .hero-features { 
+        display: grid; 
+        grid-template-columns: 1fr 1fr; 
+        gap: 1.5rem; 
+        justify-content: center; 
+        margin-bottom: 2rem;
+    }
+    .feature { max-width: 100%; }
 }
 
 @media (max-width: 480px) {
@@ -2005,6 +2014,13 @@ img {
     .modal-actions { flex-direction: column; }
     .cert-grid { grid-template-columns: 1fr; }
     .wa-widget-card { width: calc(100vw - 2rem); right: -1rem; }
+    
+    .hero-content { padding: 1.5rem 1rem; }
+    .hero-content h1 { 
+        font-size: 1.8rem; 
+        word-wrap: break-word; 
+        hyphens: auto; 
+    }
 }
 
 /* ========== CLIENT INFO FORM ========== */
