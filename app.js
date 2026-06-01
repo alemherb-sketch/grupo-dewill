@@ -796,6 +796,15 @@ document.addEventListener('click', (event) => {
             if (icon) {
                 icon.className = 'fab fa-whatsapp';
             }
-        }
     }
 });
+
+// ========== MOBILE MENU ==========
+function toggleMobileMenu() {
+    const navLinks = document.getElementById('navLinks');
+    const hamburger = document.getElementById('hamburger');
+    if (navLinks) {
+        navLinks.classList.toggle('active');
+        hamburger.classList.toggle('is-active');
+    }
+}
