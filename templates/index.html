@@ -5,6 +5,7 @@
 <!-- HERO STATIC BANNER -->
 <section class="hero-static">
     <div class="hero-static-container">
+        <!-- Badge 20 años (posicionado absolutamente sobre el hero) -->
         <div class="hero-badge-20y">
             <div class="badge-sun">
                 <div class="sun-ray"></div>
@@ -24,24 +25,25 @@
                 </div>
             </div>
         </div>
+        <!-- Contenido izquierdo -->
         <div class="hero-content">
             <h1>PINTURAS, HERRAMIENTAS<br>Y SOLUCIONES QUE<br><span>TRANSFORMAN TUS PROYECTOS</span></h1>
             <p>Ofrecemos productos de alta calidad y las mejores marcas para la construcción, industria y hogar en todo el Perú.</p>
             <div class="hero-features">
-                <div class="feature"><i class="fas fa-shield-alt"></i> CALIDAD GARANTIZADA</div>
-                <div class="feature"><i class="fas fa-truck"></i> ENVÍOS A TODO EL PERÚ</div>
-                <div class="feature"><i class="fas fa-headset"></i> ASESORÍA ESPECIALIZADA</div>
-                <div class="feature"><i class="fas fa-building"></i> VENTA AL POR MAYOR Y MENOR</div>
+                <div class="feature"><i class="fas fa-shield-alt"></i><span>CALIDAD<br>GARANTIZADA</span></div>
+                <div class="feature"><i class="fas fa-truck"></i><span>ENVÍOS A TODO<br>EL PERÚ</span></div>
+                <div class="feature"><i class="fas fa-headset"></i><span>ASESORÍA<br>ESPECIALIZADA</span></div>
+                <div class="feature"><i class="fas fa-building"></i><span>VENTA AL POR<br>MAYOR Y MENOR</span></div>
             </div>
             <div class="hero-brands-box">
                 <div class="hero-brands-title">TRABAJAMOS CON LAS MEJORES MARCAS DEL MERCADO</div>
                 <div class="hero-brands-logos">
                     <!-- ANYPSA -->
                     <div class="brand-item logo-anypsa">
-                        <svg viewBox="0 0 100 60" width="45" height="30">
-                            <path d="M50 0 L15 50 L35 50 L50 25 L65 50 L85 50 Z" fill="white"/>
-                            <path d="M35 55 L65 55 L65 60 L35 60 Z" fill="white"/>
-                            <path d="M45 52 L50 48 L55 52 Z" fill="white"/>
+                        <svg viewBox="0 0 100 65" width="52" height="35">
+                            <path d="M50 2 L12 55 L33 55 L50 26 L67 55 L88 55 Z" fill="white"/>
+                            <rect x="33" y="58" width="34" height="5" rx="1" fill="white"/>
+                            <polygon points="44,56 50,50 56,56" fill="white"/>
                         </svg>
                         <span>ANYPSA</span>
                     </div>
@@ -71,11 +73,14 @@
                 <a href="https://wa.me/{{ site.get('whatsapp', '51977585654') }}" target="_blank" class="btn btn-outline">COTIZA POR WHATSAPP <i class="fab fa-whatsapp"></i></a>
             </div>
         </div>
+        <!-- Imagen derecha -->
         <div class="hero-image">
+            <div class="hero-bg-shapes"></div>
             <img src="{{ url_for('static', filename='assets/hero-painter.png') }}" alt="Pintor Profesional">
         </div>
     </div>
 </section>
+
 
 
 <!-- BRANDS / REPRESENTATIONS -->
