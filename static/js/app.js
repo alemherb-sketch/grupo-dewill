@@ -906,6 +906,7 @@ document.addEventListener('click', (event) => {
             if (icon) {
                 icon.className = 'fab fa-whatsapp';
             }
+        }
     }
 });
 
