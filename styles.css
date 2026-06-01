@@ -384,6 +384,33 @@ img {
     z-index: 2;
 }
 
+.hero-painter {
+    position: absolute;
+    bottom: 0;
+    right: 5%;
+    height: 90%;
+    max-height: 850px;
+    z-index: 3;
+    object-fit: contain;
+    filter: drop-shadow(-15px 15px 25px rgba(0, 0, 0, 0.4));
+    pointer-events: none;
+}
+
+@media (max-width: 1200px) {
+    .hero-painter {
+        right: -5%;
+        height: 80%;
+        opacity: 0.6;
+        z-index: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-painter {
+        display: none;
+    }
+}
+
 .hero-content {
     max-width: 900px;
     padding: 0 2rem;
