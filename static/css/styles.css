@@ -861,11 +861,11 @@ img {
     position: absolute;
     top: -50%;
     bottom: -50%;
-    left: 20%;
+    left: 60%;
     right: -100vw;
-    background: #021847;
+    background: linear-gradient(135deg, #021847 0%, #0b2559 100%);
     z-index: 1;
-    box-shadow: -10px 0 30px rgba(0,0,0,0.2);
+    box-shadow: -15px 0 30px rgba(2, 24, 71, 0.2);
 }
 .hero-bg-shapes {
     display: none;
