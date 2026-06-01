@@ -2,83 +2,38 @@
 {% block title %}{{ site.get('meta_title', 'Grupo Dewill | Suministros Industriales') }}{% endblock %}
 
 {% block content %}
-<!-- HERO STATIC BANNER -->
-<section class="hero-static">
-    <div class="hero-static-container">
-        <!-- Badge 20 años (posicionado absolutamente sobre el hero) -->
-        <div class="hero-badge-20y">
-            <div class="badge-sun">
-                <div class="sun-ray"></div>
-                <div class="sun-ray"></div>
-                <div class="sun-ray"></div>
-                <div class="sun-ray"></div>
-                <div class="sun-ray"></div>
-                <div class="sun-ray"></div>
+<!-- HERO CAROUSEL -->
+<section class="hero-carousel-section">
+    {% if banners and banners|length > 0 %}
+        <div class="hero-carousel" id="mainBannerCarousel">
+            <div class="carousel-track">
+                {% for banner in banners %}
+                    <div class="carousel-slide {% if loop.first %}active{% endif %}">
+                        <a href="{{ banner.cta_link or '#' }}">
+                            <img src="{{ url_for('static', filename=banner.image_url) }}" alt="{{ banner.title or 'Banner' }}">
+                        </a>
+                    </div>
+                {% endfor %}
             </div>
-            <div class="badge-ribbon"></div>
-            <div class="badge-inner">
-                <span class="badge-top">MÁS DE</span>
-                <span class="badge-mid">20</span>
-                <span class="badge-mid2">AÑOS</span>
-                <span class="badge-bot">DE EXPERIENCIA</span>
-                <div class="badge-stars">
-                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+            {% if banners|length > 1 %}
+                <button class="carousel-control prev" onclick="moveCarousel(-1)"><i class="fas fa-chevron-left"></i></button>
+                <button class="carousel-control next" onclick="moveCarousel(1)"><i class="fas fa-chevron-right"></i></button>
+                <div class="carousel-indicators">
+                    {% for banner in banners %}
+                        <span class="dot {% if loop.first %}active{% endif %}" onclick="goToSlide({{ loop.index0 }})"></span>
+                    {% endfor %}
                 </div>
+            {% endif %}
+        </div>
+    {% else %}
+        <!-- Default Fallback si no hay banners -->
+        <div class="hero-fallback">
+            <div class="fallback-content">
+                <h2>Bienvenido a Grupo Dewill</h2>
+                <p>Configura tus banners en el panel administrativo.</p>
             </div>
         </div>
-        <!-- Contenido izquierdo -->
-        <div class="hero-content">
-            <h1>PINTURAS, HERRAMIENTAS<br>Y SOLUCIONES QUE<br><span>TRANSFORMAN TUS PROYECTOS</span></h1>
-            <p>Ofrecemos productos de alta calidad y las mejores marcas para la construcción, industria y hogar en todo el Perú.</p>
-            <div class="hero-features">
-                <div class="feature"><i class="fas fa-shield-alt"></i><span>CALIDAD<br>GARANTIZADA</span></div>
-                <div class="feature"><i class="fas fa-truck"></i><span>ENVÍOS A TODO<br>EL PERÚ</span></div>
-                <div class="feature"><i class="fas fa-headset"></i><span>ASESORÍA<br>ESPECIALIZADA</span></div>
-                <div class="feature"><i class="fas fa-building"></i><span>VENTA AL POR<br>MAYOR Y MENOR</span></div>
-            </div>
-            <div class="hero-brands-box">
-                <div class="hero-brands-title">TRABAJAMOS CON LAS MEJORES MARCAS DEL MERCADO</div>
-                <div class="hero-brands-logos">
-                    <!-- ANYPSA -->
-                    <div class="brand-item logo-anypsa">
-                        <svg viewBox="0 0 100 65" width="52" height="35">
-                            <path d="M50 2 L12 55 L33 55 L50 26 L67 55 L88 55 Z" fill="white"/>
-                            <rect x="33" y="58" width="34" height="5" rx="1" fill="white"/>
-                            <polygon points="44,56 50,50 56,56" fill="white"/>
-                        </svg>
-                        <span>ANYPSA</span>
-                    </div>
-                    <!-- AMERICAN COLORS -->
-                    <div class="brand-item logo-american">
-                        <div class="am-icon">A</div>
-                        <div class="am-text">AMERICAN<br>COLORS</div>
-                    </div>
-                    <!-- Ceresita -->
-                    <div class="brand-item logo-ceresita">
-                        <div class="cer-border">
-                            <span>Ceresita</span>
-                        </div>
-                    </div>
-                    <!-- CPP -->
-                    <div class="brand-item logo-cpp">
-                        CPP
-                    </div>
-                    <!-- TEKNO -->
-                    <div class="brand-item logo-tekno">
-                        TE<span class="tekno-k"><span class="k-bar"></span><span class="k-arm1"></span><span class="k-arm2"></span></span>NO
-                    </div>
-                </div>
-            </div>
-            <div class="hero-cta">
-                <a href="{{ url_for('productos') }}" class="btn btn-primary">VER PRODUCTOS <i class="fas fa-arrow-right"></i></a>
-                <a href="https://wa.me/{{ site.get('whatsapp', '51977585654') }}" target="_blank" class="btn btn-outline">COTIZA POR WHATSAPP <i class="fab fa-whatsapp"></i></a>
-            </div>
-        </div>
-        <!-- Imagen derecha -->
-        <div class="hero-image">
-            <div class="hero-bg-shapes"></div>
-        </div>
-    </div>
+    {% endif %}
 </section>
 
 

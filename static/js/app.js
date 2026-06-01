@@ -808,3 +808,56 @@ function toggleMobileMenu() {
         hamburger.classList.toggle('is-active');
     }
 }
+
+// ==================== HERO CAROUSEL ====================
+let currentSlide = 0;
+let carouselInterval;
+
+function initCarousel() {
+    const slides = document.querySelectorAll('.carousel-slide');
+    if (slides.length <= 1) return;
+
+    startCarousel();
+}
+
+function showSlide(index) {
+    const slides = document.querySelectorAll('.carousel-slide');
+    const dots = document.querySelectorAll('.carousel-indicators .dot');
+    
+    if (slides.length === 0) return;
+
+    if (index >= slides.length) currentSlide = 0;
+    else if (index < 0) currentSlide = slides.length - 1;
+    else currentSlide = index;
+
+    slides.forEach(slide => slide.classList.remove('active'));
+    dots.forEach(dot => dot.classList.remove('active'));
+
+    slides[currentSlide].classList.add('active');
+    if (dots[currentSlide]) dots[currentSlide].classList.add('active');
+}
+
+function moveCarousel(direction) {
+    showSlide(currentSlide + direction);
+    resetCarouselInterval();
+}
+
+function goToSlide(index) {
+    showSlide(index);
+    resetCarouselInterval();
+}
+
+function startCarousel() {
+    carouselInterval = setInterval(() => {
+        moveCarousel(1);
+    }, 5000);
+}
+
+function resetCarouselInterval() {
+    clearInterval(carouselInterval);
+    startCarousel();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    initCarousel();
+});
