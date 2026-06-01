@@ -861,3 +861,16 @@ function resetCarouselInterval() {
 document.addEventListener('DOMContentLoaded', () => {
     initCarousel();
 });
+
+
+// Featured Products Slider
+function scrollFeaturedSlider(direction) {
+    const slider = document.getElementById('featuredSlider');
+    if (slider) {
+        const scrollAmount = 300;
+        slider.scrollBy({
+            left: direction * scrollAmount,
+            behavior: 'smooth'
+        });
+    }
+}
