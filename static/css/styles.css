@@ -868,16 +868,17 @@ img {
     display: none; /* Removed the old diagonal lines */
 }
 .hero-image img {
-    position: relative;
+    position: absolute;
     z-index: 2;
-    height: 95%;
+    height: 125%;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-35%);
     object-fit: contain;
     width: auto;
-    max-width: 110%;
-    transform: scale(1.1) translateX(20px);
-    transform-origin: bottom center;
-    filter: drop-shadow(-20px 20px 30px rgba(0, 0, 0, 0.15)) 
-            drop-shadow(0 0 50px rgba(8, 28, 59, 0.1));
+    max-width: none;
+    filter: drop-shadow(-20px 20px 30px rgba(0, 0, 0, 0.25)) 
+            drop-shadow(0 0 50px rgba(8, 28, 59, 0.2));
 }
 
 
