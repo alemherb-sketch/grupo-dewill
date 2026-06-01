@@ -1725,7 +1725,7 @@ img {
 
 /* ========== FOOTER ========== */
 .footer {
-    background: linear-gradient(135deg, #021a69 0%, #0044ff 100%);
+    background-color: var(--secondary);
     padding: 5rem 0 2rem;
     position: relative;
 }
