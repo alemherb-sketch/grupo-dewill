@@ -361,7 +361,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 100);
     }
 
-    renderProducts();
+    // Only render products client-side if we are on the static page
+    // The server-rendered Flask products page has products-grid-new class
+    const grid = document.getElementById('productsGrid');
+    if (grid && !grid.classList.contains('products-grid-new')) {
+        renderProducts();
+    }
     updateQuoteUI();
     setupEventListeners();
     initHeroAnimations();
