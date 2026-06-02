@@ -3478,3 +3478,28 @@ img {
         min-width: unset;
     }
 }
+
+/* Watermark Background Transparency */
+section, 
+.section, 
+.about-new-section, 
+.why-section, 
+.featured-section, 
+.brands-section, 
+.products-main-section, 
+.gallery-section, 
+.contacto-section, 
+.blog-section, 
+.nosotros-section, 
+.certifications-section, 
+.benefits-bar, 
+.products-layout, 
+.products-sidebar, 
+.products-main-content,
+.hero-static,
+.hero-static-container,
+.hero-content,
+.page-hero-products {
+    background: transparent !important;
+    background-color: transparent !important;
+}
