@@ -120,60 +120,63 @@
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Right Column: Form -->
-            <div class="contact-form-col">
-                <div class="form-card">
-                    <h3>Envíanos un <span class="text-primary">mensaje</span></h3>
-                    <p>Completa el formulario y uno de nuestros asesores se comunicará contigo.</p>
-                    <form action="#" method="POST" class="contact-form">
-                        <div class="form-group">
-                            <input type="text" class="form-control" placeholder="Nombre completo" required>
-                        </div>
-                        <div class="form-group">
-                            <input type="email" class="form-control" placeholder="Correo electrónico" required>
-                        </div>
-                        <div class="form-group">
-                            <input type="tel" class="form-control" placeholder="Teléfono / WhatsApp" required>
-                        </div>
-                        <div class="form-group">
-                            <input type="text" class="form-control" placeholder="Asunto" required>
-                        </div>
-                        <div class="form-group">
-                            <textarea class="form-control" rows="5" placeholder="Mensaje" required></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100"><i class="fas fa-paper-plane"></i> ENVIAR MENSAJE</button>
-                    </form>
-                </div>
-                
-                <div class="other-contacts-card">
-                    <h4>Otras formas de contacto</h4>
-                    <div class="other-contact-item">
-                        <div class="oc-icon whatsapp"><i class="fab fa-whatsapp"></i></div>
-                        <div class="oc-text">
-                            <span>WhatsApp Corporativo</span>
-                            <strong>{{ site.get('phone', '01 123 4567') }}</strong>
-                        </div>
-                    </div>
-                    <div class="other-contact-item">
-                        <div class="oc-icon email"><i class="fas fa-envelope"></i></div>
-                        <div class="oc-text">
-                            <span>Correo Electrónico</span>
-                            <strong>ventas@grupodewill.com</strong>
-                        </div>
-                    </div>
-                    <div class="other-contact-item social">
-                        <div class="oc-icon twitter"><i class="fab fa-twitter"></i></div>
-                        <div class="oc-text">
-                            <span>Síguenos en Redes Sociales</span>
-                            <div class="oc-socials">
-                                <a href="{{ site.get('facebook','#') }}"><i class="fab fa-facebook-f"></i></a>
-                                <a href="{{ site.get('instagram','#') }}"><i class="fab fa-instagram"></i></a>
-                                <a href="#"><i class="fab fa-youtube"></i></a>
-                                <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                <!-- Bottom Layout: Form and Other Contacts -->
+                <div class="contact-bottom-layout">
+                    <div class="other-contacts-card">
+                        <h4>Otras formas de contacto</h4>
+                        <div class="other-contact-item">
+                            <div class="oc-icon whatsapp"><i class="fab fa-whatsapp"></i></div>
+                            <div class="oc-text">
+                                <span>WhatsApp Corporativo</span>
+                                <strong>{{ site.get('phone', '01 123 4567') }}</strong>
                             </div>
                         </div>
+                        <div class="other-contact-item">
+                            <div class="oc-icon email"><i class="fas fa-envelope"></i></div>
+                            <div class="oc-text">
+                                <span>Correo Electrónico</span>
+                                <strong>ventas@grupodewill.com</strong>
+                            </div>
+                        </div>
+                        <div class="other-contact-item social">
+                            <div class="oc-icon twitter"><i class="fab fa-twitter"></i></div>
+                            <div class="oc-text">
+                                <span>Síguenos en</span>
+                                <div class="oc-socials">
+                                    <a href="{{ site.get('facebook', '#') }}"><i class="fab fa-facebook-f"></i></a>
+                                    <a href="{{ site.get('instagram', '#') }}"><i class="fab fa-instagram"></i></a>
+                                    <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-card">
+                        <h3>Envíanos un <span class="text-primary">mensaje</span></h3>
+                        <p>Completa el formulario y uno de nuestros asesores se comunicará contigo.</p>
+                        <form action="#" method="POST" class="contact-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <input type="text" class="form-control" placeholder="Nombre completo" required>
+                                </div>
+                                <div class="form-group">
+                                    <input type="email" class="form-control" placeholder="Correo electrónico" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <input type="tel" class="form-control" placeholder="Teléfono / WhatsApp" required>
+                                </div>
+                                <div class="form-group">
+                                    <input type="text" class="form-control" placeholder="Asunto" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <textarea class="form-control" rows="4" placeholder="Mensaje" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100"><i class="fas fa-paper-plane"></i> ENVIAR MENSAJE</button>
+                        </form>
                     </div>
                 </div>
             </div>
