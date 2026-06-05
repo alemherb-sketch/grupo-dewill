@@ -4,84 +4,8 @@
 
 {% block content %}
 <!-- Top Header Section -->
-<section class="contact-hero-banner">
-    <!-- Left Geometric Shapes -->
-    <div class="hero-shapes">
-        <div class="shape-red-triangle"></div>
-        <div class="shape-blue-triangle"></div>
-        <div class="shape-blue-bottom"></div>
-    </div>
-    
-    <div class="contact-hero-container">
-        <div class="contact-hero-content animate-fade-up">
-            <h1 class="contact-hero-title">Contácta<span class="text-primary">nos</span></h1>
-            <p class="contact-hero-subtitle">Estamos para ayudarte a hacer realidad tus proyectos.<br>Visítanos en cualquiera de nuestras tiendas o escríbenos.</p>
-            
-            <div class="contact-hero-features">
-                <div class="hero-feature">
-                    <div class="h-feature-icon"><i class="fas fa-headset"></i></div>
-                    <h4>Atención Personalizada</h4>
-                    <p>Te asesoramos en<br>cada paso de tu proyecto.</p>
-                </div>
-                <div class="hero-feature">
-                    <div class="h-feature-icon"><i class="fas fa-phone-alt"></i></div>
-                    <h4>Respuesta Rápida</h4>
-                    <p>Nos comunicamos<br>contigo a la brevedad.</p>
-                </div>
-                <div class="hero-feature">
-                    <div class="h-feature-icon"><i class="fas fa-truck"></i></div>
-                    <h4>Envíos a Todo el Perú</h4>
-                    <p>Llevamos nuestros productos<br>a donde los necesites.</p>
-                </div>
-                <div class="hero-feature">
-                    <div class="h-feature-icon"><i class="fas fa-shield-alt"></i></div>
-                    <h4>Calidad Garantizada</h4>
-                    <p>Productos de alta calidad<br>para resultados duraderos.</p>
-                </div>
-            </div>
-            
-            <a href="#contacto-form" class="hero-cta-btn">
-                <div class="hero-cta-icon"><i class="fas fa-comment-dots"></i></div>
-                <span class="hero-cta-text">¡Estamos para ayudarte!</span>
-                <div class="hero-cta-arrow"><i class="fas fa-chevron-right"></i></div>
-            </a>
-        </div>
-    </div>
-    
-    <div class="contact-hero-image">
-        <div class="hero-image-overlay"></div>
-        <img src="{{ url_for('static', filename='assets/banner_contacto.jpg') }}" alt="Oficina Grupo Dewill" class="hero-bg-pic" onerror="this.src='{{ url_for('static', filename='assets/ambiente_oficina.png') }}'">
-    </div>
-
-    <!-- Bottom Bar -->
-    <div class="hero-bottom-bar">
-        <div class="hero-bb-container">
-            <div class="hero-bb-item">
-                <div class="bb-icon-circle"><i class="fas fa-map-marker-alt"></i></div>
-                <span>Visítanos en nuestras<br>tiendas</span>
-            </div>
-            <div class="hero-bb-divider"></div>
-            <div class="hero-bb-item">
-                <div class="bb-icon-circle"><i class="fas fa-phone-alt"></i></div>
-                <span>+51 983 570 641</span>
-            </div>
-            <div class="hero-bb-divider"></div>
-            <div class="hero-bb-item">
-                <div class="bb-icon-circle"><i class="fas fa-envelope"></i></div>
-                <span>ventas@grupodewill.com</span>
-            </div>
-            <div class="hero-bb-divider"></div>
-            <div class="hero-bb-item socials-item">
-                <div class="bb-icon-circle"><i class="fas fa-globe"></i></div>
-                <span>www.grupodewill.com</span>
-                <div class="hero-bb-social-icons">
-                    <a href="{{ site.get('facebook', '#') }}"><i class="fab fa-facebook-f"></i></a>
-                    <a href="{{ site.get('instagram', '#') }}"><i class="fab fa-instagram"></i></a>
-                    <a href="#"><i class="fab fa-linkedin-in"></i></a>
-                </div>
-            </div>
-        </div>
-    </div>
+<section class="contact-hero-static" style="padding: 0; margin: 0; background: #fff; width: 100%;">
+    <img src="{{ url_for('static', filename='assets/banner_contacto.png') }}" alt="Banner Contacto" style="width: 100%; display: block;">
 </section>
 
 <!-- Main Contact Section -->
