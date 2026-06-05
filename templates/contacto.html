@@ -39,12 +39,48 @@
                     <p>Productos de alta calidad<br>para resultados duraderos.</p>
                 </div>
             </div>
+            
+            <a href="#contacto-form" class="hero-cta-btn">
+                <div class="hero-cta-icon"><i class="fas fa-comment-dots"></i></div>
+                <span class="hero-cta-text">¡Estamos para ayudarte!</span>
+                <div class="hero-cta-arrow"><i class="fas fa-chevron-right"></i></div>
+            </a>
         </div>
     </div>
     
     <div class="contact-hero-image">
         <div class="hero-image-overlay"></div>
         <img src="{{ url_for('static', filename='assets/banner_contacto.jpg') }}" alt="Oficina Grupo Dewill" class="hero-bg-pic" onerror="this.src='{{ url_for('static', filename='assets/ambiente_oficina.png') }}'">
+    </div>
+
+    <!-- Bottom Bar -->
+    <div class="hero-bottom-bar">
+        <div class="hero-bb-container">
+            <div class="hero-bb-item">
+                <div class="bb-icon-circle"><i class="fas fa-map-marker-alt"></i></div>
+                <span>Visítanos en nuestras<br>tiendas</span>
+            </div>
+            <div class="hero-bb-divider"></div>
+            <div class="hero-bb-item">
+                <div class="bb-icon-circle"><i class="fas fa-phone-alt"></i></div>
+                <span>+51 983 570 641</span>
+            </div>
+            <div class="hero-bb-divider"></div>
+            <div class="hero-bb-item">
+                <div class="bb-icon-circle"><i class="fas fa-envelope"></i></div>
+                <span>ventas@grupodewill.com</span>
+            </div>
+            <div class="hero-bb-divider"></div>
+            <div class="hero-bb-item socials-item">
+                <div class="bb-icon-circle"><i class="fas fa-globe"></i></div>
+                <span>www.grupodewill.com</span>
+                <div class="hero-bb-social-icons">
+                    <a href="{{ site.get('facebook', '#') }}"><i class="fab fa-facebook-f"></i></a>
+                    <a href="{{ site.get('instagram', '#') }}"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
 

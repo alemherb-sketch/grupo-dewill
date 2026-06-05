@@ -2841,6 +2841,29 @@ img {
 .hero-bg-pic { width: 100%; height: 100%; object-fit: cover; }
 .hero-image-overlay { position: absolute; inset: 0; background: linear-gradient(to right, rgba(8,28,59,0.4), transparent); }
 
+/* Contact Banner Button */
+.hero-cta-btn { display: inline-flex; align-items: center; background: #0b1c3a; color: white; text-decoration: none; border-radius: 40px; margin-top: 2.5rem; overflow: hidden; width: fit-content; box-shadow: 0 10px 25px rgba(0,0,0,0.15); transition: transform 0.3s; }
+.hero-cta-btn:hover { transform: translateY(-3px); }
+.hero-cta-icon { background: var(--primary); color: white; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; margin: 5px 5px 5px 8px; }
+.hero-cta-text { padding: 0 1.5rem 0 1rem; font-weight: 700; font-size: 1.1rem; }
+.hero-cta-arrow { background: var(--primary); color: white; height: 54px; width: 50px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; border-radius: 0 40px 40px 0; }
+
+/* Contact Banner Bottom Bar */
+.hero-bottom-bar { position: absolute; bottom: 0; left: 0; width: 100%; background: #0b1c3a; color: white; z-index: 10; border-top: 2px solid rgba(255,255,255,0.05); }
+.hero-bb-container { max-width: 1400px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 2rem; }
+.hero-bb-item { display: flex; align-items: center; gap: 1rem; font-size: 0.95rem; line-height: 1.3; font-weight: 500; }
+.hero-bb-item.socials-item { gap: 0.5rem; }
+.bb-icon-circle { width: 40px; height: 40px; border: 1.5px solid rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.1rem; }
+.hero-bb-divider { width: 2px; height: 35px; background: var(--primary); }
+.hero-bb-social-icons { display: flex; gap: 0.5rem; margin-left: 1rem; }
+.hero-bb-social-icons a { width: 32px; height: 32px; background: white; color: #0b1c3a; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: 0.3s; font-size: 0.9rem; }
+.hero-bb-social-icons a:hover { background: var(--primary); color: white; }
+
+@media (max-width: 1200px) {
+    .hero-bb-container { flex-wrap: wrap; justify-content: center; gap: 1.5rem; }
+    .hero-bb-divider { display: none; }
+}
+
 .contact-main-section { padding: 4rem 0; background: #ffffff; }
 .breadcrumb { margin-bottom: 3rem; color: var(--text-muted); font-size: 0.9rem; }
 .breadcrumb a { color: var(--secondary); font-weight: 600; text-decoration: none; margin-right: 0.5rem; }
