@@ -36,24 +36,23 @@
     {% endif %}
 </section>
 
-
-
-<!-- BRANDS / REPRESENTATIONS -->
-{% if brands %}
-<section class="section brands-section">
+<!-- PRODUCT LINES / CATEGORIES -->
+{% if categories %}
+<section class="section categories-section">
     <div class="container">
         <div class="section-header">
-            <span class="section-tag"><i class="fas fa-handshake"></i> Representaciones</span>
-            <h2 class="section-title">Nuestras <span class="gradient-text">Marcas Representadas</span></h2>
+            <span class="section-tag"><i class="fas fa-layer-group"></i> Categorías</span>
+            <h2 class="section-title">Línea de <span class="gradient-text">Productos</span></h2>
+            <p class="section-subtitle">Explora nuestro catálogo por áreas especializadas.</p>
         </div>
-        <div class="brands-grid">
-            {% for brand in brands %}
-            <a href="{{ url_for('productos', marca=brand.slug) }}" class="brand-card glass-card">
-                {% if brand.logo_url %}
-                <img src="{{ url_for('static', filename=brand.logo_url) }}" alt="{{ brand.name }}">
-                {% else %}
-                <span class="brand-name-text">{{ brand.name }}</span>
-                {% endif %}
+        <div class="categories-grid">
+            {% for cat in categories %}
+            <a href="{{ url_for('productos', cat=cat.slug) }}" class="category-card glass-card animate-fade-up">
+                <div class="category-icon">
+                    <i class="{{ cat.icon }}"></i>
+                </div>
+                <h3 class="category-name">{{ cat.name }}</h3>
+                <span class="category-link">Ver catálogo <i class="fas fa-arrow-right"></i></span>
             </a>
             {% endfor %}
         </div>
@@ -99,6 +98,29 @@
         </div>
         <div class="section-cta">
             <a href="{{ url_for('productos') }}" class="btn btn-primary"><i class="fas fa-th-large"></i> Ver Todo el Catálogo</a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- BRANDS / REPRESENTATIONS -->
+{% if brands %}
+<section class="section brands-section">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-tag"><i class="fas fa-handshake"></i> Representaciones</span>
+            <h2 class="section-title">Nuestras <span class="gradient-text">Marcas Representadas</span></h2>
+        </div>
+        <div class="brands-grid">
+            {% for brand in brands %}
+            <a href="{{ url_for('productos', marca=brand.slug) }}" class="brand-card glass-card">
+                {% if brand.logo_url %}
+                <img src="{{ url_for('static', filename=brand.logo_url) }}" alt="{{ brand.name }}">
+                {% else %}
+                <span class="brand-name-text">{{ brand.name }}</span>
+                {% endif %}
+            </a>
+            {% endfor %}
         </div>
     </div>
 </section>

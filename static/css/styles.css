@@ -3536,3 +3536,95 @@ section,
     color: rgba(255, 255, 255, 0.9) !important;
     text-shadow: 0 1px 6px rgba(0, 0, 0, 0.4) !important;
 }
+
+/* ====== 1.5 CATEGORIES / LÍNEA DE PRODUCTOS ====== */
+.categories-section { padding: 4rem 0; background: #ffffff; }
+.categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+.category-card {
+    background: var(--bg-surface);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+    border: 1px solid rgba(0,0,0,0.05);
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+.category-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    opacity: 0;
+    transition: var(--transition);
+    z-index: -1;
+}
+.category-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-lg);
+    border-color: transparent;
+}
+.category-card:hover::before {
+    opacity: 1;
+}
+.category-icon {
+    width: 70px;
+    height: 70px;
+    background: #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: var(--primary);
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    transition: var(--transition);
+}
+.category-card:hover .category-icon {
+    color: var(--secondary);
+    transform: scale(1.1);
+}
+.category-name {
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+    color: var(--secondary);
+    margin-bottom: 0.75rem;
+    font-weight: 700;
+    transition: var(--transition);
+}
+.category-card:hover .category-name {
+    color: #ffffff;
+}
+.category-link {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: var(--transition);
+}
+.category-card:hover .category-link {
+    color: #ffffff;
+}
+.category-link i {
+    font-size: 0.8rem;
+    transition: transform 0.3s;
+}
+.category-card:hover .category-link i {
+    transform: translateX(5px);
+}
+
