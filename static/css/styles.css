@@ -2607,7 +2607,7 @@ img {
 .products-layout { display: flex; gap: 2rem; align-items: flex-start; }
 @media (max-width: 992px) { .products-layout { flex-direction: column; } }
 
-.products-sidebar { width: 280px; flex-shrink: 0; }
+.products-sidebar { width: 240px; flex-shrink: 0; }
 @media (max-width: 992px) { .products-sidebar { width: 100%; } }
 
 .sidebar-box {
@@ -2661,8 +2661,8 @@ img {
 .products-main-content { flex: 1; width: 100%; }
 .products-grid-new {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(185px, 1fr));
+    gap: 1.25rem;
 }
 .product-card-new {
     background: #ffffff;
@@ -2686,10 +2686,10 @@ img {
 .product-card-name a { color: inherit; }
 .product-card-brand { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem; font-weight: 500; }
 .product-card-desc { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; flex: 1; line-height: 1.5; }
-.product-card-actions { display: flex; gap: 0.5rem; margin-top: auto; }
-.btn-ver-detalle { flex: 1; background: transparent; border: 1px solid var(--secondary); color: var(--secondary); text-align: center; padding: 0.6rem; border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 600; transition: var(--transition); }
+.product-card-actions { display: flex; gap: 0.25rem; margin-top: auto; }
+.btn-ver-detalle { flex: 1; background: transparent; border: 1px solid var(--secondary); color: var(--secondary); text-align: center; padding: 0.5rem 0.25rem; border-radius: var(--radius-sm); font-size: 0.75rem; font-weight: 700; transition: var(--transition); letter-spacing: -0.2px; }
 .btn-ver-detalle:hover { background: var(--secondary); color: white; }
-.btn-cotizar-card { flex: 1; background: var(--primary); border: none; color: white; padding: 0.6rem; border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: var(--transition); }
+.btn-cotizar-card { flex: 1; background: var(--primary); border: none; color: white; padding: 0.5rem 0.25rem; border-radius: var(--radius-sm); font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: var(--transition); letter-spacing: -0.2px; }
 .btn-cotizar-card:hover { background: var(--primary-dark); box-shadow: 0 4px 10px rgba(217,32,39,0.3); transform: translateY(-2px); }
 
 .product-card-colors { display: flex; gap: 0.25rem; margin-bottom: 1rem; }
