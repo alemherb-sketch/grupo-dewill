@@ -2420,6 +2420,7 @@ img {
     position: relative;
     width: 100%;
     overflow: hidden;
+    background-color: #ffffff; /* Añadido para mezclar bordes si el banner es muy alto */
 }
 
 .hero-carousel {
@@ -2452,14 +2453,19 @@ img {
 }
 
 .carousel-slide a {
-    display: block;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: 100%;
+    height: 100%;
     line-height: 0;
 }
 
 .carousel-slide img {
     width: 100%;
     height: auto;
+    max-height: calc(100vh - 130px);
+    object-fit: contain;
     display: block;
 }
 
