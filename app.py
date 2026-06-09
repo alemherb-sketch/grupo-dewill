@@ -631,9 +631,10 @@ def admin_product_import():
                     if not pd.isna(row['Marca']):
                         marca_name = str(row['Marca']).strip()
                         if marca_name:
-                            brand = Brand.query.filter(Brand.name.ilike(marca_name)).first()
+                            marca_slug = slugify(marca_name)
+                            brand = Brand.query.filter(Brand.slug == marca_slug).first()
                             if not brand:
-                                brand = Brand(name=marca_name, slug=slugify(marca_name))
+                                brand = Brand(name=marca_name, slug=marca_slug)
                                 db.session.add(brand)
                                 db.session.flush()
                                 
@@ -659,9 +660,10 @@ def admin_product_import():
                         if not pd.isna(row['Categoria']):
                             cat_name = str(row['Categoria']).strip()
                             if cat_name:
-                                category = Category.query.filter(Category.name.ilike(cat_name)).first()
+                                cat_slug = slugify(cat_name)
+                                category = Category.query.filter(Category.slug == cat_slug).first()
                                 if not category:
-                                    category = Category(name=cat_name, slug=slugify(cat_name), order=0)
+                                    category = Category(name=cat_name, slug=cat_slug, order=0)
                                     db.session.add(category)
                                     db.session.flush()
                                 
@@ -670,9 +672,10 @@ def admin_product_import():
                         if category and not pd.isna(row['Sub Categoria']):
                             subcat_name = str(row['Sub Categoria']).strip()
                             if subcat_name:
-                                subcategory = SubCategory.query.filter(SubCategory.name.ilike(subcat_name), SubCategory.category_id == category.id).first()
+                                subcat_slug = slugify(subcat_name)
+                                subcategory = SubCategory.query.filter(SubCategory.slug == subcat_slug, SubCategory.category_id == category.id).first()
                                 if not subcategory:
-                                    subcategory = SubCategory(name=subcat_name, slug=slugify(subcat_name), category_id=category.id)
+                                    subcategory = SubCategory(name=subcat_name, slug=subcat_slug, category_id=category.id)
                                     db.session.add(subcategory)
                                     db.session.flush()
                                 
@@ -711,9 +714,10 @@ def admin_product_import():
                     if 'Presentacion' in df.columns and not pd.isna(row['Presentacion']):
                         pres_name = str(row['Presentacion']).strip()
                         if pres_name:
-                            pres = Presentation.query.filter(Presentation.name.ilike(pres_name)).first()
+                            pres_slug = slugify(pres_name)
+                            pres = Presentation.query.filter(Presentation.slug == pres_slug).first()
                             if not pres:
-                                pres = Presentation(name=pres_name, slug=slugify(pres_name))
+                                pres = Presentation(name=pres_name, slug=pres_slug)
                                 db.session.add(pres)
                                 db.session.flush()
                             if pres not in product.presentations:
