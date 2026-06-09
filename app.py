@@ -747,8 +747,16 @@ def admin_product_import():
                 return redirect(url_for('admin_products'))
                 
             except Exception as e:
-                db.session.rollback()
-                flash(f'Error al procesar el archivo Excel: {str(e)}', 'error')
+                import traceback
+                traceback.print_exc()
+                try:
+                    db.session.rollback()
+                except Exception:
+                    pass
+                error_msg = str(e)
+                if len(error_msg) > 500:
+                    error_msg = error_msg[:500] + '...'
+                flash(f'Error al procesar el archivo Excel: {error_msg}', 'error')
                 return redirect(request.url)
         else:
             flash('Formato de archivo no válido. Use .xlsx o .xls', 'error')
@@ -855,8 +863,16 @@ def admin_products_delete_all():
         db.session.commit()
         flash(f'{count} productos han sido eliminados correctamente.', 'success')
     except Exception as e:
-        db.session.rollback()
-        flash(f'Error al eliminar productos: {str(e)}', 'error')
+        import traceback
+        traceback.print_exc()
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        error_msg = str(e)
+        if len(error_msg) > 500:
+            error_msg = error_msg[:500] + '...'
+        flash(f'Error al eliminar productos: {error_msg}', 'error')
     return redirect(url_for('admin_products'))
 
 @app.route('/admin/productos/imagen/<int:img_id>/eliminar', methods=['POST'])
