@@ -579,7 +579,7 @@ def admin_products():
     cat_id = request.args.get('cat', '')
     page = request.args.get('page', 1, type=int)
     query = Product.query
-    if q: query = query.filter(Product.name.ilike(f'%{q}%'))
+    if q: query = query.filter(db.or_(Product.name.ilike(f'%{q}%'), Product.sku.ilike(f'%{q}%')))
     if cat_id: query = query.filter_by(category_id=int(cat_id))
     products = query.order_by(Product.created_at.desc()).paginate(page=page, per_page=20, error_out=False)
     categories = Category.query.order_by(Category.order).all()
