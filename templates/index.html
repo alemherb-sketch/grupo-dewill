@@ -111,16 +111,28 @@
             <span class="section-tag"><i class="fas fa-handshake"></i> Representaciones</span>
             <h2 class="section-title">Nuestras <span class="gradient-text">Marcas Representadas</span></h2>
         </div>
-        <div class="brands-grid">
-            {% for brand in brands %}
-            <a href="{{ url_for('productos', marca=brand.slug) }}" class="brand-card glass-card">
-                {% if brand.logo_url %}
-                <img src="{{ url_for('static', filename=brand.logo_url) }}" alt="{{ brand.name }}">
-                {% else %}
-                <span class="brand-name-text">{{ brand.name }}</span>
-                {% endif %}
-            </a>
-            {% endfor %}
+        <div class="brands-marquee-container">
+            <div class="brands-marquee-track">
+                {% for brand in brands %}
+                <a href="{{ url_for('productos', marca=brand.slug) }}" class="brand-card glass-card">
+                    {% if brand.logo_url %}
+                    <img src="{{ url_for('static', filename=brand.logo_url) }}" alt="{{ brand.name }}">
+                    {% else %}
+                    <span class="brand-name-text">{{ brand.name }}</span>
+                    {% endif %}
+                </a>
+                {% endfor %}
+                <!-- Duplicado para efecto infinito -->
+                {% for brand in brands %}
+                <a href="{{ url_for('productos', marca=brand.slug) }}" class="brand-card glass-card">
+                    {% if brand.logo_url %}
+                    <img src="{{ url_for('static', filename=brand.logo_url) }}" alt="{{ brand.name }}">
+                    {% else %}
+                    <span class="brand-name-text">{{ brand.name }}</span>
+                    {% endif %}
+                </a>
+                {% endfor %}
+            </div>
         </div>
     </div>
 </section>
