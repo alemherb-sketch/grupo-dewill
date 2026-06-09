@@ -1040,6 +1040,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+});
 
 // ========== LIVE SEARCH ==========
 document.addEventListener('DOMContentLoaded', () => {
