@@ -40,6 +40,13 @@
                 <li><a href="{{ url_for('blog') }}" class="nav-link {% if request.endpoint in ['blog', 'blog_post'] %}active{% endif %}">BLOG</a></li>
                 <li><a href="{{ url_for('contacto') }}" class="nav-link {% if request.endpoint == 'contacto' %}active{% endif %}">CONTACTO</a></li>
             </ul>
+            <div class="nav-search-container" style="margin-right: 1.5rem;">
+                <form action="{{ url_for('productos') }}" method="GET" class="nav-search" id="globalSearchForm">
+                    <input type="text" name="q" id="globalSearchInput" placeholder="Buscar productos, marcas..." value="{{ request.args.get('q', '') }}" autocomplete="off">
+                    <button type="submit"><i class="fas fa-search"></i></button>
+                </form>
+                <div class="search-results-dropdown" id="globalSearchResults"></div>
+            </div>
             <div class="nav-actions">
                 <button class="btn-cart" id="btnCart" onclick="toggleQuotePanel()">
                     <i class="fas fa-clipboard-list"></i>

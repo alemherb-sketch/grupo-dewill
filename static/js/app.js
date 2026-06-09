@@ -1040,4 +1040,64 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+
+// ========== LIVE SEARCH ==========
+document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('globalSearchInput');
+    const searchResults = document.getElementById('globalSearchResults');
+    let searchTimeout;
+
+    if (searchInput && searchResults) {
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.trim();
+            clearTimeout(searchTimeout);
+
+            if (query.length < 2) {
+                searchResults.classList.remove('show');
+                return;
+            }
+
+            searchResults.innerHTML = '<div class="search-loading"><i class="fas fa-spinner fa-spin"></i> Buscando...</div>';
+            searchResults.classList.add('show');
+
+            searchTimeout = setTimeout(() => {
+                fetch(`/api/productos/search?q=${encodeURIComponent(query)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.length === 0) {
+                            searchResults.innerHTML = '<div class="search-no-results">No se encontraron productos</div>';
+                            return;
+                        }
+
+                        searchResults.innerHTML = data.map(p => `
+                            <a href="/producto/${p.id}" class="search-result-item">
+                                <img src="/static/${p.main_image || 'assets/product_paint.png'}" class="search-result-img" alt="${p.name}">
+                                <div class="search-result-info">
+                                    <span class="search-result-title">${p.name}</span>
+                                    <span class="search-result-cat">${p.category_name || ''} ${p.brand_name ? ' - ' + p.brand_name : ''}</span>
+                                </div>
+                            </a>
+                        `).join('');
+                    })
+                    .catch(err => {
+                        console.error('Error fetching search results:', err);
+                        searchResults.innerHTML = '<div class="search-no-results">Error al buscar</div>';
+                    });
+            }, 300);
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.classList.remove('show');
+            }
+        });
+        
+        // Show again when clicking input if there is text
+        searchInput.addEventListener('focus', () => {
+            if (searchInput.value.trim().length >= 2 && searchResults.innerHTML !== '') {
+                searchResults.classList.add('show');
+            }
+        });
+    }
 });
