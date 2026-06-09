@@ -840,6 +840,21 @@ def admin_product_delete(pid):
     flash('Producto eliminado', 'success')
     return redirect(url_for('admin_products'))
 
+@app.route('/admin/productos/eliminar-todos', methods=['POST'])
+@login_required
+def admin_products_delete_all():
+    try:
+        products = Product.query.all()
+        count = len(products)
+        for p in products:
+            db.session.delete(p)
+        db.session.commit()
+        flash(f'{count} productos han sido eliminados correctamente.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error al eliminar productos: {str(e)}', 'error')
+    return redirect(url_for('admin_products'))
+
 @app.route('/admin/productos/imagen/<int:img_id>/eliminar', methods=['POST'])
 @login_required
 def admin_product_image_delete(img_id):
