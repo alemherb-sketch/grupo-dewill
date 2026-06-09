@@ -1364,5 +1364,10 @@ def admin_colors():
     return render_template('admin/colors.html', colors=PaintColor.query.all())
 
 
+@app.errorhandler(500)
+def internal_server_error(e):
+    import traceback
+    return f"<h1>Internal Server Error (Captured)</h1><pre>{traceback.format_exc()}</pre>", 500
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
