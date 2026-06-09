@@ -1366,8 +1366,12 @@ def admin_colors():
 
 @app.errorhandler(Exception)
 def handle_exception(e):
+    from werkzeug.exceptions import HTTPException
+    if isinstance(e, HTTPException):
+        return e
     import traceback
-    return f"<h1>Global Exception Caught</h1><pre>{traceback.format_exc()}</pre>", 500
+    traceback.print_exc()
+    return f"<h1>Error interno del servidor</h1><pre>{traceback.format_exc()}</pre>", 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
