@@ -199,7 +199,13 @@ def productos():
             
     if q:
         search_term = ''.join(['_' if c.lower() in 'aeiouáéíóú' else c for c in q])
-        query = query.filter(db.or_(Product.name.ilike(f'%{search_term}%'), Product.description.ilike(f'%{search_term}%')))
+        query = query.filter(db.or_(
+            Product.name.ilike(f'%{search_term}%'), 
+            Product.description.ilike(f'%{search_term}%'),
+            Product.sku.ilike(f'%{search_term}%'),
+            Product.brand.has(Brand.name.ilike(f'%{search_term}%')),
+            Product.category.has(Category.name.ilike(f'%{search_term}%'))
+        ))
         
     # Filter by specs
     for spec_name, spec_vals in selected_specs.items():
@@ -237,8 +243,16 @@ def api_search():
     if len(q) < 2:
         return jsonify([])
     search_term = ''.join(['_' if c.lower() in 'aeiouáéíóú' else c for c in q])
-    results = Product.query.filter(Product.is_active == True,
-        db.or_(Product.name.ilike(f'%{search_term}%'), Product.description.ilike(f'%{search_term}%'))).limit(8).all()
+    results = Product.query.filter(
+        Product.is_active == True,
+        db.or_(
+            Product.name.ilike(f'%{search_term}%'), 
+            Product.description.ilike(f'%{search_term}%'),
+            Product.sku.ilike(f'%{search_term}%'),
+            Product.brand.has(Brand.name.ilike(f'%{search_term}%')),
+            Product.category.has(Category.name.ilike(f'%{search_term}%'))
+        )
+    ).limit(8).all()
     return jsonify([p.to_dict() for p in results])
 
 @app.route('/api/producto/<int:product_id>/colores')
@@ -579,7 +593,13 @@ def admin_products():
     cat_id = request.args.get('cat', '')
     page = request.args.get('page', 1, type=int)
     query = Product.query
-    if q: query = query.filter(db.or_(Product.name.ilike(f'%{q}%'), Product.sku.ilike(f'%{q}%')))
+    if q: 
+        query = query.filter(db.or_(
+            Product.name.ilike(f'%{q}%'), 
+            Product.sku.ilike(f'%{q}%'),
+            Product.brand.has(Brand.name.ilike(f'%{q}%')),
+            Product.category.has(Category.name.ilike(f'%{q}%'))
+        ))
     if cat_id: query = query.filter_by(category_id=int(cat_id))
     products = query.order_by(Product.created_at.desc()).paginate(page=page, per_page=20, error_out=False)
     categories = Category.query.order_by(Category.order).all()
