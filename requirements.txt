@@ -7,7 +7,6 @@ Pillow
 gunicorn
 psycopg2-binary
 resend
-pandas
 openpyxl
 duckduckgo-search
 requests

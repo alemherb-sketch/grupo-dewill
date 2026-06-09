@@ -599,85 +599,94 @@ def admin_product_import():
             
         if file and (file.filename.endswith('.xlsx') or file.filename.endswith('.xls')):
             try:
-                import pandas as pd
-                df = pd.read_excel(file)
-                # Normalize columns to Title Case to handle variations like 'CODIGO' or 'codigo'
-                df.columns = [str(c).strip().title() for c in df.columns]
+                from openpyxl import load_workbook
+                wb = load_workbook(filename=file, read_only=True, data_only=True)
+                ws = wb.active
+                
+                # Read headers from first row
+                headers_raw = []
+                for cell in next(ws.iter_rows(min_row=1, max_row=1)):
+                    headers_raw.append(str(cell.value or '').strip().title())
                 
                 required_cols = ['Codigo', 'Categoria', 'Sub Categoria', 'Marca', 'Producto']
                 for col in required_cols:
-                    if col not in df.columns:
+                    if col not in headers_raw:
+                        wb.close()
                         flash(f'Falta la columna requerida: {col}', 'error')
                         return redirect(request.url)
-                        
+                
+                # Build column index map
+                col_map = {name: idx for idx, name in enumerate(headers_raw)}
+                
                 imported = 0
                 skipped = 0
                 cleared_products = set()
                 
-                for index, row in df.iterrows():
-                    # Safely handle missing/nan values
-                    if pd.isna(row['Codigo']):
-                        skipped += 1
-                        continue
-                    codigo = str(row['Codigo']).strip()
+                for row in ws.iter_rows(min_row=2, values_only=True):
+                    # Safely get cell value by column name
+                    def cell(name):
+                        idx = col_map.get(name)
+                        if idx is None or idx >= len(row):
+                            return None
+                        v = row[idx]
+                        if v is None:
+                            return None
+                        return str(v).strip() or None
+                    
+                    codigo = cell('Codigo')
                     if not codigo:
                         skipped += 1
                         continue
                         
-                    prod_name = str(row['Producto']).strip() if not pd.isna(row['Producto']) else 'Sin Nombre'
+                    prod_name = cell('Producto') or 'Sin Nombre'
                     
-                    # 1. Handle Brand FIRST so we can group by brand
+                    # 1. Handle Brand
                     brand = None
-                    if not pd.isna(row['Marca']):
-                        marca_name = str(row['Marca']).strip()
-                        if marca_name:
-                            marca_slug = slugify(marca_name)
-                            brand = Brand.query.filter(Brand.slug == marca_slug).first()
-                            if not brand:
-                                brand = Brand(name=marca_name, slug=marca_slug)
-                                db.session.add(brand)
-                                db.session.flush()
+                    marca_name = cell('Marca')
+                    if marca_name:
+                        marca_slug = slugify(marca_name)
+                        brand = Brand.query.filter(Brand.slug == marca_slug).first()
+                        if not brand:
+                            brand = Brand(name=marca_name, slug=marca_slug)
+                            db.session.add(brand)
+                            db.session.flush()
                                 
-                    # 2. Group products by name AND brand to avoid mixing brands for generic names
+                    # 2. Group products by name AND brand
                     if brand:
                         product = Product.query.filter(Product.name.ilike(prod_name), Product.brand_id == brand.id).first()
                     else:
                         product = Product.query.filter(Product.name.ilike(prod_name), Product.brand_id.is_(None)).first()
                     
                     if product and product.id not in cleared_products:
-                        # Clear old presentation links to ensure Excel is source of truth
                         ProductPresentationColor.query.filter_by(product_id=product.id).delete()
                         cleared_products.add(product.id)
                         db.session.flush()
                     
                     if not product:
-                        # If product name+brand does not exist, check if SKU already exists to avoid conflict
                         if Product.query.filter_by(sku=codigo).first():
                             skipped += 1
                             continue
                         # Handle Category
                         category = None
-                        if not pd.isna(row['Categoria']):
-                            cat_name = str(row['Categoria']).strip()
-                            if cat_name:
-                                cat_slug = slugify(cat_name)
-                                category = Category.query.filter(Category.slug == cat_slug).first()
-                                if not category:
-                                    category = Category(name=cat_name, slug=cat_slug, order=0)
-                                    db.session.add(category)
-                                    db.session.flush()
+                        cat_name = cell('Categoria')
+                        if cat_name:
+                            cat_slug = slugify(cat_name)
+                            category = Category.query.filter(Category.slug == cat_slug).first()
+                            if not category:
+                                category = Category(name=cat_name, slug=cat_slug, order=0)
+                                db.session.add(category)
+                                db.session.flush()
                                 
                         # Handle Sub Category
                         subcategory = None
-                        if category and not pd.isna(row['Sub Categoria']):
-                            subcat_name = str(row['Sub Categoria']).strip()
-                            if subcat_name:
-                                subcat_slug = slugify(subcat_name)
-                                subcategory = SubCategory.query.filter(SubCategory.slug == subcat_slug, SubCategory.category_id == category.id).first()
-                                if not subcategory:
-                                    subcategory = SubCategory(name=subcat_name, slug=subcat_slug, category_id=category.id)
-                                    db.session.add(subcategory)
-                                    db.session.flush()
+                        subcat_name = cell('Sub Categoria')
+                        if category and subcat_name:
+                            subcat_slug = slugify(subcat_name)
+                            subcategory = SubCategory.query.filter(SubCategory.slug == subcat_slug, SubCategory.category_id == category.id).first()
+                            if not subcategory:
+                                subcategory = SubCategory(name=subcat_name, slug=subcat_slug, category_id=category.id)
+                                db.session.add(subcategory)
+                                db.session.flush()
                                 
                         # Create Product
                         product = Product(
@@ -691,39 +700,32 @@ def admin_product_import():
                         )
                         db.session.add(product)
                         db.session.flush()
-                        imported += 1
-                    else:
-                        # Product with the same name already exists. We just append the color to it later.
-                        pass
                         
                     # Handle Color
-                    color_val = None
-                    if 'Color' in df.columns and not pd.isna(row['Color']):
-                        color_val = str(row['Color']).strip() or None
-                        if color_val:
-                            existing_spec = ProductSpec.query.filter(
-                                ProductSpec.product_id == product.id,
-                                ProductSpec.key == 'Color',
-                                ProductSpec.value.ilike(color_val)
-                            ).first()
-                            if not existing_spec:
-                                db.session.add(ProductSpec(product_id=product.id, key='Color', value=color_val))
+                    color_val = cell('Color')
+                    if color_val:
+                        existing_spec = ProductSpec.query.filter(
+                            ProductSpec.product_id == product.id,
+                            ProductSpec.key == 'Color',
+                            ProductSpec.value.ilike(color_val)
+                        ).first()
+                        if not existing_spec:
+                            db.session.add(ProductSpec(product_id=product.id, key='Color', value=color_val))
                             
                     # Handle Presentation
                     pres = None
-                    if 'Presentacion' in df.columns and not pd.isna(row['Presentacion']):
-                        pres_name = str(row['Presentacion']).strip()
-                        if pres_name:
-                            pres_slug = slugify(pres_name)
-                            pres = Presentation.query.filter(Presentation.slug == pres_slug).first()
-                            if not pres:
-                                pres = Presentation(name=pres_name, slug=pres_slug)
-                                db.session.add(pres)
-                                db.session.flush()
-                            if pres not in product.presentations:
-                                product.presentations.append(pres)
+                    pres_name = cell('Presentacion')
+                    if pres_name:
+                        pres_slug = slugify(pres_name)
+                        pres = Presentation.query.filter(Presentation.slug == pres_slug).first()
+                        if not pres:
+                            pres = Presentation(name=pres_name, slug=pres_slug)
+                            db.session.add(pres)
+                            db.session.flush()
+                        if pres not in product.presentations:
+                            product.presentations.append(pres)
 
-                    # Link color to presentation (so frontend can filter colors by selected presentation)
+                    # Link color to presentation
                     if pres and color_val:
                         pc = PaintColor.query.filter(PaintColor.name.ilike(color_val)).first()
                         hex_code = pc.hex_code if pc else '#cccccc'
@@ -742,6 +744,7 @@ def admin_product_import():
 
                     imported += 1
                     
+                wb.close()
                 db.session.commit()
                 flash(f'Importación completada. {imported} productos importados, {skipped} omitidos.', 'success')
                 return redirect(url_for('admin_products'))
@@ -1363,15 +1366,6 @@ def admin_colors():
         return redirect(url_for('admin_colors'))
     return render_template('admin/colors.html', colors=PaintColor.query.all())
 
-
-@app.errorhandler(Exception)
-def handle_exception(e):
-    from werkzeug.exceptions import HTTPException
-    if isinstance(e, HTTPException):
-        return e
-    import traceback
-    traceback.print_exc()
-    return f"<h1>Error interno del servidor</h1><pre>{traceback.format_exc()}</pre>", 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
