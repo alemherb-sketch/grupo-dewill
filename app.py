@@ -748,12 +748,16 @@ def admin_product_import():
                 
             except Exception as e:
                 import traceback
-                tb = traceback.format_exc()
+                traceback.print_exc()
                 try:
                     db.session.rollback()
                 except Exception:
                     pass
-                return f"<h1>Error Crítico en la Importación</h1><pre>{tb}</pre>", 500
+                error_msg = str(e)
+                if len(error_msg) > 200:
+                    error_msg = error_msg[:200] + '...'
+                flash(f'Error al procesar el archivo Excel: {error_msg}', 'error')
+                return redirect(request.url)
         else:
             flash('Formato de archivo no válido. Use .xlsx o .xls', 'error')
             return redirect(request.url)
