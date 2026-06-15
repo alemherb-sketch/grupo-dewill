@@ -361,11 +361,11 @@
 .oc-socials a:hover { background: var(--primary); color: white; transform: translateY(-3px); }
 
 /* ====== 6. BENEFITS BAR ====== */
-.benefits-bar { background: var(--secondary); color: white; padding: 3rem 0; margin-top: 2rem; }
+.benefits-bar { background: transparent; color: var(--text-main); padding: 3rem 0; margin-top: 2rem; }
 .benefits-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem; }
 @media (max-width: 992px) { .benefits-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 576px) { .benefits-grid { grid-template-columns: 1fr; } }
 .benefit-item { display: flex; align-items: center; gap: 1rem; }
 .benefit-item i { font-size: 2.5rem; color: var(--primary); opacity: 0.9; }
-.benefit-item strong { display: block; font-family: var(--font-heading); font-size: 1.1rem; margin-bottom: 0.25rem; letter-spacing: 0.5px; }
-.benefit-item span { display: block; font-size: 0.85rem; color: rgba(255,255,255,0.7); line-height: 1.4; }
+.benefit-item strong { display: block; font-family: var(--font-heading); font-size: 1.1rem; margin-bottom: 0.25rem; letter-spacing: 0.5px; color: var(--secondary); }
+.benefit-item span { display: block; font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
