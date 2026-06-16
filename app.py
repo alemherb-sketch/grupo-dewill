@@ -935,16 +935,26 @@ def admin_product_delete(pid):
     flash('Producto eliminado', 'success')
     return redirect(url_for('admin_products'))
 
-@app.route('/admin/productos/eliminar-todos', methods=['POST'])
+@app.route('/admin/productos/eliminar-seleccion', methods=['POST'])
 @login_required
-def admin_products_delete_all():
+def admin_products_bulk_delete():
     try:
-        products = Product.query.all()
+        product_ids = request.form.get('product_ids', '')
+        if not product_ids:
+            flash('No se seleccionaron productos para eliminar.', 'warning')
+            return redirect(url_for('admin_products'))
+            
+        id_list = [int(id_str) for id_str in product_ids.split(',') if id_str.strip().isdigit()]
+        if not id_list:
+            flash('IDs de productos no válidos.', 'error')
+            return redirect(url_for('admin_products'))
+            
+        products = Product.query.filter(Product.id.in_(id_list)).all()
         count = len(products)
         for p in products:
             db.session.delete(p)
         db.session.commit()
-        flash(f'{count} productos han sido eliminados correctamente.', 'success')
+        flash(f'{count} producto(s) han sido eliminados correctamente.', 'success')
     except Exception as e:
         import traceback
         traceback.print_exc()
@@ -991,7 +1001,12 @@ def admin_categories():
                 db.session.delete(c); db.session.commit(); flash('Categoría eliminada', 'success')
             else: flash('No se puede eliminar: tiene productos', 'error')
         return redirect(url_for('admin_categories'))
-    return render_template('admin/categories.html', categories=Category.query.order_by(Category.order).all())
+    q = request.args.get('q', '')
+    query = Category.query
+    if q:
+        query = query.filter(Category.name.ilike(f'%{q}%'))
+    categories = query.order_by(Category.order).all()
+    return render_template('admin/categories.html', categories=categories, q=q)
 
 @app.route('/admin/marcas', methods=['GET', 'POST'])
 @login_required
@@ -1016,7 +1031,12 @@ def admin_brands():
                 db.session.delete(b); db.session.commit(); flash('Marca eliminada', 'success')
             else: flash('No se puede eliminar: tiene productos', 'error')
         return redirect(url_for('admin_brands'))
-    return render_template('admin/brands.html', brands=Brand.query.order_by(Brand.name).all())
+    q = request.args.get('q', '')
+    query = Brand.query
+    if q:
+        query = query.filter(Brand.name.ilike(f'%{q}%'))
+    brands = query.order_by(Brand.name).all()
+    return render_template('admin/brands.html', brands=brands, q=q)
 
 
 @app.route('/admin/subcategorias', methods=['GET', 'POST'])
@@ -1049,8 +1069,12 @@ def admin_subcategories():
             else:
                 flash('No se puede eliminar: tiene productos asociados', 'error')
         return redirect(url_for('admin_subcategories'))
-    subcategories = SubCategory.query.join(Category).order_by(Category.order, SubCategory.name).all()
-    return render_template('admin/subcategories.html', subcategories=subcategories, categories=categories)
+    q = request.args.get('q', '')
+    query = SubCategory.query.join(Category)
+    if q:
+        query = query.filter(SubCategory.name.ilike(f'%{q}%'))
+    subcategories = query.order_by(Category.order, SubCategory.name).all()
+    return render_template('admin/subcategories.html', subcategories=subcategories, categories=categories, q=q)
 
 
 @app.route('/admin/presentaciones', methods=['GET', 'POST'])
@@ -1080,8 +1104,12 @@ def admin_presentations():
             else:
                 flash('No se puede eliminar: está asociada a productos', 'error')
         return redirect(url_for('admin_presentations'))
-    presentations = Presentation.query.order_by(Presentation.name).all()
-    return render_template('admin/presentations.html', presentations=presentations)
+    q = request.args.get('q', '')
+    query = Presentation.query
+    if q:
+        query = query.filter(Presentation.name.ilike(f'%{q}%'))
+    presentations = query.order_by(Presentation.name).all()
+    return render_template('admin/presentations.html', presentations=presentations, q=q)
 
 @app.route('/admin/solicitudes')
 @login_required
@@ -1449,7 +1477,12 @@ def admin_colors():
             c = PaintColor.query.get(request.form['id'])
             if c: db.session.delete(c); db.session.commit(); flash('Color eliminado', 'success')
         return redirect(url_for('admin_colors'))
-    return render_template('admin/colors.html', colors=PaintColor.query.all())
+    q = request.args.get('q', '')
+    query = PaintColor.query
+    if q:
+        query = query.filter(PaintColor.name.ilike(f'%{q}%') | PaintColor.hex_code.ilike(f'%{q}%'))
+    colors = query.all()
+    return render_template('admin/colors.html', colors=colors, q=q)
 
 
 if __name__ == '__main__':

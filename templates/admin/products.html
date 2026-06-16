@@ -15,18 +15,20 @@
     <div style="display: flex; gap: 10px; align-items: center;">
         <a href="{{ url_for('admin_product_import') }}" class="btn btn-secondary"><i class="fas fa-file-excel"></i> Importar Excel</a>
         <a href="{{ url_for('admin_product_new') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Nuevo Producto</a>
-        <form method="POST" action="{{ url_for('admin_products_delete_all') }}" style="margin: 0;" onsubmit="return confirm('ATENCIÓN: ¿Está seguro que desea eliminar TODOS los productos? Esta acción no se puede deshacer y es solo para mantenimiento.')">
-            <button type="submit" class="btn btn-primary" style="background-color: #dc3545; border-color: #dc3545;"><i class="fas fa-trash-alt"></i> Eliminar Todos</button>
+        <form method="POST" action="{{ url_for('admin_products_bulk_delete') }}" style="margin: 0;" id="bulkDeleteForm" onsubmit="return confirmBulkDelete()">
+            <input type="hidden" name="product_ids" id="bulkProductIds" value="">
+            <button type="submit" class="btn btn-primary" style="background-color: #dc3545; border-color: #dc3545;"><i class="fas fa-trash-alt"></i> Eliminar</button>
         </form>
     </div>
 </div>
 
 <div class="admin-panel">
     <table class="admin-table">
-        <thead><tr><th>Imagen</th><th>Nombre</th><th>SKU</th><th>Categoría</th><th>Marca</th><th>Destacado</th><th>Activo</th><th>Acciones</th></tr></thead>
+        <thead><tr><th style="width: 40px;"><input type="checkbox" onclick="toggleAllProducts(this)"></th><th>Imagen</th><th>Nombre</th><th>SKU</th><th>Categoría</th><th>Marca</th><th>Destacado</th><th>Activo</th><th>Acciones</th></tr></thead>
         <tbody>
             {% for p in products.items %}
             <tr>
+                <td><input type="checkbox" class="product-checkbox" value="{{ p.id }}"></td>
                 <td><img src="{{ url_for('static', filename=p.main_image or 'assets/product_paint.png') }}" class="table-thumb" alt=""></td>
                 <td><strong>{{ p.name }}</strong></td>
                 <td>{{ p.sku or '-' }}</td>
@@ -50,4 +52,28 @@
     </div>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function confirmBulkDelete() {
+    const checked = document.querySelectorAll('.product-checkbox:checked');
+    if(checked.length === 0) {
+        alert("Selecciona al menos un producto para eliminar.");
+        return false;
+    }
+    if(confirm("¿Estás seguro que deseas eliminar " + checked.length + " producto(s)?")) {
+        const ids = Array.from(checked).map(cb => cb.value).join(',');
+        document.getElementById('bulkProductIds').value = ids;
+        return true;
+    }
+    return false;
+}
+function toggleAllProducts(source) {
+    const checkboxes = document.querySelectorAll('.product-checkbox');
+    for(let i=0; i<checkboxes.length; i++) {
+        checkboxes[i].checked = source.checked;
+    }
+}
+</script>
 {% endblock %}

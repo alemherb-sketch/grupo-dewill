@@ -4,8 +4,14 @@
 
 {% block admin_content %}
 <div class="admin-toolbar">
-    <h3>{{ subcategories|length }} sub categorías registradas</h3>
-    <button class="btn btn-primary" onclick="document.getElementById('newSubcatModal').classList.add('show')"><i class="fas fa-plus"></i> Nueva Sub Categoría</button>
+    <form class="toolbar-search" method="GET" style="flex: 1; display: flex; gap: 0.5rem;">
+        <input type="text" name="q" value="{{ q }}" placeholder="Buscar subcategorías..." class="form-input" style="max-width: 300px;">
+        <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i></button>
+    </form>
+    <div style="display: flex; gap: 10px; align-items: center;">
+        <h3 style="margin: 0; margin-right: 15px; font-size: 0.9rem; color: var(--text-light);">{{ subcategories|length }} registradas</h3>
+        <button class="btn btn-primary" onclick="document.getElementById('newSubcatModal').classList.add('show')"><i class="fas fa-plus"></i> Nueva Sub Categoría</button>
+    </div>
 </div>
 
 <div class="admin-panel">
