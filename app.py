@@ -60,6 +60,12 @@ with app.app_context():
             db.create_all()
         except Exception:
             pass
+        # Add image_url column to categories
+        try:
+            db.session.execute(text("ALTER TABLE categories ADD COLUMN image_url VARCHAR(255)"))
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
     except Exception as e:
         print(f"Migration error: {e}")
 
