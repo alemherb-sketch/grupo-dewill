@@ -9,8 +9,9 @@
         <div class="form-section">
             <h3><i class="fas fa-address-book"></i> Datos de Contacto</h3>
             <div class="form-group"><label>Teléfono Principal</label><input type="text" name="phone" value="{{ site.get('phone', '') }}" class="form-input"></div>
-            <div class="form-group"><label>Número WhatsApp Ventas 01 (sólo números, inc cod país)</label><input type="text" name="whatsapp" value="{{ site.get('whatsapp', '') }}" class="form-input" placeholder="51999888777"></div>
-            <div class="form-group"><label>Número WhatsApp Ventas 02 (sólo números, inc cod país)</label><input type="text" name="whatsapp_2" value="{{ site.get('whatsapp_2', '') }}" class="form-input" placeholder="51999888777"></div>
+            <div class="form-group"><label>WhatsApp Tienda Principal (sólo números)</label><input type="text" name="whatsapp" value="{{ site.get('whatsapp', '51983461199') }}" class="form-input" placeholder="51983461199"></div>
+            <div class="form-group"><label>WhatsApp Tienda 2 - Nicolini (sólo números)</label><input type="text" name="whatsapp_2" value="{{ site.get('whatsapp_2', '51983461177') }}" class="form-input" placeholder="51983461177"></div>
+            <div class="form-group"><label>WhatsApp Tienda 3 - Ferretero (sólo números)</label><input type="text" name="whatsapp_3" value="{{ site.get('whatsapp_3', '51936723624') }}" class="form-input" placeholder="51936723624"></div>
             <div class="form-group"><label>Email de Contacto (Público)</label><input type="email" name="email" value="{{ site.get('email', '') }}" class="form-input"></div>
             <div class="form-group"><label>Email para Notificaciones (Pedidos)</label><input type="email" name="notify_email" value="{{ site.get('notify_email', '') }}" class="form-input" placeholder="ventas@grupodewill.com"></div>
             <div class="form-group"><label>Dirección Física</label><textarea name="address" rows="2" class="form-input">{{ site.get('address', '') }}</textarea></div>

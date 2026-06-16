@@ -1113,7 +1113,7 @@ def admin_gallery():
 @login_required
 def admin_settings():
     if request.method == 'POST':
-        for key in ['phone','whatsapp','whatsapp_2','email','notify_email','address','facebook','instagram','tiktok',
+        for key in ['phone','whatsapp','whatsapp_2','whatsapp_3','email','notify_email','address','facebook','instagram','tiktok',
                      'hero_title','hero_subtitle','hero_badge','meta_title','meta_description','meta_keywords','maps_embed']:
             SiteConfig.set(key, request.form.get(key, ''))
         flash('Configuración guardada', 'success')
