@@ -398,9 +398,13 @@ def blog_post(slug):
     ).limit(3).all()
     return render_template('blog_post.html', post=post, blog_categories=blog_categories, related=related)
 
-@app.route('/contacto')
+@app.route('/contacto', methods=['GET', 'POST'])
 def contacto():
-    return render_template('contacto.html')
+    success = False
+    if request.method == 'POST':
+        # Aquí se puede añadir lógica para enviar correo o guardar en base de datos
+        success = True
+    return render_template('contacto.html', success=success)
 
 @app.route('/galeria')
 def galeria():
