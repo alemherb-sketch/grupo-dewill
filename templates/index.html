@@ -42,17 +42,22 @@
     <div class="container">
         <div class="section-header">
             <span class="section-tag"><i class="fas fa-layer-group"></i> Categorías</span>
-            <h2 class="section-title">Línea de <span class="gradient-text">Productos</span></h2>
+            <h2 class="section-title">Líneas de <span class="gradient-text" style="color:var(--primary); -webkit-text-fill-color:var(--primary);">Productos</span></h2>
             <p class="section-subtitle">Explora nuestro catálogo por áreas especializadas.</p>
         </div>
-        <div class="categories-grid">
+        <div class="new-categories-grid">
             {% for cat in categories %}
-            <a href="{{ url_for('productos', cat=cat.slug) }}" class="category-card glass-card animate-fade-up">
-                <div class="category-icon">
-                    <i class="{{ cat.icon }}"></i>
+            <a href="{{ url_for('productos', cat=cat.slug) }}" class="new-category-card animate-fade-up" 
+               style="background-image: url('{{ url_for('static', filename=cat.image_url) if cat.image_url else 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=600&q=80' }}');">
+                <div class="ncc-overlay"></div>
+                <div class="ncc-content">
+                    <div class="ncc-icon">
+                        <i class="{{ cat.icon }}"></i>
+                    </div>
+                    <h3 class="ncc-name">{{ cat.name|upper }}</h3>
+                    <p class="ncc-count"><i class="fas fa-box"></i> {{ cat.products|length }}+ productos</p>
+                    <span class="ncc-btn">Ver catálogo <i class="fas fa-arrow-right"></i></span>
                 </div>
-                <h3 class="category-name">{{ cat.name }}</h3>
-                <span class="category-link">Ver catálogo <i class="fas fa-arrow-right"></i></span>
             </a>
             {% endfor %}
         </div>

@@ -915,14 +915,19 @@ def admin_categories():
     if request.method == 'POST':
         action = request.form.get('action')
         if action == 'create':
-            db.session.add(Category(name=request.form['name'], slug=request.form['slug'],
-                icon=request.form.get('icon','fas fa-tag'), order=request.form.get('order',0,type=int)))
+            c = Category(name=request.form['name'], slug=request.form['slug'],
+                icon=request.form.get('icon','fas fa-tag'), order=request.form.get('order',0,type=int))
+            if 'image' in request.files and request.files['image'].filename:
+                c.image_url = save_upload(request.files['image'], 'categories')
+            db.session.add(c)
             db.session.commit(); flash('Categoría creada', 'success')
         elif action == 'update':
             c = Category.query.get(request.form['id'])
             if c:
                 c.name=request.form['name']; c.slug=request.form['slug']
                 c.icon=request.form.get('icon','fas fa-tag'); c.order=request.form.get('order',0,type=int)
+                if 'image' in request.files and request.files['image'].filename:
+                    c.image_url = save_upload(request.files['image'], 'categories')
                 db.session.commit(); flash('Categoría actualizada', 'success')
         elif action == 'delete':
             c = Category.query.get(request.form['id'])

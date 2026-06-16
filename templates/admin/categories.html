@@ -10,17 +10,22 @@
 
 <div class="admin-panel">
     <table class="admin-table">
-        <thead><tr><th>Orden</th><th>Icono</th><th>Nombre</th><th>Slug</th><th>Productos</th><th>Acciones</th></tr></thead>
+        <thead><tr><th>Orden</th><th>Imagen/Icono</th><th>Nombre</th><th>Slug</th><th>Productos</th><th>Acciones</th></tr></thead>
         <tbody>
             {% for c in categories %}
             <tr>
                 <td>{{ c.order }}</td>
-                <td><i class="{{ c.icon }}"></i></td>
+                <td>
+                    {% if c.image_url %}
+                    <img src="{{ url_for('static', filename=c.image_url) }}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;margin-right:8px;vertical-align:middle;">
+                    {% endif %}
+                    <i class="{{ c.icon }}"></i>
+                </td>
                 <td><strong>{{ c.name }}</strong></td>
                 <td><code>{{ c.slug }}</code></td>
                 <td>{{ c.products|length }}</td>
                 <td class="actions-cell">
-                    <button class="btn-sm btn-edit" onclick="editCat({{ c.id }},'{{ c.name }}','{{ c.slug }}','{{ c.icon }}',{{ c.order }})"><i class="fas fa-edit"></i></button>
+                    <button class="btn-sm btn-edit" onclick="editCat({{ c.id }},'{{ c.name }}','{{ c.slug }}','{{ c.icon }}',{{ c.order }}, '{{ c.image_url or '' }}')"><i class="fas fa-edit"></i></button>
                     <form method="POST" style="display:inline;" onsubmit="return confirm('¿Eliminar esta categoría?')">
                         <input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="{{ c.id }}">
                         <button type="submit" class="btn-sm btn-delete"><i class="fas fa-trash"></i></button>
@@ -36,10 +41,11 @@
 <div class="admin-modal" id="newCatModal">
     <div class="modal-card">
         <h3>Nueva Categoría</h3>
-        <form method="POST">
+        <form method="POST" enctype="multipart/form-data">
             <input type="hidden" name="action" value="create">
             <div class="form-group"><label>Nombre</label><input type="text" name="name" required class="form-input"></div>
             <div class="form-group"><label>Slug</label><input type="text" name="slug" required class="form-input" placeholder="ej: pinturas"></div>
+            <div class="form-group"><label>Imagen de Fondo (opcional)</label><input type="file" name="image" class="form-input" accept="image/*"></div>
             <div class="form-group"><label>Icono (clase Font Awesome)</label><input type="text" name="icon" class="form-input" value="fas fa-tag" placeholder="fas fa-tag"></div>
             <div class="form-group"><label>Orden</label><input type="number" name="order" class="form-input" value="0"></div>
             <div class="modal-actions">
@@ -54,11 +60,12 @@
 <div class="admin-modal" id="editCatModal">
     <div class="modal-card">
         <h3>Editar Categoría</h3>
-        <form method="POST">
+        <form method="POST" enctype="multipart/form-data">
             <input type="hidden" name="action" value="update">
             <input type="hidden" name="id" id="editCatId">
             <div class="form-group"><label>Nombre</label><input type="text" name="name" id="editCatName" required class="form-input"></div>
             <div class="form-group"><label>Slug</label><input type="text" name="slug" id="editCatSlug" required class="form-input"></div>
+            <div class="form-group"><label>Imagen Actual</label><br><img id="editCatImgPreview" src="" style="max-height:80px;border-radius:4px;display:none;margin-bottom:10px;"><br><input type="file" name="image" class="form-input" accept="image/*"></div>
             <div class="form-group"><label>Icono</label><input type="text" name="icon" id="editCatIcon" class="form-input"></div>
             <div class="form-group"><label>Orden</label><input type="number" name="order" id="editCatOrder" class="form-input"></div>
             <div class="modal-actions">
@@ -72,12 +79,20 @@
 
 {% block admin_js %}
 <script>
-function editCat(id,name,slug,icon,order){
+function editCat(id,name,slug,icon,order,imageUrl){
     document.getElementById('editCatId').value=id;
     document.getElementById('editCatName').value=name;
     document.getElementById('editCatSlug').value=slug;
     document.getElementById('editCatIcon').value=icon;
     document.getElementById('editCatOrder').value=order;
+    const imgPreview = document.getElementById('editCatImgPreview');
+    if(imageUrl) {
+        imgPreview.src = "/static/" + imageUrl;
+        imgPreview.style.display = 'block';
+    } else {
+        imgPreview.style.display = 'none';
+        imgPreview.src = "";
+    }
     document.getElementById('editCatModal').classList.add('show');
 }
 </script>

@@ -25,6 +25,15 @@ def migrate():
         except Exception as e:
             db.session.rollback()
             print(f"Nota: La columna 'subcategory_id' probablemente ya existe o hubo un error: {e}")
+            
+        # 4. Agregar columna image_url a categories
+        try:
+            db.session.execute(text("ALTER TABLE categories ADD COLUMN image_url VARCHAR(255)"))
+            db.session.commit()
+            print("Columna 'image_url' agregada a categories exitosamente.")
+        except Exception as e:
+            db.session.rollback()
+            print(f"Nota: La columna 'image_url' probablemente ya existe o hubo un error: {e}")
         
         # Insertar los colores por defecto
         colors = [
