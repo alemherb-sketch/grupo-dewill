@@ -380,7 +380,7 @@ def api_cotizacion():
                 'body': body
             }
             # Send in background to avoid hanging the UI
-            threading.Thread(target=send_async_email, args=(app._get_current_object(), msg_data)).start()
+            threading.Thread(target=send_async_email, args=(app, msg_data)).start()
     except Exception as e:
         print(f"Email failed: {e}")
     return jsonify({'success': True, 'quote_id': quote.id})
@@ -440,7 +440,7 @@ def contacto():
             'subject': f"Nuevo mensaje de contacto: {asunto}",
             'body': f"Nombre: {nombre}\nEmail: {email}\nTeléfono/WhatsApp: {telefono}\nAsunto: {asunto}\n\nMensaje:\n{mensaje}"
         }
-        thread = threading.Thread(target=send_async_email, args=(app._get_current_object(), msg_data))
+        thread = threading.Thread(target=send_async_email, args=(app, msg_data))
         thread.start()
         
         # Preparar URL de WhatsApp usando el número configurado en el panel
