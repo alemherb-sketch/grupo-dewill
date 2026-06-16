@@ -5,8 +5,8 @@
 {% block content %}
 <!-- Section 1: Hero & Experience -->
 <section class="about-hero-model">
-    <!-- Red/blue stripes background element -->
-    <div class="about-stripe-bg"></div>
+    <!-- Red/blue corner accent -->
+    <div class="about-stripe-bg" aria-hidden="true"></div>
     <div class="container about-hero-container">
         <!-- Left Col -->
         <div class="about-hero-left">
@@ -15,7 +15,7 @@
             <div class="hero-title-divider"></div>
             <h3 class="about-hero-subtitle">Más de 20 años construyendo <span class="text-red">confianza</span> en el Perú</h3>
             <p class="about-hero-desc">Somos aliados estratégicos en pinturas, herramientas, adhesivos y soluciones para la construcción, industria y hogar.</p>
-            
+
             <div class="about-experience-card">
                 <div class="exp-header">
                     <div class="exp-icon"><i class="fas fa-trophy"></i></div>
@@ -78,15 +78,15 @@
         <h2 class="stores-section-title">Nuestras <span class="text-red">Tiendas</span></h2>
         <div class="stores-row">
             <div class="store-item">
-                <img src="{{ url_for('static', filename='assets/local_foto.jpeg') }}" alt="Tienda Principal">
+                <div class="store-img-wrap"><img src="{{ url_for('static', filename='assets/local_foto.jpeg') }}" alt="Tienda Principal"></div>
                 <div class="store-address-tag"><i class="fas fa-map-marker-alt"></i> Av. Guillermo Dansey N° 595, Lima, Perú</div>
             </div>
             <div class="store-item">
-                <img src="{{ url_for('static', filename='assets/tienda2.jpeg') }}" alt="Tienda 2">
+                <div class="store-img-wrap"><img src="{{ url_for('static', filename='assets/tienda2.jpeg') }}" alt="Tienda 2"></div>
                 <div class="store-address-tag"><i class="fas fa-map-marker-alt"></i> Av. Argentina N° 215, Cercado de Lima</div>
             </div>
             <div class="store-item">
-                <img src="{{ url_for('static', filename='assets/tienda3.jpeg') }}" alt="Tienda 3">
+                <div class="store-img-wrap"><img src="{{ url_for('static', filename='assets/tienda3.jpeg') }}" alt="Tienda 3"></div>
                 <div class="store-address-tag"><i class="fas fa-map-marker-alt"></i> Jr. Huarochirí C.C. Plaza Ferretero, Lima</div>
             </div>
         </div>
@@ -94,14 +94,16 @@
 </section>
 
 <!-- Section 4: Stats Bar -->
-<section class="about-stats-banner">
-    <div class="container stats-banner-container">
-        <div class="stat-banner-item"><i class="fas fa-shield-alt"></i><h2>+20 AÑOS</h2><span>DE EXPERIENCIA</span></div>
-        <div class="stat-banner-item"><i class="fas fa-users"></i><h2>+15,000</h2><span>CLIENTES<br>ATENDIDOS</span></div>
-        <div class="stat-banner-item"><i class="fas fa-store"></i><h2>3 TIENDAS</h2><span>ESTRATÉGICAMENTE<br>UBICADAS EN LIMA</span></div>
-        <div class="stat-banner-item"><i class="fas fa-truck"></i><h2>COBERTURA</h2><span>A TODO<br>EL PERÚ</span></div>
-        <div class="stat-banner-item"><i class="fas fa-box"></i><h2>+5,000</h2><span>PRODUCTOS<br>DISPONIBLES</span></div>
-        <div class="stat-banner-item"><i class="fas fa-certificate"></i><h2>MARCAS LÍDERES</h2><span>NACIONALES E<br>INTERNACIONALES</span></div>
+<section class="about-stats-wrap">
+    <div class="about-stats-banner">
+        <div class="stats-banner-container">
+            <div class="stat-banner-item"><i class="fas fa-shield-alt"></i><h2>+20 AÑOS</h2><span>DE EXPERIENCIA</span></div>
+            <div class="stat-banner-item"><i class="fas fa-users"></i><h2>+15,000</h2><span>CLIENTES<br>ATENDIDOS</span></div>
+            <div class="stat-banner-item"><i class="fas fa-store"></i><h2>3 TIENDAS</h2><span>ESTRATÉGICAMENTE<br>UBICADAS EN LIMA</span></div>
+            <div class="stat-banner-item"><i class="fas fa-truck"></i><h2>COBERTURA</h2><span>A TODO<br>EL PERÚ</span></div>
+            <div class="stat-banner-item"><i class="fas fa-box"></i><h2>+5,000</h2><span>PRODUCTOS<br>DISPONIBLES</span></div>
+            <div class="stat-banner-item"><i class="fas fa-certificate"></i><h2>MARCAS LÍDERES</h2><span>NACIONALES E<br>INTERNACIONALES</span></div>
+        </div>
     </div>
 </section>
 
