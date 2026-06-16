@@ -3920,7 +3920,7 @@ section,
 .why-section-dark {
     position: relative;
     padding: 5rem 0;
-    background-color: #080c16;
+    background-color: #080c16 !important;
     color: #fff;
     overflow: hidden;
 }
