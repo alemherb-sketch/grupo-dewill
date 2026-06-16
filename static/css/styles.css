@@ -2908,8 +2908,9 @@ img {
 .btn-shipping { background: white; color: var(--secondary); padding: 0.75rem 1.5rem; border-radius: var(--radius-full); font-weight: 700; font-size: 0.85rem; white-space: nowrap; transition: var(--transition); }
 .btn-shipping:hover { background: var(--primary); color: white; }
 
-.bottom-features-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
-.bottom-feature { display: flex; gap: 1rem; }
+.bottom-features-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 4rem; }
+.bottom-feature { display: flex; gap: 1.25rem; background: #ffffff; padding: 1.5rem; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); border: 1px solid rgba(0,0,0,0.05); transition: var(--transition); align-items: center; }
+.bottom-feature:hover { transform: translateY(-5px); box-shadow: var(--shadow-md); }
 .b-feature-icon { width: 45px; height: 45px; background: rgba(217,32,39,0.1); color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
 .bottom-feature h5 { font-family: var(--font-heading); color: var(--secondary); font-size: 1.05rem; margin-bottom: 0.25rem; }
 .bottom-feature p { color: var(--text-muted); font-size: 0.85rem; }
@@ -2928,8 +2929,8 @@ img {
 .contact-form .form-control:focus { border-color: var(--primary); background: #ffffff; box-shadow: 0 4px 10px rgba(217,32,39,0.1); }
 .w-100 { width: 100%; }
 
-.other-contacts-card { background: var(--bg-surface); border-radius: var(--radius-lg); padding: 2.5rem; border: 1px solid rgba(0,0,0,0.05); }
-.other-contacts-card h4 { font-family: var(--font-heading); font-size: 1.25rem; color: var(--secondary); margin-bottom: 1.5rem; }
+.other-contacts-card { background: #ffffff; border-radius: var(--radius-lg); padding: 3rem; border: 1px solid rgba(0,0,0,0.05); box-shadow: var(--shadow-lg); height: 100%; display: flex; flex-direction: column; justify-content: center; }
+.other-contacts-card h4 { font-family: var(--font-heading); font-size: 1.5rem; color: var(--secondary); margin-bottom: 2rem; }
 .other-contact-item { display: flex; gap: 1.25rem; align-items: center; margin-bottom: 1.5rem; }
 .other-contact-item:last-child { margin-bottom: 0; }
 .oc-icon { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: white; flex-shrink: 0; }
