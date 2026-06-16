@@ -418,11 +418,41 @@ def blog_post(slug):
 
 @app.route('/contacto', methods=['GET', 'POST'])
 def contacto():
+    import urllib.parse
+    site = SiteConfig.query.first()
     success = False
+    whatsapp_url = ""
     if request.method == 'POST':
-        # Aquí se puede añadir lógica para enviar correo o guardar en base de datos
+        nombre = request.form.get('nombre', '')
+        email = request.form.get('email', '')
+        telefono = request.form.get('telefono', '')
+        asunto = request.form.get('asunto', '')
+        mensaje = request.form.get('mensaje', '')
+        
+        # Obtener el correo configurado en el panel administrativo o el de por defecto
+        admin_email = app.config['MAIL_NOTIFY_TO']
+        if site and site.config_data.get('email_notificaciones'):
+            admin_email = site.config_data.get('email_notificaciones')
+            
+        # Preparar y enviar correo
+        msg_data = {
+            'recipients': [admin_email],
+            'subject': f"Nuevo mensaje de contacto: {asunto}",
+            'body': f"Nombre: {nombre}\nEmail: {email}\nTeléfono/WhatsApp: {telefono}\nAsunto: {asunto}\n\nMensaje:\n{mensaje}"
+        }
+        thread = threading.Thread(target=send_async_email, args=(app._get_current_object(), msg_data))
+        thread.start()
+        
+        # Preparar URL de WhatsApp usando el número configurado en el panel
+        wa_number = '51977585654'
+        if site and site.config_data.get('whatsapp'):
+            wa_number = site.config_data.get('whatsapp')
+            
+        wa_text = f"Hola Grupo Dewill, mi nombre es {nombre}. {mensaje}"
+        whatsapp_url = f"https://wa.me/{wa_number}?text={urllib.parse.quote(wa_text)}"
+        
         success = True
-    return render_template('contacto.html', success=success)
+    return render_template('contacto.html', success=success, whatsapp_url=whatsapp_url)
 
 @app.route('/galeria')
 def galeria():
