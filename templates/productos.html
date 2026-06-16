@@ -156,8 +156,8 @@
                             {% endif %}
                         </div>
                         <div class="product-card-body">
-                            {% if product.category %}
-                            <span class="product-card-category">{{ product.category.name|upper }}</span>
+                            {% if product.subcategory %}
+                            <span class="product-card-category">{{ product.subcategory.name|upper }}</span>
                             {% endif %}
                             <h3 class="product-card-name">
                                 <a href="{{ url_for('producto_detalle', product_id=product.id) }}">{{ product.name }}</a>
