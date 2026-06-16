@@ -4084,7 +4084,7 @@ section,
     position: relative;
     z-index: 1;
     display: grid;
-    grid-template-columns: 5fr 7fr;
+    grid-template-columns: 2fr 3fr;
     gap: 1.5rem;
     align-items: center;
 }
@@ -4176,15 +4176,36 @@ section,
 /* Hero image + flanking side icons */
 .about-hero-image-wrapper {
     position: relative;
-    max-width: 420px;
+    max-width: 470px;
     margin: 0 auto;
+    perspective: 1400px;
+}
+/* Blurred store-interior backdrop (efecto de fondo) */
+.about-hero-image-wrapper::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 18px;
+    background: url('../assets/local_foto.jpeg') center/cover;
+    filter: blur(16px) brightness(0.5) saturate(1.1);
+    transform: translate(12px, 24px) rotateY(-8deg);
+    transform-origin: center;
+    opacity: 0.85;
+    z-index: 0;
 }
 .about-hero-image-wrapper img {
+    position: relative;
+    z-index: 1;
     width: 100%;
     border-radius: 16px;
     display: block;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 28px 60px rgba(11, 22, 44, 0.30);
     border: 5px solid #fff;
+    transform: rotateY(-8deg);
+    transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.about-hero-image-wrapper:hover img {
+    transform: rotateY(0deg);
 }
 
 .side-icons-list {
@@ -4204,7 +4225,7 @@ section,
     flex-direction: column;
     align-items: center;
     text-align: center;
-    width: 86px;
+    width: 80px;
     gap: 0.45rem;
     transition: transform 0.3s ease;
 }
@@ -4462,10 +4483,9 @@ section,
 .bc-info-item i { color: #c8102e; font-size: 1.2rem; width: 18px; text-align: center; }
 
 /* ---- RESPONSIVE ---- */
-@media (max-width: 991px) {
-    .about-hero-container { grid-template-columns: 1fr; gap: 2.5rem; }
-    .about-hero-image-wrapper { max-width: 460px; margin: 2rem auto 0; }
-    .about-hero-desc { max-width: 100%; }
+@media (max-width: 1199px) {
+    /* Not enough room to flank the larger image, so the feature icons
+       drop into rows beneath it. */
     .side-icons-list {
         position: static;
         top: auto;
@@ -4479,6 +4499,14 @@ section,
     .side-icons-list.left-side,
     .side-icons-list.right-side { left: auto; right: auto; }
     .side-icon-item { width: 100px; }
+}
+
+@media (max-width: 991px) {
+    .about-hero-container { grid-template-columns: 1fr; gap: 2.5rem; }
+    .about-hero-image-wrapper { max-width: 470px; margin: 1.5rem auto 0; perspective: none; }
+    .about-hero-image-wrapper img { transform: none; }
+    .about-hero-image-wrapper::before { transform: translate(10px, 18px); }
+    .about-hero-desc { max-width: 100%; }
     .mv-container { grid-template-columns: 1fr; }
     .bottom-contact-container { flex-direction: column; text-align: center; }
     .bc-left { flex-direction: column; text-align: center; }
