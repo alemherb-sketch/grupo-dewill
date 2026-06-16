@@ -4,6 +4,13 @@
 
 {% block content %}
 <style>
+    .detail-info-panel {
+        min-width: 0; /* Prevents grid column from blowing out due to flex-nowrap */
+    }
+    .detail-download-row {
+        flex-direction: column; /* Stack download buttons below image */
+        gap: 0.5rem;
+    }
     .color-swatches-grid::-webkit-scrollbar {
         height: 6px;
     }
