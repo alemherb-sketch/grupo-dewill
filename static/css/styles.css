@@ -4060,10 +4060,11 @@ section,
 .about-stripe-bg {
     position: absolute;
     top: 0; left: 0;
-    width: 500px;
-    height: 500px;
+    width: 350px;
+    height: 350px;
     background: linear-gradient(135deg, #0b162c 0%, #0b162c 25%, #c8102e 25%, #c8102e 40%, transparent 40%);
     z-index: 0;
+    opacity: 0.15;
 }
 
 .about-hero-container {
@@ -4182,11 +4183,11 @@ section,
 }
 
 .side-icons-list.left-side {
-    left: -60px;
+    left: -20px;
 }
 
 .side-icons-list.right-side {
-    right: -60px;
+    right: -20px;
 }
 
 .side-icon-item {
@@ -4198,7 +4199,7 @@ section,
     padding: 0.5rem 0.3rem;
     border-radius: 12px;
     box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-    width: 100px;
+    width: 90px;
     transition: transform 0.3s;
 }
 
