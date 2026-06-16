@@ -37,6 +37,18 @@ with app.app_context():
             db.session.commit()
         except Exception:
             db.session.rollback()
+        # Add safety_sheet_url to products
+        try:
+            db.session.execute(text("ALTER TABLE products ADD COLUMN safety_sheet_url VARCHAR(300)"))
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+        # Add catalog_url to products
+        try:
+            db.session.execute(text("ALTER TABLE products ADD COLUMN catalog_url VARCHAR(300)"))
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
         # Add presentation column to quote_items
         try:
             db.session.execute(text("ALTER TABLE quote_items ADD COLUMN presentation VARCHAR(100)"))
