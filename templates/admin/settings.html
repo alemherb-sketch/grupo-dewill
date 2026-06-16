@@ -47,21 +47,5 @@
     </div>
 </form>
 
-<div class="form-section" style="margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 2rem;">
-    <h3><i class="fas fa-tools"></i> Mantenimiento del Sistema</h3>
-    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Utiliza estas opciones para restaurar los datos iniciales si la base de datos está vacía.</p>
-    <form action="{{ url_for('admin_seed_db') }}" method="POST" onsubmit="return confirm('¿Estás seguro de cargar los datos de demostración? Esto agregará productos y categorías si no existen.')">
-        <button type="submit" class="btn btn-outline" style="color: var(--primary); border-color: var(--primary);">
-            <i class="fas fa-database"></i> Cargar Datos de Demostración
-        </button>
-    </form>
-    <form action="{{ url_for('admin_clean_duplicates') }}" method="POST" style="margin-top: 1rem;" onsubmit="return confirm('¿Limpiar productos duplicados? Esto unificará todos los productos con el mismo nombre, combinando sus colores en uno solo. Esta acción no se puede deshacer.')">
-        <button type="submit" class="btn btn-outline" style="color: #f59e0b; border-color: #f59e0b;">
-            <i class="fas fa-compress-arrows-alt"></i> Limpiar Productos Duplicados
-        </button>
-        <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.4rem;">
-            Unifica productos con el mismo nombre, combinando sus colores como opciones seleccionables.
-        </p>
-    </form>
-</div>
+
 {% endblock %}
