@@ -3,6 +3,26 @@
 {% block nav_class %}scrolled{% endblock %}
 
 {% block content %}
+<style>
+    .color-swatches-grid::-webkit-scrollbar {
+        height: 6px;
+    }
+    .color-swatches-grid::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+    .color-swatches-grid::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 4px;
+    }
+    .color-swatches-grid::-webkit-scrollbar-thumb:hover {
+        background: #aaa;
+    }
+    .presentation-select:focus {
+        outline: none;
+        border-color: var(--primary);
+    }
+</style>
 <section class="product-detail-page">
     <div class="product-detail-container">
 
@@ -77,6 +97,18 @@
                         {% endfor %}
                     </div>
                     {% endif %}
+                    
+                    <!-- DOWNLOAD BUTTONS MOVED HERE -->
+                    <div class="detail-download-row" style="margin-top: 1rem;">
+                        {% if product.pdf_url %}
+                        <a href="{{ url_for('static', filename=product.pdf_url) }}" target="_blank" class="download-btn">
+                            <i class="fas fa-file-pdf"></i> DESCARGAR FICHA TÉCNICA
+                        </a>
+                        {% endif %}
+                        <a href="https://wa.me/{{ site.get('whatsapp', '51977585654') }}?text=Hola, necesito información sobre: {{ product.name|urlencode }}" target="_blank" class="download-btn">
+                            <i class="fab fa-whatsapp"></i> CONSULTAR POR WHATSAPP
+                        </a>
+                    </div>
                 </div>
 
                 <!-- Right: Info -->
@@ -94,14 +126,11 @@
                     <div class="detail-section">
                         <div class="detail-section-label">PRESENTACIÓN</div>
                         <p class="detail-section-hint">Elige la presentación:</p>
-                        <div class="presentation-buttons" id="presentationBtns">
+                        <select class="presentation-select form-control" style="max-width: 300px; border-radius: 8px; border: 2px solid #eee; padding: 0.5rem; cursor: pointer; font-family: inherit; font-size: 0.95rem; font-weight: 500;" onchange="selectPresentationDropdown(this)">
                             {% for pres in product.presentations %}
-                            <button class="pres-btn {% if loop.first %}selected{% endif %}"
-                                    onclick="selectPresentation(this, '{{ pres.name|e }}', {{ pres.id }})">
-                                {{ pres.name }}
-                            </button>
+                            <option value="{{ pres.name|e }}" data-id="{{ pres.id }}">{{ pres.name }}</option>
                             {% endfor %}
-                        </div>
+                        </select>
                         <input type="hidden" id="selectedPresentation" value="{{ product.presentations[0].name if product.presentations else '' }}">
                     </div>
                     {% endif %}
@@ -111,7 +140,7 @@
                     <div class="detail-section">
                         <div class="detail-section-label">COLOR</div>
                         <p class="detail-section-hint">Elige un color:</p>
-                        <div class="color-swatches-grid">
+                        <div class="color-swatches-grid" style="flex-wrap: nowrap; overflow-x: auto; padding-bottom: 0.5rem; scrollbar-width: thin; -webkit-overflow-scrolling: touch;">
                             {% for color in paint_colors %}
                             <button class="color-swatch-new"
                                     data-name="{{ color.name }}"
@@ -163,18 +192,6 @@
                                 <i class="fas fa-shopping-cart"></i> AGREGAR AL COTIZADOR
                             </button>
                         </div>
-                    </div>
-
-                    <!-- DOWNLOAD BUTTONS -->
-                    <div class="detail-download-row">
-                        {% if product.pdf_url %}
-                        <a href="{{ url_for('static', filename=product.pdf_url) }}" target="_blank" class="download-btn">
-                            <i class="fas fa-file-pdf"></i> DESCARGAR FICHA TÉCNICA
-                        </a>
-                        {% endif %}
-                        <a href="https://wa.me/{{ site.get('whatsapp', '51977585654') }}?text=Hola, necesito información sobre: {{ product.name|urlencode }}" target="_blank" class="download-btn">
-                            <i class="fab fa-whatsapp"></i> CONSULTAR POR WHATSAPP
-                        </a>
                     </div>
                 </div>
             </div>
@@ -284,6 +301,43 @@ function setMainImg(thumb, src) {
     document.getElementById('mainImage').src = src;
     document.querySelectorAll('.thumb-new').forEach(t => t.classList.remove('active'));
     thumb.classList.add('active');
+}
+
+async function selectPresentationDropdown(selectElem) {
+    const option = selectElem.options[selectElem.selectedIndex];
+    const name = option.value;
+    const presId = option.getAttribute('data-id');
+    
+    document.getElementById('selectedPresentation').value = name;
+    
+    // Fetch available colors for this presentation
+    const isPaint = {{ 'true' if paint_colors else 'false' }};
+    if (isPaint) {
+        try {
+            const res = await fetch(`/api/producto/{{ product.id }}/colores?pres_id=${presId}`);
+            const colors = await res.json();
+            const grid = document.querySelector('.color-swatches-grid');
+            if (grid) {
+                if (colors.length > 0) {
+                    grid.innerHTML = colors.map(c => {
+                        const extraStyle = c.hex_code.toLowerCase() === '#ffffff' ? 'border: 2px solid #ddd;' : '';
+                        return `<button class="color-swatch-new" 
+                                data-name="${c.name}" data-hex="${c.hex_code}" title="${c.name}"
+                                onclick="selectColor(this, '${c.name.replace(/'/g, "\\'")}', '${c.hex_code}')"
+                                style="background-color: ${c.hex_code}; ${extraStyle}">
+                        </button>`;
+                    }).join('');
+                } else {
+                    grid.innerHTML = '<p class="colors-empty-msg" style="grid-column: 1 / -1; color: #666; font-size: 0.9rem;">⚠️ No hay colores vinculados a esta presentación. Por favor, actualiza el archivo Excel en el panel de administración.</p>';
+                }
+                // Reset selected color
+                document.getElementById('selectedColorName').value = '';
+                document.getElementById('selectedColorDisplay').style.display = 'none';
+            }
+        } catch(e) {
+            console.error(e);
+        }
+    }
 }
 
 async function selectPresentation(btn, name, presId) {
