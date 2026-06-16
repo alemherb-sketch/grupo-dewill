@@ -679,7 +679,8 @@ function sendQuoteToWhatsApp() {
     message += "\nPor favor, envíenme los precios y tiempos de entrega. ¡Gracias!";
 
     const encodedMessage = encodeURIComponent(message);
-    window.open(`https://wa.me/${typeof WHATSAPP_NUMBER !== 'undefined' ? WHATSAPP_NUMBER : '51977585654'}?text=${encodedMessage}`, '_blank');
+    const targetNumber = (typeof WHATSAPP_NUMBER !== 'undefined' && WHATSAPP_NUMBER.trim() !== '') ? WHATSAPP_NUMBER : '51977585654';
+    window.open(`https://wa.me/${targetNumber}?text=${encodedMessage}`, '_blank');
 }
 
 function submitQuoteRequest() {
@@ -806,7 +807,8 @@ function openProductModal(productId) {
     // WhatsApp Link
     const waLink = document.getElementById('modalWhatsAppLink');
     const waMsg = `Hola Grupo Dewill, solicito información sobre: ${product.name}`;
-    waLink.href = `https://wa.me/${typeof WHATSAPP_NUMBER !== 'undefined' ? WHATSAPP_NUMBER : '51977585654'}?text=${encodeURIComponent(waMsg)}`;
+    const targetNumber = (typeof WHATSAPP_NUMBER !== 'undefined' && WHATSAPP_NUMBER.trim() !== '') ? WHATSAPP_NUMBER : '51977585654';
+    waLink.href = `https://wa.me/${targetNumber}?text=${encodeURIComponent(waMsg)}`;
 
     document.getElementById('productModal').style.display = 'flex';
     document.body.style.overflow = 'hidden';
