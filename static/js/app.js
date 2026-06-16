@@ -466,7 +466,7 @@ function addToQuote(productId, productName = null, productImage = null, color = 
         product = {
             id: productId,
             name: productName,
-            image: productImage || 'static/assets/product_paint.png',
+            image: productImage || '/static/assets/product_paint.png',
             category: 'general',
             description: ''
         };
@@ -492,8 +492,12 @@ function addToQuote(productId, productName = null, productImage = null, color = 
     };
 
     // Keep image paths relative to static folder neat under Flask
-    if (newItem.image && !newItem.image.startsWith('/') && !newItem.image.startsWith('http') && !newItem.image.startsWith('static/')) {
-        newItem.image = 'static/' + newItem.image;
+    if (newItem.image && !newItem.image.startsWith('/') && !newItem.image.startsWith('http')) {
+        if (newItem.image.startsWith('static/')) {
+            newItem.image = '/' + newItem.image;
+        } else {
+            newItem.image = '/static/' + newItem.image;
+        }
     }
 
     quoteList.push(newItem);
@@ -502,8 +506,8 @@ function addToQuote(productId, productName = null, productImage = null, color = 
     showToast('Agregado a la lista de cotización', 'success');
 }
 
-function updateQuantity(productId, delta) {
-    const item = quoteList.find(p => p.id === productId);
+function updateQuantity(index, delta) {
+    const item = quoteList[index];
     if (!item) return;
 
     item.quantity = (item.quantity || 1) + delta;
@@ -513,8 +517,8 @@ function updateQuantity(productId, delta) {
     updateQuoteUI();
 }
 
-function removeFromQuote(productId) {
-    quoteList = quoteList.filter(item => item.id !== productId);
+function removeFromQuote(index) {
+    quoteList.splice(index, 1);
     saveQuote();
     updateQuoteUI();
 }
@@ -556,20 +560,33 @@ function updateQuoteUI() {
         document.getElementById('btnCart').classList.add('has-items-alert');
 
         quoteItems.innerHTML = '';
-        quoteList.forEach(item => {
+        quoteList.forEach((item, index) => {
             const div = document.createElement('div');
             div.className = 'quote-item';
+            
+            let extraInfo = '';
+            if (item.presentation) {
+                extraInfo += `<span style="display:block; font-size:0.8rem; color:#666; margin-top:2px;">Pres: <strong>${item.presentation}</strong></span>`;
+            }
+            if (item.color) {
+                // If color is a hex code or color name, we can show a small dot
+                const isHex = /^#[0-9A-F]{6}$/i.test(item.color);
+                const dot = isHex ? `<span style="background-color:${item.color}; display:inline-block; width:12px; height:12px; border-radius:50%; border:1px solid #ccc; vertical-align:middle; margin-left:4px;"></span>` : '';
+                extraInfo += `<span style="display:block; font-size:0.8rem; color:#666; margin-top:2px;">Color: <strong>${item.color}</strong>${dot}</span>`;
+            }
+
             div.innerHTML = `
-                <img src="${item.image}" class="quote-item-img">
+                <img src="${item.image || '/static/assets/product_paint.png'}" class="quote-item-img" onerror="this.src='/static/assets/product_paint.png'">
                 <div class="quote-item-info">
-                    <h4>${item.name}</h4>
-                    <div class="quote-item-controls">
+                    <h4 style="margin-bottom: 4px;">${item.name}</h4>
+                    ${extraInfo}
+                    <div class="quote-item-controls" style="margin-top: 8px;">
                         <div class="quantity-selector">
-                            <button class="qty-btn" onclick="updateQuantity(${item.id}, -1)"><i class="fas fa-minus"></i></button>
+                            <button class="qty-btn" onclick="updateQuantity(${index}, -1)"><i class="fas fa-minus"></i></button>
                             <span class="qty-val">${item.quantity || 1}</span>
-                            <button class="qty-btn" onclick="updateQuantity(${item.id}, 1)"><i class="fas fa-plus"></i></button>
+                            <button class="qty-btn" onclick="updateQuantity(${index}, 1)"><i class="fas fa-plus"></i></button>
                         </div>
-                        <button class="btn-remove" onclick="removeFromQuote(${item.id})" title="Eliminar">
+                        <button class="btn-remove" onclick="removeFromQuote(${index})" title="Eliminar">
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     </div>
