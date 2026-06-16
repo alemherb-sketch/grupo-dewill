@@ -29,6 +29,17 @@
         outline: none;
         border-color: var(--primary);
     }
+    #mainImgWrap {
+        cursor: zoom-in;
+        position: relative;
+        overflow: hidden;
+    }
+    #mainImage {
+        transition: transform 0.2s ease;
+    }
+    #mainImgWrap:hover #mainImage {
+        transition: none; /* smooth tracking during mousemove */
+    }
 </style>
 <section class="product-detail-page">
     <div class="product-detail-container">
@@ -112,7 +123,7 @@
                             <i class="fas fa-file-pdf"></i> DESCARGAR FICHA TÉCNICA
                         </a>
                         {% endif %}
-                        <a href="https://wa.me/{{ site.get('whatsapp', '51977585654') }}?text=Hola, necesito información sobre: {{ product.name|urlencode }}" target="_blank" class="download-btn">
+                        <a href="https://wa.me/{{ site.get('whatsapp', '51977585654') }}?text=Hola, necesito información sobre: {{ product.name|urlencode }}" target="_blank" class="download-btn wa-btn">
                             <i class="fab fa-whatsapp"></i> CONSULTAR POR WHATSAPP
                         </a>
                     </div>
@@ -387,6 +398,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const firstPresBtn = document.querySelector('.pres-btn.selected');
     if (firstPresBtn) {
         firstPresBtn.click();
+    }
+    
+    // Lupa / Zoom effect for main image
+    const mainImgWrap = document.getElementById('mainImgWrap');
+    const mainImg = document.getElementById('mainImage');
+    if (mainImgWrap && mainImg) {
+        mainImgWrap.addEventListener('mousemove', function(e) {
+            const { left, top, width, height } = mainImgWrap.getBoundingClientRect();
+            const x = ((e.clientX - left) / width) * 100;
+            const y = ((e.clientY - top) / height) * 100;
+            mainImg.style.transformOrigin = `${x}% ${y}%`;
+            mainImg.style.transform = 'scale(2)';
+        });
+        mainImgWrap.addEventListener('mouseleave', function() {
+            mainImg.style.transformOrigin = 'center center';
+            mainImg.style.transform = 'scale(1)';
+        });
     }
 });
 
