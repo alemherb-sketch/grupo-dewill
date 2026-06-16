@@ -123,6 +123,16 @@
                             <i class="fas fa-file-pdf"></i> DESCARGAR FICHA TÉCNICA
                         </a>
                         {% endif %}
+                        {% if product.safety_sheet_url %}
+                        <a href="{{ url_for('static', filename=product.safety_sheet_url) }}" target="_blank" class="download-btn">
+                            <i class="fas fa-file-pdf"></i> DESCARGAR HOJA DE SEGURIDAD
+                        </a>
+                        {% endif %}
+                        {% if product.catalog_url %}
+                        <a href="{{ url_for('static', filename=product.catalog_url) }}" target="_blank" class="download-btn">
+                            <i class="fas fa-file-pdf"></i> DESCARGAR CATÁLOGO
+                        </a>
+                        {% endif %}
                         <a href="https://wa.me/{{ site.get('whatsapp', '51977585654') }}?text=Hola, necesito información sobre: {{ product.name|urlencode }}" target="_blank" class="download-btn wa-btn">
                             <i class="fab fa-whatsapp"></i> CONSULTAR POR WHATSAPP
                         </a>

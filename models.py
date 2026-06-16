@@ -87,6 +87,8 @@ class Product(db.Model):
     brand_id = db.Column(db.Integer, db.ForeignKey('brands.id'))
     main_image = db.Column(db.String(300))
     pdf_url = db.Column(db.String(300))
+    safety_sheet_url = db.Column(db.String(300))
+    catalog_url = db.Column(db.String(300))
     video_url = db.Column(db.String(300))
     is_featured = db.Column(db.Boolean, default=False)
     is_active = db.Column(db.Boolean, default=True)

@@ -816,6 +816,10 @@ def admin_product_new():
             p.main_image = save_upload(request.files['main_image'], 'products')
         if 'pdf_file' in request.files and request.files['pdf_file'].filename:
             p.pdf_url = save_upload(request.files['pdf_file'], 'docs')
+        if 'safety_sheet_file' in request.files and request.files['safety_sheet_file'].filename:
+            p.safety_sheet_url = save_upload(request.files['safety_sheet_file'], 'docs')
+        if 'catalog_file' in request.files and request.files['catalog_file'].filename:
+            p.catalog_url = save_upload(request.files['catalog_file'], 'docs')
         
         # Save presentations
         pres_ids = request.form.getlist('presentation_ids', type=int)
@@ -857,6 +861,10 @@ def admin_product_edit(pid):
             p.main_image = save_upload(request.files['main_image'], 'products')
         if 'pdf_file' in request.files and request.files['pdf_file'].filename:
             p.pdf_url = save_upload(request.files['pdf_file'], 'docs')
+        if 'safety_sheet_file' in request.files and request.files['safety_sheet_file'].filename:
+            p.safety_sheet_url = save_upload(request.files['safety_sheet_file'], 'docs')
+        if 'catalog_file' in request.files and request.files['catalog_file'].filename:
+            p.catalog_url = save_upload(request.files['catalog_file'], 'docs')
         for f in request.files.getlist('extra_images'):
             if f.filename:
                 url = save_upload(f, 'products')
