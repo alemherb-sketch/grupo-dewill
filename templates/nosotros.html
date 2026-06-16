@@ -3,92 +3,124 @@
 {% block nav_class %}scrolled{% endblock %}
 
 {% block content %}
-<section class="page-hero">
-    <div class="page-hero-bg"><img src="{{ url_for('static', filename='assets/hero_bg.png') }}" alt="Nosotros" class="hero-bg-img"><div class="hero-overlay"></div></div>
-    <div class="page-hero-content">
-        <div class="hero-badge animate-fade-up"><i class="fas fa-building"></i> Conócenos</div>
-        <h1 class="page-hero-title animate-fade-up delay-1">Sobre <span class="gradient-text">Nosotros</span></h1>
-        <p class="page-hero-subtitle animate-fade-up delay-2">Más de 10 años siendo su aliado estratégico en suministros industriales.</p>
-    </div>
-</section>
-
-<!-- ABOUT / WELCOME NEW -->
-<section class="about-new-section" id="nosotros">
-    <div class="container">
-        <div class="about-new-grid">
-            <div class="about-new-content">
-                <span class="about-new-tag">QUIÉNES SOMOS</span>
-                <h2 class="about-new-title">CONOCE MÁS SOBRE<br>GRUPO DEWILL S.A.C</h2>
-                <p class="about-new-desc">Somos una empresa peruana dedicada a la comercialización de pinturas, herramientas y soluciones para la construcción, industria y hogar. Trabajamos con las mejores marcas del mercado para ofrecer productos de alta calidad que garantizan resultados duraderos.</p>
-                <p class="about-new-desc">Nuestro compromiso es brindar atención personalizada, asesoría especializada y soluciones que se adapten a las necesidades de nuestros clientes.</p>
-            </div>
-            <div class="about-new-cards">
-                <div class="about-new-card">
-                    <i class="fas fa-bullseye"></i>
-                    <div>
-                        <h3>MISIÓN</h3>
-                        <p>Brindar productos y servicios de alta calidad, superando las expectativas de nuestros clientes con soluciones innovadoras y un servicio confiable.</p>
+<!-- Section 1: Hero & Experience -->
+<section class="about-hero-model">
+    <!-- Red/blue stripes background element -->
+    <div class="about-stripe-bg"></div>
+    <div class="container about-hero-container">
+        <!-- Left Col -->
+        <div class="about-hero-left">
+            <span class="about-hero-tag"><i class="fas fa-users"></i> CONÓCENOS</span>
+            <h1 class="about-hero-title">Sobre <span class="text-red">Nosotros</span></h1>
+            <h3 class="about-hero-subtitle">Más de 20 años construyendo <span class="text-red">confianza</span> en el Perú</h3>
+            <p class="about-hero-desc">Somos aliados estratégicos en pinturas, herramientas, adhesivos y soluciones para la construcción, industria y hogar.</p>
+            
+            <div class="about-experience-card">
+                <div class="exp-header">
+                    <div class="exp-icon"><i class="fas fa-trophy"></i></div>
+                    <div class="exp-text">
+                        <h2>+20 AÑOS</h2>
+                        <span>DE EXPERIENCIA</span>
                     </div>
                 </div>
-                <div class="about-new-card">
-                    <i class="fas fa-eye"></i>
-                    <div>
-                        <h3>VISIÓN</h3>
-                        <p>Ser la empresa líder en el sector, reconocida por nuestra calidad, confianza y compromiso con el desarrollo del país.</p>
-                    </div>
-                </div>
+                <p class="exp-desc">Ofreciendo productos de alta calidad y soluciones efectivas que garantizan resultados duraderos.</p>
             </div>
         </div>
-        
-        <div class="about-new-image" style="margin-top: 4rem; margin-bottom: 4rem;">
-            <img src="{{ url_for('static', filename='assets/about-building.png') }}" alt="Local Grupo Dewill S.A.C">
-            <div class="about-stats-bar">
-                <div class="about-stats-container">
-                    <div class="about-stat-item">
-                        <i class="fas fa-trophy"></i>
-                        <div class="about-stat-info">
-                            <strong>+10 AÑOS</strong>
-                            <span>En el mercado</span>
-                        </div>
-                    </div>
-                    <div class="about-stat-item">
-                        <i class="fas fa-users"></i>
-                        <div class="about-stat-info">
-                            <strong>MILES</strong>
-                            <span>De clientes satisfechos</span>
-                        </div>
-                    </div>
-                    <div class="about-stat-item">
-                        <i class="fas fa-certificate"></i>
-                        <div class="about-stat-info">
-                            <strong>MARCAS</strong>
-                            <span>De prestigio</span>
-                        </div>
-                    </div>
-                    <div class="about-stat-item">
-                        <i class="fas fa-map-marked-alt"></i>
-                        <div class="about-stat-info">
-                            <strong>COBERTURA</strong>
-                            <span>En todo el Perú</span>
-                        </div>
-                    </div>
+        <!-- Right Col -->
+        <div class="about-hero-right">
+            <div class="about-hero-image-wrapper">
+                <img src="{{ url_for('static', filename='assets/local_foto.jpeg') }}" alt="Local Grupo Dewill">
+                <!-- Side icons floating -->
+                <div class="side-icons-list left-side">
+                    <div class="side-icon-item"><i class="fas fa-shield-alt"></i><span>PRODUCTOS<br>DE CALIDAD</span></div>
+                    <div class="side-icon-item"><i class="fas fa-star"></i><span>LAS MEJORES<br>MARCAS</span></div>
+                    <div class="side-icon-item"><i class="fas fa-truck"></i><span>ENVÍOS A<br>TODO EL PERÚ</span></div>
+                    <div class="side-icon-item"><i class="fas fa-headset"></i><span>ATENCIÓN<br>PERSONALIZADA</span></div>
+                </div>
+                <div class="side-icons-list right-side">
+                    <div class="side-icon-item"><i class="fas fa-paint-roller"></i><span>PINTURAS</span></div>
+                    <div class="side-icon-item"><i class="fas fa-tools"></i><span>HERRAMIENTAS</span></div>
+                    <div class="side-icon-item"><i class="fas fa-home"></i><span>SOLUCIONES<br>PARA CONSTRUCCIÓN,<br>INDUSTRIA Y HOGAR</span></div>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<section class="section why-section">
-    <div class="container">
-        <div class="section-header">
-            <span class="section-tag"><i class="fas fa-star"></i> Ventajas</span>
-            <h2 class="section-title">¿Por Qué <span class="gradient-text">Elegirnos?</span></h2>
+<!-- Section 2: Misión y Visión -->
+<section class="about-mission-vision">
+    <div class="container mv-container">
+        <!-- Misión -->
+        <div class="mv-card mission-card">
+            <div class="mv-watermark"><i class="fas fa-bullseye"></i></div>
+            <div class="mv-icon"><i class="fas fa-bullseye"></i></div>
+            <div class="mv-content">
+                <h3>MISIÓN</h3>
+                <p>Brindar productos y soluciones de alta calidad para los sectores de construcción, industria y hogar, ofreciendo asesoría especializada, atención personalizada y las mejores marcas del mercado para contribuir al éxito de nuestros clientes.</p>
+            </div>
         </div>
-        <div class="why-grid">
-            <div class="why-card"><div class="why-number">01</div><div class="why-icon"><i class="fas fa-truck-fast"></i></div><h3>Entrega Rápida</h3><p>Despacho inmediato a nivel local y envíos a todo el Perú en tiempo récord.</p></div>
-            <div class="why-card"><div class="why-number">02</div><div class="why-icon"><i class="fas fa-certificate"></i></div><h3>Calidad Garantizada</h3><p>Todos nuestros productos cuentan con certificaciones y garantía de fábrica.</p></div>
-            <div class="why-card"><div class="why-number">03</div><div class="why-icon"><i class="fas fa-tags"></i></div><h3>Precios Competitivos</h3><p>Las mejores tarifas del mercado sin comprometer la calidad ni el servicio.</p></div>
-            <div class="why-card"><div class="why-number">04</div><div class="why-icon"><i class="fas fa-headset"></i></div><h3>Asesoría Técnica</h3><p>Equipo de expertos listos para ayudarte a elegir la solución correcta.</p></div>
+        <!-- Visión -->
+        <div class="mv-card vision-card">
+            <div class="mv-watermark"><i class="fas fa-eye"></i></div>
+            <div class="mv-icon"><i class="fas fa-eye"></i></div>
+            <div class="mv-content">
+                <h3>VISIÓN</h3>
+                <p>Ser la empresa líder en distribución de pinturas, herramientas y soluciones integrales en el Perú, reconocida por su calidad, confianza, innovación y compromiso con el desarrollo de nuestros clientes y del país.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Section 3: Nuestras Tiendas -->
+<section class="about-stores-section">
+    <div class="container">
+        <h2 class="stores-section-title">Nuestras <span class="text-red">Tiendas</span></h2>
+        <div class="stores-row">
+            <div class="store-item">
+                <img src="{{ url_for('static', filename='assets/local_foto.jpeg') }}" alt="Tienda Principal">
+                <div class="store-address-tag"><i class="fas fa-map-marker-alt"></i> Av. Guillermo Dansey N° 595, Lima, Perú</div>
+            </div>
+            <div class="store-item">
+                <img src="{{ url_for('static', filename='assets/tienda2.jpeg') }}" alt="Tienda 2">
+                <div class="store-address-tag"><i class="fas fa-map-marker-alt"></i> Av. Argentina N° 215, Cercado de Lima</div>
+            </div>
+            <div class="store-item">
+                <img src="{{ url_for('static', filename='assets/tienda3.jpeg') }}" alt="Tienda 3">
+                <div class="store-address-tag"><i class="fas fa-map-marker-alt"></i> Jr. Huarochirí C.C. Plaza Ferretero, Lima</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Section 4: Stats Bar -->
+<section class="about-stats-banner">
+    <div class="container stats-banner-container">
+        <div class="stat-banner-item"><i class="fas fa-shield-alt"></i><h2>+20 AÑOS</h2><span>DE EXPERIENCIA</span></div>
+        <div class="stat-banner-item"><i class="fas fa-users"></i><h2>+15,000</h2><span>CLIENTES<br>ATENDIDOS</span></div>
+        <div class="stat-banner-item"><i class="fas fa-store"></i><h2>3 TIENDAS</h2><span>ESTRATÉGICAMENTE<br>UBICADAS EN LIMA</span></div>
+        <div class="stat-banner-item"><i class="fas fa-truck"></i><h2>COBERTURA</h2><span>A TODO<br>EL PERÚ</span></div>
+        <div class="stat-banner-item"><i class="fas fa-box"></i><h2>+5,000</h2><span>PRODUCTOS<br>DISPONIBLES</span></div>
+        <div class="stat-banner-item"><i class="fas fa-certificate"></i><h2>MARCAS LÍDERES</h2><span>NACIONALES E<br>INTERNACIONALES</span></div>
+    </div>
+</section>
+
+<!-- Section 5: Bottom Contact Bar -->
+<section class="about-bottom-contact">
+    <div class="container bottom-contact-container">
+        <div class="bc-left">
+            <div class="bc-icon"><i class="fas fa-headset"></i></div>
+            <div class="bc-text">
+                <h4>¿Necesitas asesoría?</h4>
+                <p>Nuestro equipo está listo para ayudarte<br>en lo que necesites.</p>
+            </div>
+        </div>
+        <div class="bc-center">
+            <a href="{{ url_for('contacto') }}" class="btn-bc-red">CONOCE NUESTRAS TIENDAS <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <div class="bc-right">
+            <div class="bc-info-item"><i class="fas fa-phone-alt"></i> {{ site.get('phone', '01 123 4567') }}</div>
+            <div class="bc-info-item"><i class="fas fa-envelope"></i> {{ site.get('email', 'ventas@grupodewill.com') }}</div>
+            <div class="bc-info-item"><i class="fas fa-globe"></i> www.grupodewill.com</div>
         </div>
     </div>
 </section>

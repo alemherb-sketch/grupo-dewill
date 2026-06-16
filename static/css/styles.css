@@ -4048,3 +4048,482 @@ section,
     position: relative;
     z-index: 1;
 }
+
+/* ====== NEW ABOUT US PAGE (NOSOTROS MODEL) ====== */
+
+.about-hero-model {
+    position: relative;
+    padding: 8rem 0 5rem;
+    background-color: #fff;
+    overflow: hidden;
+}
+
+.about-stripe-bg {
+    position: absolute;
+    top: 0; left: 0;
+    width: 300px;
+    height: 300px;
+    background: linear-gradient(135deg, #c8102e 0%, #c8102e 50%, #0b162c 50%, #0b162c 100%);
+    clip-path: polygon(0 0, 100% 0, 0 100%);
+    z-index: 0;
+}
+
+.about-hero-container {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+}
+
+.about-hero-tag {
+    display: inline-block;
+    border: 1px solid #c8102e;
+    color: #c8102e;
+    border-radius: 50px;
+    padding: 0.3rem 1rem;
+    font-weight: 700;
+    font-size: 0.85rem;
+    margin-bottom: 1.5rem;
+    letter-spacing: 1px;
+}
+
+.about-hero-title {
+    font-size: 4rem;
+    font-weight: 900;
+    color: #0b162c;
+    line-height: 1.1;
+    margin-bottom: 1rem;
+}
+
+.text-red {
+    color: #c8102e;
+}
+
+.about-hero-subtitle {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #0b162c;
+    margin-bottom: 1.5rem;
+}
+
+.about-hero-desc {
+    font-size: 1.05rem;
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 2.5rem;
+    max-width: 90%;
+}
+
+.about-experience-card {
+    background-color: #0b162c;
+    border-radius: 15px;
+    padding: 2rem;
+    color: #fff;
+    max-width: 400px;
+    box-shadow: 0 15px 30px rgba(11, 22, 44, 0.2);
+}
+
+.exp-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.exp-icon i {
+    font-size: 3rem;
+    color: #f1c40f;
+}
+
+.exp-text h2 {
+    font-size: 2rem;
+    font-weight: 900;
+    margin: 0;
+    line-height: 1;
+}
+
+.exp-text span {
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    opacity: 0.9;
+}
+
+.exp-desc {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.5;
+    margin: 0;
+}
+
+.about-hero-image-wrapper {
+    position: relative;
+    border-radius: 10px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+}
+
+.about-hero-image-wrapper img {
+    width: 100%;
+    border-radius: 10px;
+    display: block;
+}
+
+.side-icons-list {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.side-icons-list.left-side {
+    left: -40px;
+}
+
+.side-icons-list.right-side {
+    right: -40px;
+}
+
+.side-icon-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    background: #fff;
+    padding: 0.8rem;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    width: 90px;
+}
+
+.side-icon-item i {
+    font-size: 1.5rem;
+    color: #0b162c;
+    margin-bottom: 0.5rem;
+}
+
+.side-icon-item span {
+    font-size: 0.55rem;
+    font-weight: 800;
+    color: #0b162c;
+    line-height: 1.2;
+}
+
+/* Misión y Visión */
+.about-mission-vision {
+    padding: 3rem 0;
+    background: #fff;
+}
+
+.mv-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.mv-card {
+    position: relative;
+    background: #fff;
+    border: 2px solid #eaeaea;
+    border-radius: 15px;
+    padding: 2.5rem 2rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    overflow: hidden;
+}
+
+.mission-card {
+    border-color: rgba(200, 16, 46, 0.3);
+}
+
+.vision-card {
+    border-color: rgba(11, 22, 44, 0.3);
+}
+
+.mv-icon {
+    position: relative;
+    z-index: 1;
+    min-width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    color: #fff;
+}
+
+.mission-card .mv-icon {
+    background: #c8102e;
+}
+
+.vision-card .mv-icon {
+    background: #0b162c;
+}
+
+.mv-content {
+    position: relative;
+    z-index: 1;
+}
+
+.mv-content h3 {
+    font-size: 1.3rem;
+    font-weight: 800;
+    margin-bottom: 0.8rem;
+}
+
+.mission-card .mv-content h3 {
+    color: #c8102e;
+}
+
+.vision-card .mv-content h3 {
+    color: #0b162c;
+}
+
+.mv-content p {
+    font-size: 0.95rem;
+    color: #555;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.mv-watermark {
+    position: absolute;
+    right: -20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12rem;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.mission-card .mv-watermark {
+    color: rgba(200, 16, 46, 0.05);
+}
+
+.vision-card .mv-watermark {
+    color: rgba(11, 22, 44, 0.05);
+}
+
+/* Nuestras Tiendas */
+.about-stores-section {
+    padding: 3rem 0 5rem;
+    background: #fff;
+}
+
+.stores-section-title {
+    text-align: center;
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #0b162c;
+    margin-bottom: 3rem;
+    position: relative;
+}
+
+.stores-section-title::after {
+    content: "";
+    display: block;
+    width: 60px;
+    height: 3px;
+    background: #c8102e;
+    margin: 10px auto 0;
+}
+
+.stores-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.store-item {
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.store-item img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    display: block;
+}
+
+.store-address-tag {
+    background: #0b162c;
+    color: #fff;
+    padding: 1.2rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.store-address-tag i {
+    color: #c8102e;
+    font-size: 1.1rem;
+}
+
+/* Stats Banner */
+.about-stats-banner {
+    background: #0b162c;
+    padding: 3rem 0;
+}
+
+.stats-banner-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 2rem;
+    text-align: center;
+}
+
+.stat-banner-item i {
+    font-size: 2.5rem;
+    color: #c8102e;
+    margin-bottom: 1rem;
+}
+
+.stat-banner-item h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 0.3rem;
+}
+
+.stat-banner-item span {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.7);
+    letter-spacing: 1px;
+    display: block;
+}
+
+/* Bottom Contact Bar */
+.about-bottom-contact {
+    background: #f8f9fa;
+    padding: 3rem 0;
+    border-bottom: 5px solid #0b162c;
+}
+
+.bottom-contact-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+
+.bc-left {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.bc-icon {
+    width: 60px;
+    height: 60px;
+    background: #ffe5e5;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    color: #c8102e;
+}
+
+.bc-text h4 {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #0b162c;
+    margin: 0 0 0.2rem 0;
+}
+
+.bc-text p {
+    font-size: 0.9rem;
+    color: #666;
+    margin: 0;
+}
+
+.btn-bc-red {
+    background: #c8102e;
+    color: #fff;
+    padding: 1rem 2rem;
+    border-radius: 50px;
+    font-weight: 800;
+    font-size: 0.95rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8rem;
+    transition: background 0.3s;
+}
+
+.btn-bc-red:hover {
+    background: #a00b23;
+    color: #fff;
+}
+
+.bc-right {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.bc-info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #0b162c;
+}
+
+.bc-info-item i {
+    color: #0b162c;
+}
+
+/* Responsiveness */
+@media (max-width: 991px) {
+    .about-hero-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .about-stripe-bg {
+        width: 150px;
+        height: 150px;
+    }
+    
+    .about-hero-title {
+        font-size: 3rem;
+    }
+    
+    .mv-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .bottom-contact-container {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .bc-left {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .bc-right {
+        align-items: center;
+    }
+}
+
+@media (max-width: 768px) {
+    .side-icons-list {
+        display: none;
+    }
+}
