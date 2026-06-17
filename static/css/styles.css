@@ -3526,6 +3526,9 @@ img {
     }
     .btn-add-to-quote {
         width: 100%;
+        flex: none;
+        height: 56px;
+        font-size: 1.05rem;
     }
     .detail-download-row {
         flex-direction: column;
