@@ -4,17 +4,16 @@
 
 {% block content %}
 <!-- HERO -->
-<section class="page-hero">
-    <div class="page-hero-bg">
-        <img src="{{ url_for('static', filename='assets/hero_bg.png') }}" alt="Galería de Ambientes" class="hero-bg-img">
-        <div class="hero-overlay"></div>
-    </div>
-    <div class="page-hero-content">
-        <div class="hero-badge animate-fade-up"><i class="fas fa-paint-roller"></i> INSPIRACIÓN REAL</div>
-        <h1 class="page-hero-title animate-fade-up delay-1">Galería de <span style="color: var(--primary);">Ambientes</span></h1>
-        <p class="page-hero-subtitle animate-fade-up delay-2">Visualiza la armonía de colores en espacios reales<br>y elige el estilo que mejor se adapte a ti.</p>
-    </div>
+<section class="page-hero-ambientes" style="width: 100%; display: block; overflow: hidden;">
+    <img src="{{ url_for('static', filename='assets/banner_ambientes_new.png') }}" alt="Galería de Ambientes" style="width: 100%; height: auto; display: block;">
 </section>
+
+<!-- SEO TEXT -->
+<div style="display: none;">
+    <h2>INSPIRACIÓN REAL</h2>
+    <h1>Galería de Ambientes</h1>
+    <p>Visualiza la armonía de colores en espacios reales<br>y elige el estilo que mejor se adapte a ti.</p>
+</div>
 
 <!-- TABS BAR -->
 <div class="ambientes-tabs-bar">
