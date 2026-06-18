@@ -4,14 +4,13 @@
 
 {% block content %}
 <!-- PAGE HERO -->
-<section class="page-hero-products">
+<section class="page-hero-products" style="background: #f4f6f9; padding: 6rem 0;">
     <div class="page-hero-bg">
-        <img src="{{ url_for('static', filename='assets/banner_productos_new.png') }}" alt="Productos" class="hero-bg-img">
-        <div class="hero-overlay"></div>
+        <img src="{{ url_for('static', filename='assets/banner_productos_new.png') }}" alt="Productos" class="hero-bg-img" style="opacity: 1 !important;">
     </div>
     <div class="page-hero-content">
-        <h1 class="page-hero-title-products">Nuestros <span style="color: var(--primary);">Productos</span></h1>
-        <p class="page-hero-subtitle-products">Pinturas de alta calidad para cada necesidad.</p>
+        <h1 class="page-hero-title-products" style="color: var(--secondary) !important; font-weight: 800 !important; text-shadow: none !important;">Nuestros <span style="color: var(--primary) !important;">Productos</span></h1>
+        <p class="page-hero-subtitle-products" style="color: var(--secondary) !important; font-weight: 500 !important; text-shadow: none !important;">Pinturas de alta calidad para cada necesidad.</p>
     </div>
 </section>
 
