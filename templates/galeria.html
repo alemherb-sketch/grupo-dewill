@@ -26,14 +26,13 @@
         {% if images %}
         <div class="gallery-grid">
             {% for img in images %}
-            <div class="gallery-item" onclick="openLightbox('{{ url_for('static', filename=img.image_url) }}', '{{ img.title }}')">
+            <div class="gallery-item" onclick="openLightbox('{{ url_for('static', filename=img.image_url) }}', '{{ img.title }}', '{{ img.subtitle or '' }}')">
                 <img src="{{ url_for('static', filename=img.image_url) }}" alt="{{ img.title }}" loading="lazy">
+                {% if img.color_code %}<span class="gallery-color-swatch" style="background:{{ img.color_code }}"></span>{% endif %}
                 <div class="gallery-item-overlay">
+                    <i class="fas fa-expand gallery-item-expand"></i>
                     <span class="gallery-item-title">{{ img.title }}</span>
-                    {% if img.color_code %}
-                    <span class="gallery-color-swatch" style="background:{{ img.color_code }}"></span>
-                    {% endif %}
-                    <i class="fas fa-expand"></i>
+                    {% if img.subtitle %}<span class="gallery-item-subtitle">{{ img.subtitle }}</span>{% endif %}
                 </div>
             </div>
             {% endfor %}
@@ -58,9 +57,11 @@
 
 {% block extra_js %}
 <script>
-function openLightbox(src, title) {
+function openLightbox(src, title, subtitle) {
     document.getElementById('lightboxImage').src = src;
-    document.getElementById('lightboxCaption').textContent = title || '';
+    var caption = title || '';
+    if (subtitle) { caption += (caption ? ' — ' : '') + subtitle; }
+    document.getElementById('lightboxCaption').textContent = caption;
     document.getElementById('lightbox').classList.add('active');
     document.body.style.overflow = 'hidden';
 }
