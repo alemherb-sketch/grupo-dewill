@@ -78,6 +78,12 @@ with app.app_context():
             db.session.commit()
         except Exception:
             db.session.rollback()
+        # Add subtitle column to gallery_images
+        try:
+            db.session.execute(text("ALTER TABLE gallery_images ADD COLUMN subtitle VARCHAR(200)"))
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
     except Exception as e:
         print(f"Migration error: {e}")
 
