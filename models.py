@@ -195,6 +195,7 @@ class GalleryImage(db.Model):
     category_id = db.Column(db.Integer, db.ForeignKey('gallery_categories.id'), nullable=False)
     image_url = db.Column(db.String(300), nullable=False)
     title = db.Column(db.String(200))
+    subtitle = db.Column(db.String(200))
     color_code = db.Column(db.String(7))
     order = db.Column(db.Integer, default=0)
 

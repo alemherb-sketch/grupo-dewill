@@ -1177,7 +1177,7 @@ def admin_gallery():
                 url = save_upload(request.files['image'], 'gallery')
                 if url:
                     db.session.add(GalleryImage(category_id=request.form.get('category_id',type=int),
-                        image_url=url, title=request.form.get('title',''),
+                        image_url=url, title=request.form.get('title',''), subtitle=request.form.get('subtitle',''),
                         color_code=request.form.get('color_code',''), order=request.form.get('order',0,type=int)))
                     db.session.commit(); flash('Imagen agregada', 'success')
         elif action == 'delete_image':
