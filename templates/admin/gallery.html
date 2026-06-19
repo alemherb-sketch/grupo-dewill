@@ -3,82 +3,134 @@
 {% block page_title %}Gestión de Galería{% endblock %}
 
 {% block admin_content %}
+<!-- Summary -->
+<div class="gallery-summary">
+    <div class="summary-chip">
+        <i class="fas fa-tags" style="background:var(--admin-sidebar-bg);"></i>
+        <div>
+            <div class="chip-num">{{ gallery_categories|length }}</div>
+            <div class="chip-lbl">Categorías</div>
+        </div>
+    </div>
+    <div class="summary-chip">
+        <i class="fas fa-images" style="background:var(--admin-primary);"></i>
+        <div>
+            <div class="chip-num">{{ all_images|length }}</div>
+            <div class="chip-lbl">Imágenes</div>
+        </div>
+    </div>
+</div>
+
 <div class="form-grid-2">
     <!-- Categories Panel -->
-    <div class="admin-panel">
+    <div class="admin-panel" style="margin-bottom:0;">
         <div class="panel-header">
             <h3><i class="fas fa-tags"></i> Categorías de Galería</h3>
-            <button class="btn-sm btn-primary" onclick="document.getElementById('newGalCatModal').classList.add('show')"><i class="fas fa-plus"></i></button>
+            <button class="btn btn-primary btn-sm" onclick="document.getElementById('newGalCatModal').classList.add('show')"><i class="fas fa-plus"></i> Nueva</button>
         </div>
         <div class="panel-body">
-            <ul style="list-style:none;padding:0;margin:0;">
+            <ul class="gal-cat-list">
                 {% for gc in gallery_categories %}
-                <li style="display:flex;justify-content:space-between;align-items:center;padding:0.75rem 0;border-bottom:1px solid rgba(255,255,255,0.05);">
-                    <span><strong>{{ gc.name }}</strong> <code>({{ gc.slug }})</code></span>
+                <li class="gal-cat-item">
+                    <div class="gal-cat-info">
+                        <strong>{{ gc.name }}</strong>
+                        <div class="gal-cat-tags">
+                            <span class="slug-pill">{{ gc.slug }}</span>
+                            <span class="count-pill"><i class="fas fa-image"></i> {{ gc.images|length }}</span>
+                        </div>
+                    </div>
                     <form method="POST" style="display:inline;" onsubmit="return confirm('¿Eliminar esta categoría y todas sus imágenes?')">
                         <input type="hidden" name="action" value="delete_category"><input type="hidden" name="id" value="{{ gc.id }}">
-                        <button type="submit" class="btn-sm btn-delete"><i class="fas fa-trash"></i></button>
+                        <button type="submit" class="btn-delete" title="Eliminar categoría"><i class="fas fa-trash"></i></button>
                     </form>
                 </li>
                 {% else %}
-                <li style="color:var(--text-muted);font-style:italic;">No hay categorías registradas.</li>
+                <li class="gallery-empty" style="padding:2rem 1rem;">
+                    <i class="fas fa-tags"></i>
+                    No hay categorías registradas.
+                </li>
                 {% endfor %}
             </ul>
         </div>
     </div>
 
-    <!-- Images Panel -->
-    <div class="admin-panel">
+    <!-- Upload Panel -->
+    <div class="admin-panel" style="margin-bottom:0;">
         <div class="panel-header">
-            <h3><i class="fas fa-images"></i> Agregar Imagen</h3>
+            <h3><i class="fas fa-cloud-arrow-up"></i> Agregar Imagen</h3>
         </div>
         <div class="panel-body">
             {% if gallery_categories %}
             <form method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="action" value="add_image">
+                <div class="form-group">
+                    <label>Imagen *</label>
+                    <label class="upload-dropzone" id="galleryDropzone">
+                        <input type="file" name="image" id="galleryImageInput" accept="image/*" required onchange="previewGalleryImage(event)">
+                        <div class="dropzone-prompt" id="dropzonePrompt">
+                            <i class="fas fa-cloud-arrow-up"></i>
+                            <span>Arrastra una imagen o haz clic para seleccionar</span>
+                            <small>PNG o JPG · se recomienda 1200px de ancho</small>
+                        </div>
+                        <img id="imagePreview" class="dropzone-preview" src="#" alt="Vista previa" hidden>
+                    </label>
+                </div>
                 <div class="form-group"><label>Categoría *</label>
                     <select name="category_id" required class="form-input">
                         {% for gc in gallery_categories %}<option value="{{ gc.id }}">{{ gc.name }}</option>{% endfor %}
                     </select>
                 </div>
-                <div class="form-group">
-                    <label>Imagen *</label>
-                    <input type="file" name="image" id="galleryImageInput" accept="image/*" required class="form-input-file" onchange="previewGalleryImage(event)">
-                    <div id="imagePreviewContainer" style="margin-top: 10px; display: none;">
-                        <img id="imagePreview" src="#" alt="Vista previa de la imagen" style="max-width: 100%; max-height: 200px; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.1);">
-                    </div>
-                </div>
                 <div class="form-group"><label>Título</label><input type="text" name="title" class="form-input" placeholder="Ej: Sala Comedor"></div>
                 <div class="form-group"><label>Subtítulo</label><input type="text" name="subtitle" class="form-input" placeholder="Ej: Una descripción corta"></div>
-                <div class="form-group"><label>Orden</label><input type="number" name="order" value="0" class="form-input"></div>
-                <button type="submit" class="btn btn-primary"><i class="fas fa-upload"></i> Subir Imagen</button>
+                <div class="form-row">
+                    <div class="form-group" style="margin-bottom:0;"><label>Orden</label><input type="number" name="order" value="0" class="form-input"></div>
+                    <div class="form-group" style="margin-bottom:0;display:flex;align-items:flex-end;">
+                        <button type="submit" class="btn btn-primary btn-full"><i class="fas fa-upload"></i> Subir Imagen</button>
+                    </div>
+                </div>
             </form>
             {% else %}
-            <div class="admin-alert admin-alert-info">Primero debes crear una categoría.</div>
+            <div class="admin-alert admin-alert-info"><i class="fas fa-info-circle"></i> Primero debes crear una categoría.</div>
             {% endif %}
         </div>
     </div>
 </div>
 
+<!-- All Images -->
 <div class="admin-panel" style="margin-top:2rem;">
-    <div class="panel-header"><h3><i class="fas fa-th"></i> Todas las Imágenes</h3></div>
+    <div class="panel-header">
+        <h3><i class="fas fa-th"></i> Todas las Imágenes</h3>
+        {% if gallery_categories and all_images %}
+        <div class="gal-filter-tabs">
+            <button type="button" class="gal-filter-tab active" onclick="filterGallery('all', this)">Todas</button>
+            {% for gc in gallery_categories %}
+            <button type="button" class="gal-filter-tab" onclick="filterGallery('{{ gc.id }}', this)">{{ gc.name }}</button>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
     <div class="panel-body">
-        <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(200px, 1fr));gap:1rem;">
+        <div class="gallery-grid">
             {% for img in all_images %}
-            <div style="background:var(--bg-dark);border:1px solid rgba(255,255,255,0.05);border-radius:var(--radius-sm);overflow:hidden;position:relative;">
-                <img src="{{ url_for('static', filename=img.image_url) }}" style="width:100%;height:150px;object-fit:cover;display:block;">
-                <div style="padding:0.75rem;">
-                    <strong style="display:block;font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ img.title or 'Sin título' }}</strong>
-                    {% if img.subtitle %}<small style="display:block;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ img.subtitle }}</small>{% endif %}
-                    <small style="color:var(--text-muted);">{{ img.gallery_category.name if img.gallery_category else 'Sin categoría' }}</small>
+            <div class="gallery-card" data-cat="{{ img.category_id }}">
+                <div class="gallery-card-media">
+                    <img src="{{ url_for('static', filename=img.image_url) }}" alt="{{ img.title or 'Imagen de galería' }}" loading="lazy">
+                    {% if img.gallery_category %}<span class="gallery-card-cat">{{ img.gallery_category.name }}</span>{% endif %}
+                    <form method="POST" onsubmit="return confirm('¿Eliminar imagen?')">
+                        <input type="hidden" name="action" value="delete_image"><input type="hidden" name="id" value="{{ img.id }}">
+                        <button type="submit" class="gallery-card-del" title="Eliminar imagen"><i class="fas fa-trash"></i></button>
+                    </form>
                 </div>
-                <form method="POST" action="" onsubmit="return confirm('¿Eliminar imagen?')" style="position:absolute;top:0.5rem;right:0.5rem;">
-                    <input type="hidden" name="action" value="delete_image"><input type="hidden" name="id" value="{{ img.id }}">
-                    <button type="submit" class="btn-sm btn-delete" style="background:rgba(255,0,0,0.8);color:white;border:none;"><i class="fas fa-trash"></i></button>
-                </form>
+                <div class="gallery-card-body">
+                    <strong>{{ img.title or 'Sin título' }}</strong>
+                    {% if img.subtitle %}<small>{{ img.subtitle }}</small>{% endif %}
+                </div>
             </div>
             {% else %}
-            <p style="color:var(--text-muted);font-style:italic;">No hay imágenes en la galería.</p>
+            <div class="gallery-empty" style="grid-column:1/-1;">
+                <i class="fas fa-images"></i>
+                No hay imágenes en la galería todavía.
+            </div>
             {% endfor %}
         </div>
     </div>
@@ -86,10 +138,10 @@
 
 <div class="admin-modal" id="newGalCatModal">
     <div class="modal-card">
-        <h3>Nueva Categoría de Galería</h3>
+        <h3><i class="fas fa-tags"></i> Nueva Categoría de Galería</h3>
         <form method="POST">
             <input type="hidden" name="action" value="create_category">
-            <div class="form-group"><label>Nombre</label><input type="text" name="name" required class="form-input"></div>
+            <div class="form-group"><label>Nombre</label><input type="text" name="name" required class="form-input" placeholder="Ej: Interiores"></div>
             <div class="form-group"><label>Slug</label><input type="text" name="slug" required class="form-input" placeholder="ej: interiores"></div>
             <div class="modal-actions">
                 <button type="button" class="btn btn-outline" onclick="this.closest('.admin-modal').classList.remove('show')">Cancelar</button>
@@ -104,22 +156,41 @@
 <script>
     function previewGalleryImage(event) {
         var input = event.target;
-        var previewContainer = document.getElementById('imagePreviewContainer');
-        var previewImage = document.getElementById('imagePreview');
-        
+        var prompt = document.getElementById('dropzonePrompt');
+        var preview = document.getElementById('imagePreview');
         if (input.files && input.files[0]) {
             var reader = new FileReader();
-            
             reader.onload = function(e) {
-                previewImage.src = e.target.result;
-                previewContainer.style.display = 'block';
+                preview.src = e.target.result;
+                preview.hidden = false;
+                prompt.style.display = 'none';
             }
-            
             reader.readAsDataURL(input.files[0]);
         } else {
-            previewImage.src = '#';
-            previewContainer.style.display = 'none';
+            preview.src = '#';
+            preview.hidden = true;
+            prompt.style.display = '';
         }
     }
+
+    function filterGallery(cat, btn) {
+        document.querySelectorAll('.gal-filter-tab').forEach(function (t) { t.classList.remove('active'); });
+        btn.classList.add('active');
+        document.querySelectorAll('.gallery-card').forEach(function (card) {
+            card.style.display = (cat === 'all' || card.dataset.cat === cat) ? '' : 'none';
+        });
+    }
+
+    // Drag & drop visual feedback
+    (function () {
+        var dz = document.getElementById('galleryDropzone');
+        if (!dz) return;
+        ['dragenter', 'dragover'].forEach(function (ev) {
+            dz.addEventListener(ev, function (e) { e.preventDefault(); dz.classList.add('dragover'); });
+        });
+        ['dragleave', 'drop'].forEach(function (ev) {
+            dz.addEventListener(ev, function (e) { e.preventDefault(); dz.classList.remove('dragover'); });
+        });
+    })();
 </script>
 {% endblock %}
