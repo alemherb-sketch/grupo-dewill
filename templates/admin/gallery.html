@@ -41,7 +41,13 @@
                         {% for gc in gallery_categories %}<option value="{{ gc.id }}">{{ gc.name }}</option>{% endfor %}
                     </select>
                 </div>
-                <div class="form-group"><label>Imagen *</label><input type="file" name="image" accept="image/*" required class="form-input-file"></div>
+                <div class="form-group">
+                    <label>Imagen *</label>
+                    <input type="file" name="image" id="galleryImageInput" accept="image/*" required class="form-input-file" onchange="previewGalleryImage(event)">
+                    <div id="imagePreviewContainer" style="margin-top: 10px; display: none;">
+                        <img id="imagePreview" src="#" alt="Vista previa de la imagen" style="max-width: 100%; max-height: 200px; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.1);">
+                    </div>
+                </div>
                 <div class="form-group"><label>Título</label><input type="text" name="title" class="form-input" placeholder="Ej: Sala Comedor"></div>
                 <div class="form-row">
                     <div class="form-group"><label>Color Swatch (Hex)</label><input type="text" name="color_code" class="form-input" placeholder="#RRGGBB"></div>
@@ -93,4 +99,28 @@
         </form>
     </div>
 </div>
+{% endblock %}
+
+{% block admin_js %}
+<script>
+    function previewGalleryImage(event) {
+        var input = event.target;
+        var previewContainer = document.getElementById('imagePreviewContainer');
+        var previewImage = document.getElementById('imagePreview');
+        
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            
+            reader.onload = function(e) {
+                previewImage.src = e.target.result;
+                previewContainer.style.display = 'block';
+            }
+            
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            previewImage.src = '#';
+            previewContainer.style.display = 'none';
+        }
+    }
+</script>
 {% endblock %}
