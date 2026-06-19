@@ -39,10 +39,15 @@
                             <span class="count-pill"><i class="fas fa-image"></i> {{ gc.images|length }}</span>
                         </div>
                     </div>
-                    <form method="POST" style="display:inline;" onsubmit="return confirm('¿Eliminar esta categoría y todas sus imágenes?')">
-                        <input type="hidden" name="action" value="delete_category"><input type="hidden" name="id" value="{{ gc.id }}">
-                        <button type="submit" class="btn-delete" title="Eliminar categoría"><i class="fas fa-trash"></i></button>
-                    </form>
+                    <div class="gal-cat-actions">
+                        <button type="button" class="btn-edit" title="Editar categoría"
+                            data-id="{{ gc.id }}" data-name="{{ gc.name }}" data-slug="{{ gc.slug }}"
+                            onclick="openEditCatModal(this)"><i class="fas fa-pen"></i></button>
+                        <form method="POST" onsubmit="return confirm('¿Eliminar esta categoría y todas sus imágenes?')">
+                            <input type="hidden" name="action" value="delete_category"><input type="hidden" name="id" value="{{ gc.id }}">
+                            <button type="submit" class="btn-delete" title="Eliminar categoría"><i class="fas fa-trash"></i></button>
+                        </form>
+                    </div>
                 </li>
                 {% else %}
                 <li class="gallery-empty" style="padding:2rem 1rem;">
@@ -150,6 +155,22 @@
         </form>
     </div>
 </div>
+
+<div class="admin-modal" id="editGalCatModal">
+    <div class="modal-card">
+        <h3><i class="fas fa-pen"></i> Editar Categoría</h3>
+        <form method="POST">
+            <input type="hidden" name="action" value="edit_category">
+            <input type="hidden" name="id" value="">
+            <div class="form-group"><label>Nombre</label><input type="text" name="name" required class="form-input"></div>
+            <div class="form-group"><label>Slug</label><input type="text" name="slug" required class="form-input"></div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="this.closest('.admin-modal').classList.remove('show')">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}
 
 {% block admin_js %}
@@ -171,6 +192,14 @@
             preview.hidden = true;
             prompt.style.display = '';
         }
+    }
+
+    function openEditCatModal(btn) {
+        var modal = document.getElementById('editGalCatModal');
+        modal.querySelector('input[name=id]').value = btn.dataset.id;
+        modal.querySelector('input[name=name]').value = btn.dataset.name;
+        modal.querySelector('input[name=slug]').value = btn.dataset.slug;
+        modal.classList.add('show');
     }
 
     function filterGallery(cat, btn) {

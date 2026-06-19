@@ -458,6 +458,7 @@ a { text-decoration: none; color: var(--admin-primary); }
 .gal-cat-info { display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; }
 .gal-cat-info strong { font-size: 0.95rem; color: var(--admin-text); }
 .gal-cat-tags { display: flex; align-items: center; gap: 0.5rem; }
+.gal-cat-actions { display: flex; align-items: center; gap: 0.4rem; flex-shrink: 0; }
 .slug-pill { font-family: monospace; font-size: 0.72rem; background: #f1f5f9; color: #475569; padding: 0.15rem 0.5rem; border-radius: 6px; }
 .count-pill { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.72rem; font-weight: 600; background: #fef2f2; color: var(--admin-primary); padding: 0.15rem 0.55rem; border-radius: 9999px; }
 
@@ -469,6 +470,7 @@ a { text-decoration: none; color: var(--admin-primary); }
 .dropzone-prompt span { font-weight: 600; font-size: 0.9rem; color: var(--admin-text); }
 .dropzone-prompt small { font-size: 0.75rem; }
 .dropzone-preview { max-width: 100%; max-height: 250px; border-radius: var(--radius); display: block; pointer-events: none; }
+.dropzone-preview[hidden] { display: none; }
 
 .gal-filter-tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .gal-filter-tab { padding: 0.4rem 0.9rem; border-radius: 9999px; font-size: 0.85rem; font-weight: 500; color: var(--admin-text-muted); background: #fff; border: 1px solid var(--admin-border); cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }

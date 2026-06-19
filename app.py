@@ -1175,6 +1175,11 @@ def admin_gallery():
         if action == 'create_category':
             db.session.add(GalleryCategory(name=request.form['name'], slug=request.form['slug']))
             db.session.commit(); flash('Categoría creada', 'success')
+        elif action == 'edit_category':
+            gc = GalleryCategory.query.get(request.form['id'])
+            if gc:
+                gc.name = request.form['name']; gc.slug = request.form['slug']
+                db.session.commit(); flash('Categoría actualizada', 'success')
         elif action == 'delete_category':
             gc = GalleryCategory.query.get(request.form['id'])
             if gc: db.session.delete(gc); db.session.commit(); flash('Categoría eliminada', 'success')
