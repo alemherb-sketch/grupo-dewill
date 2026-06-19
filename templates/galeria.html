@@ -15,37 +15,61 @@
     <p>Descubre cómo nuestros productos transforman espacios. Inspírate con colores y acabados.</p>
 </div>
 
+{% macro gallery_card(img) %}
+<div class="gallery-card2" onclick="openLightbox('{{ url_for('static', filename=img.image_url) }}', '{{ img.title }}', '{{ img.subtitle or '' }}')">
+    <div class="gallery-card2-media">
+        <img src="{{ url_for('static', filename=img.image_url) }}" alt="{{ img.title }}" loading="lazy">
+        <span class="gallery-card2-expand"><i class="fas fa-expand"></i></span>
+    </div>
+    <div class="gallery-card2-body">
+        <span class="gallery-card2-title">{{ img.title or 'Sin título' }}</span>
+        {% if img.subtitle %}<span class="gallery-card2-subtitle">{{ img.subtitle }}</span>{% endif %}
+    </div>
+</div>
+{% endmacro %}
+
 <section class="section gallery-section">
     <div class="container">
-        {% if gallery_categories %}
-        <div class="category-filter">
-            <a href="{{ url_for('galeria') }}" class="filter-btn {% if not current_cat %}active{% endif %}"><i class="fas fa-th-large"></i> Todos</a>
-            {% for gc in gallery_categories %}
-            <a href="{{ url_for('galeria', cat=gc.slug) }}" class="filter-btn {% if current_cat == gc.slug %}active{% endif %}">{{ gc.name }}</a>
-            {% endfor %}
-        </div>
-        {% endif %}
-
-        {% if images %}
-        <div class="gallery-grid">
-            {% for img in images %}
-            <div class="gallery-item" onclick="openLightbox('{{ url_for('static', filename=img.image_url) }}', '{{ img.title }}', '{{ img.subtitle or '' }}')">
-                <img src="{{ url_for('static', filename=img.image_url) }}" alt="{{ img.title }}" loading="lazy">
-                {% if img.color_code %}<span class="gallery-color-swatch" style="background:{{ img.color_code }}"></span>{% endif %}
-                <div class="gallery-item-overlay">
-                    <i class="fas fa-expand gallery-item-expand"></i>
-                    <span class="gallery-item-title">{{ img.title }}</span>
-                    {% if img.subtitle %}<span class="gallery-item-subtitle">{{ img.subtitle }}</span>{% endif %}
-                </div>
+        {% if current_cat %}
+        {# ---- Vista de una sola categoría (Ver todas) ---- #}
+        {% set cat = gallery_categories | selectattr('slug', 'equalto', current_cat) | first %}
+        <div class="gallery-cat-block">
+            <div class="gallery-cat-header">
+                <h2 class="gallery-cat-title"><span class="gallery-cat-icon"><i class="fas fa-images"></i></span> {{ cat.name if cat else 'Galería' }}</h2>
+                <a href="{{ url_for('galeria') }}" class="gallery-cat-link"><i class="fas fa-arrow-left"></i> Volver a la galería</a>
             </div>
-            {% endfor %}
+            {% if images %}
+            <div class="gallery-row">
+                {% for img in images %}{{ gallery_card(img) }}{% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state"><i class="fas fa-images"></i><h3>Sin imágenes</h3><p>Esta categoría aún no tiene imágenes.</p></div>
+            {% endif %}
         </div>
         {% else %}
+        {# ---- Vista agrupada por categoría ---- #}
+        {% set ns = namespace(any=false) %}
+        {% for gc in gallery_categories %}
+            {% if gc.images %}
+            {% set ns.any = true %}
+            <div class="gallery-cat-block">
+                <div class="gallery-cat-header">
+                    <h2 class="gallery-cat-title"><span class="gallery-cat-icon"><i class="fas fa-images"></i></span> {{ gc.name }}</h2>
+                    <a href="{{ url_for('galeria', cat=gc.slug) }}" class="gallery-cat-link">Ver todas <i class="fas fa-arrow-right"></i></a>
+                </div>
+                <div class="gallery-row">
+                    {% for img in gc.images[:5] %}{{ gallery_card(img) }}{% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        {% endfor %}
+        {% if not ns.any %}
         <div class="empty-state">
             <i class="fas fa-images"></i>
             <h3>Próximamente</h3>
             <p>Estamos preparando nuestra galería de ambientes. ¡Vuelve pronto!</p>
         </div>
+        {% endif %}
         {% endif %}
     </div>
 </section>
