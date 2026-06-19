@@ -1191,6 +1191,14 @@ def admin_gallery():
                         image_url=url, title=request.form.get('title',''), subtitle=request.form.get('subtitle',''),
                         color_code=request.form.get('color_code',''), order=request.form.get('order',0,type=int)))
                     db.session.commit(); flash('Imagen agregada', 'success')
+        elif action == 'edit_image':
+            gi = GalleryImage.query.get(request.form['id'])
+            if gi:
+                gi.category_id = request.form.get('category_id', gi.category_id, type=int)
+                gi.title = request.form.get('title', '')
+                gi.subtitle = request.form.get('subtitle', '')
+                gi.order = request.form.get('order', 0, type=int)
+                db.session.commit(); flash('Imagen actualizada', 'success')
         elif action == 'delete_image':
             gi = GalleryImage.query.get(request.form['id'])
             if gi: db.session.delete(gi); db.session.commit(); flash('Imagen eliminada', 'success')
