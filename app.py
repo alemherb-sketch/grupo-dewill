@@ -151,6 +151,14 @@ def get_site_config():
 def inject_site_config():
     return {'site': get_site_config()}
 
+@app.context_processor
+def inject_community_photos():
+    try:
+        photos = GalleryImage.query.order_by(GalleryImage.order).limit(4).all()
+    except Exception:
+        photos = []
+    return {'community_photos': photos}
+
 def slugify(value):
     value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
     value = re.sub(r'[^\w\s-]', '', value).strip().lower()

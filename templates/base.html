@@ -7,9 +7,9 @@
     <title>{% block title %}{{ site.get('meta_title', 'Grupo Dewill') }}{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=4.6">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=4.7">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -62,6 +62,54 @@
     </nav>
 
     {% block content %}{% endblock %}
+
+    <!-- COMUNIDAD DEWILL (pre-footer CTA) -->
+    {% set caps = ['Cliente feliz', 'Proyecto terminado', 'Taller práctico', 'Gran evento'] %}
+    {% set polaroids = [] %}
+    {% if community_photos %}
+        {% for img in community_photos %}{% set _ = polaroids.append((img.image_url, img.title or caps[loop.index0 % 4])) %}{% endfor %}
+    {% else %}
+        {% for f in ['assets/tienda2.jpeg', 'assets/tienda3.jpeg', 'assets/local_foto.jpeg', 'assets/hero-painter.png'] %}{% set _ = polaroids.append((f, caps[loop.index0])) %}{% endfor %}
+    {% endif %}
+    {% set phone_img = polaroids[0][0] if polaroids else 'assets/tienda2.jpeg' %}
+    <section class="community-cta">
+        <div class="container">
+            <div class="community-inner">
+                <div class="community-phone">
+                    <div class="phone-frame"><img src="{{ url_for('static', filename=phone_img) }}" alt="Comunidad Dewill"></div>
+                    <span class="phone-cam"><i class="fas fa-camera"></i></span>
+                </div>
+                <div class="community-text">
+                    <h2>¡Forma parte de la <span>Comunidad Dewill!</span></h2>
+                    <p>Comparte las fotos de tus proyectos, talleres o eventos y muéstralas aquí.</p>
+                    <a href="https://wa.me/{{ site.get('whatsapp', '51977585654') }}?text={{ '¡Hola! Quiero compartir una foto para la Comunidad Dewill.' | urlencode }}" target="_blank" rel="noopener" class="community-wa-btn">
+                        <i class="fab fa-whatsapp"></i> Enviar mi foto por WhatsApp
+                    </a>
+                    <span class="community-phone-text">También puedes escribirnos al <strong>01 123 4567</strong></span>
+                </div>
+                <div class="community-polaroids">
+                    {% for url, cap in polaroids %}
+                    <div class="polaroid" style="--r: {{ [-4, 3, -3, 4][loop.index0 % 4] }}deg;">
+                        <img src="{{ url_for('static', filename=url) }}" alt="{{ cap }}" loading="lazy">
+                        <span class="polaroid-cap">{{ cap }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- BARRA DE BENEFICIOS -->
+    <section class="community-features">
+        <div class="container">
+            <div class="features-row">
+                <div class="feature-item"><i class="fas fa-truck"></i><div class="feat-text">Envíos a todo Lima<br>y provincias</div></div>
+                <div class="feature-item"><i class="fas fa-shield-alt"></i><div class="feat-text">Productos 100%<br>garantizados</div></div>
+                <div class="feature-item"><i class="fas fa-headset"></i><div class="feat-text">Asesoría técnica<br>especializada</div></div>
+                <div class="feature-item"><i class="fas fa-tags"></i><div class="feat-text">Precios competitivos<br>y ofertas</div></div>
+            </div>
+        </div>
+    </section>
 
     <footer class="footer">
         <div class="container">
