@@ -125,6 +125,7 @@
                         <button type="button" class="gallery-card-btn edit" title="Editar imagen"
                             data-id="{{ img.id }}" data-title="{{ img.title or '' }}" data-subtitle="{{ img.subtitle or '' }}"
                             data-category="{{ img.category_id }}" data-order="{{ img.order }}"
+                            data-image="{{ url_for('static', filename=img.image_url) }}"
                             onclick="openEditImgModal(this)"><i class="fas fa-pen"></i></button>
                         <form method="POST" onsubmit="return confirm('¿Eliminar imagen?')">
                             <input type="hidden" name="action" value="delete_image"><input type="hidden" name="id" value="{{ img.id }}">
@@ -181,9 +182,15 @@
 <div class="admin-modal" id="editGalImgModal">
     <div class="modal-card">
         <h3><i class="fas fa-pen"></i> Editar Imagen</h3>
-        <form method="POST">
+        <form method="POST" enctype="multipart/form-data">
             <input type="hidden" name="action" value="edit_image">
             <input type="hidden" name="id" value="">
+            <div class="form-group">
+                <label>Imagen</label>
+                <img id="editImgPreview" src="#" alt="Imagen actual" style="width:100%;max-height:180px;object-fit:contain;border:1px solid var(--admin-border);border-radius:var(--radius);background:#f8fafc;padding:0.4rem;">
+                <input type="file" name="image" accept="image/*" class="form-input-file" style="margin-top:0.6rem;" onchange="previewEditImg(event)">
+                <small style="color:var(--admin-text-muted);display:block;margin-top:0.4rem;">Selecciona un archivo solo si quieres reemplazar la imagen.</small>
+            </div>
             <div class="form-group"><label>Categoría</label>
                 <select name="category_id" class="form-input">
                     {% for gc in gallery_categories %}<option value="{{ gc.id }}">{{ gc.name }}</option>{% endfor %}
@@ -237,7 +244,19 @@
         modal.querySelector('input[name=subtitle]').value = btn.dataset.subtitle;
         modal.querySelector('input[name=order]').value = btn.dataset.order;
         modal.querySelector('select[name=category_id]').value = btn.dataset.category;
+        modal.querySelector('#editImgPreview').src = btn.dataset.image;
+        var fileInput = modal.querySelector('input[name=image]');
+        if (fileInput) fileInput.value = '';
         modal.classList.add('show');
+    }
+
+    function previewEditImg(event) {
+        var input = event.target;
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function (e) { document.getElementById('editImgPreview').src = e.target.result; };
+            reader.readAsDataURL(input.files[0]);
+        }
     }
 
     function filterGallery(cat, btn) {

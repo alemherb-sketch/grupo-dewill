@@ -1198,6 +1198,10 @@ def admin_gallery():
                 gi.title = request.form.get('title', '')
                 gi.subtitle = request.form.get('subtitle', '')
                 gi.order = request.form.get('order', 0, type=int)
+                if 'image' in request.files and request.files['image'].filename:
+                    new_url = save_upload(request.files['image'], 'gallery')
+                    if new_url:
+                        gi.image_url = new_url
                 db.session.commit(); flash('Imagen actualizada', 'success')
         elif action == 'delete_image':
             gi = GalleryImage.query.get(request.form['id'])
