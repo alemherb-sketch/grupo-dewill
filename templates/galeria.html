@@ -3,14 +3,17 @@
 {% block nav_class %}scrolled{% endblock %}
 
 {% block content %}
-<section class="page-hero">
-    <div class="page-hero-bg"><img src="{{ url_for('static', filename='assets/hero_bg.png') }}" alt="Galería" class="hero-bg-img"><div class="hero-overlay"></div></div>
-    <div class="page-hero-content">
-        <div class="hero-badge animate-fade-up"><i class="fas fa-images"></i> Inspiración</div>
-        <h1 class="page-hero-title animate-fade-up delay-1">Galería de <span class="gradient-text">Ambientes</span></h1>
-        <p class="page-hero-subtitle animate-fade-up delay-2">Descubre cómo nuestros productos transforman espacios. Inspírate con colores y acabados.</p>
-    </div>
+<!-- HERO -->
+<section class="page-hero-galeria" style="width: 100%; display: block; overflow: hidden;">
+    <img src="{{ url_for('static', filename='assets/banner_galeria_new.png') }}" alt="Galería de Ambientes" style="width: 100%; height: auto; display: block;">
 </section>
+
+<!-- SEO TEXT -->
+<div style="display: none;">
+    <h2>INSPIRACIÓN</h2>
+    <h1>Galería de Ambientes</h1>
+    <p>Descubre cómo nuestros productos transforman espacios. Inspírate con colores y acabados.</p>
+</div>
 
 <section class="section gallery-section">
     <div class="container">
