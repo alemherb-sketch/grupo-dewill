@@ -3,17 +3,218 @@
 {% block nav_class %}scrolled{% endblock %}
 
 {% block content %}
-<!-- HERO -->
-<section class="page-hero-ambientes" style="width: 100%; display: block; overflow: hidden;">
-    <img src="{{ url_for('static', filename='assets/banner_ambientes_new.png') }}" alt="Galería de Ambientes" style="width: 100%; height: auto; display: block;">
+{% block extra_css %}
+<style>
+.new-ambientes-hero {
+    position: relative;
+    width: 100%;
+    background-color: #01152a; /* Dewill dark blue */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 7rem 0 5rem 0;
+    overflow: hidden;
+    min-height: 450px;
+}
+
+.new-amb-img-left, .new-amb-img-right {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 35%;
+    background-size: cover;
+    background-position: center;
+    z-index: 1;
+}
+
+.new-amb-img-left { left: 0; }
+.new-amb-img-left::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    background: linear-gradient(to right, rgba(1, 21, 42, 0) 0%, #01152a 100%);
+}
+
+.new-amb-img-right { right: 0; }
+.new-amb-img-right::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    background: linear-gradient(to left, rgba(1, 21, 42, 0) 0%, #01152a 100%);
+}
+
+.new-amb-hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    color: white;
+    max-width: 650px;
+    padding: 0 20px;
+}
+
+.new-amb-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid #cc0000;
+    color: #ff3333;
+    padding: 0.4rem 1.5rem;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+}
+
+.new-amb-hero-content h1 {
+    font-size: 4.5rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 1.5rem;
+    letter-spacing: -2px;
+}
+
+.new-amb-hero-content h1 .text-red {
+    color: #cc0000;
+}
+
+.new-amb-hero-content p {
+    font-size: 1.15rem;
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.6;
+    margin-bottom: 0;
+}
+
+.nav-btn-box {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 45px;
+    height: 50px;
+    background: rgba(1, 21, 42, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    cursor: pointer;
+    z-index: 10;
+    border-radius: 4px;
+    transition: background 0.3s ease;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.nav-btn-box:hover { background: #cc0000; }
+
+.new-amb-img-left .nav-btn-box { left: 30px; }
+.new-amb-img-right .nav-btn-box { right: 30px; }
+
+.new-ambientes-benefits {
+    background-color: #011122; /* Slightly darker than hero */
+    padding: 2rem 0;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    position: relative;
+    z-index: 2;
+}
+
+.new-ambientes-benefits .benefits-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+}
+
+.new-amb-benefit-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: white;
+    justify-content: center;
+    border-right: 1px solid rgba(255,255,255,0.1);
+}
+
+.new-amb-benefit-item:last-child {
+    border-right: none;
+}
+
+.new-amb-benefit-item i {
+    font-size: 1.8rem;
+    color: #cc0000; /* Red icon */
+}
+
+.new-amb-benefit-item strong {
+    font-size: 0.9rem;
+    font-weight: 700;
+    line-height: 1.2;
+    display: block;
+}
+
+@media (max-width: 992px) {
+    .new-amb-img-left, .new-amb-img-right { width: 40%; opacity: 0.5; }
+    .new-amb-hero-content h1 { font-size: 3.5rem; }
+    .new-ambientes-benefits .benefits-grid { grid-template-columns: repeat(2, 1fr); }
+    .new-amb-benefit-item:nth-child(2) { border-right: none; }
+    .new-amb-benefit-item { border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem; }
+    .new-amb-benefit-item:nth-child(3), .new-amb-benefit-item:nth-child(4) { border-bottom: none; padding-bottom: 0; padding-top: 1rem; }
+}
+
+@media (max-width: 768px) {
+    .new-amb-img-left, .new-amb-img-right { opacity: 0.3; width: 50%; }
+    .new-amb-hero-content h1 { font-size: 2.8rem; }
+    .nav-btn-box { display: none; }
+    .new-amb-benefit-item { justify-content: flex-start; padding-left: 1rem; }
+}
+</style>
+{% endblock %}
+
+<!-- NEW HERO & BENEFITS -->
+<section class="new-ambientes-hero">
+    <div class="new-amb-img-left" style="background-image: url('{{ url_for('static', filename='assets/ambiente_sala.png') }}');">
+        <div class="nav-btn-box"><i class="fas fa-chevron-left"></i></div>
+    </div>
+    
+    <div class="new-amb-hero-content">
+        <div class="new-amb-badge">
+            <i class="fas fa-paint-roller"></i> INSPIRACIÓN REAL
+        </div>
+        <h1>Galería de<br><span class="text-red">Ambientes</span></h1>
+        <p>Visualiza la armonía de colores en espacios reales<br>y elige el estilo que mejor se adapte a ti.</p>
+    </div>
+
+    <div class="new-amb-img-right" style="background-image: url('{{ url_for('static', filename='assets/ambiente_dormitorio.png') }}');">
+        <div class="nav-btn-box"><i class="fas fa-chevron-right"></i></div>
+    </div>
 </section>
 
-<!-- SEO TEXT -->
-<div style="display: none;">
-    <h2>INSPIRACIÓN REAL</h2>
-    <h1>Galería de Ambientes</h1>
-    <p>Visualiza la armonía de colores en espacios reales<br>y elige el estilo que mejor se adapte a ti.</p>
-</div>
+<section class="new-ambientes-benefits">
+    <div class="container">
+        <div class="benefits-grid">
+            <div class="new-amb-benefit-item">
+                <i class="fas fa-shield-alt"></i>
+                <div>
+                    <strong>CALIDAD<br>GARANTIZADA</strong>
+                </div>
+            </div>
+            <div class="new-amb-benefit-item">
+                <i class="fas fa-user-check"></i>
+                <div>
+                    <strong>ASESORÍA<br>ESPECIALIZADA</strong>
+                </div>
+            </div>
+            <div class="new-amb-benefit-item">
+                <i class="fas fa-truck"></i>
+                <div>
+                    <strong>ENTREGAS A<br>NIVEL NACIONAL</strong>
+                </div>
+            </div>
+            <div class="new-amb-benefit-item">
+                <i class="fas fa-cog"></i>
+                <div>
+                    <strong>SOLUCIONES<br>INTEGRALES</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
 <!-- TABS BAR -->
 <div class="ambientes-tabs-bar">
@@ -133,41 +334,7 @@
     </div>
 </section>
 
-<!-- BENEFITS BAR -->
-<section class="benefits-bar">
-    <div class="container">
-        <div class="benefits-grid">
-            <div class="benefit-item">
-                <i class="fas fa-shield-alt"></i>
-                <div>
-                    <strong>CALIDAD GARANTIZADA</strong>
-                    <span>Productos de alta calidad</span>
-                </div>
-            </div>
-            <div class="benefit-item">
-                <i class="fas fa-headset"></i>
-                <div>
-                    <strong>ASESORÍA PERSONALIZADA</strong>
-                    <span>Te ayudamos a elegir el color ideal</span>
-                </div>
-            </div>
-            <div class="benefit-item">
-                <i class="fas fa-truck"></i>
-                <div>
-                    <strong>ENVÍOS A TODO EL PERÚ</strong>
-                    <span>Llegamos a todas las regiones</span>
-                </div>
-            </div>
-            <div class="benefit-item">
-                <i class="fas fa-user-tie"></i>
-                <div>
-                    <strong>ATENCIÓN EXPERTA</strong>
-                    <span>Soporte y asesoría profesional</span>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
+
 
 <!-- AMBIENT MODAL / SLIDER -->
 <div class="ambient-modal" id="ambientModal">
