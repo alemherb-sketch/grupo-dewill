@@ -4883,13 +4883,18 @@ section,
     background: transparent !important;
 }
 
-.blog-hero .page-hero-title,
-.blog-hero .page-hero-subtitle {
-    color: var(--bg-dark) !important;
+.blog-hero .page-hero-title {
+    color: var(--secondary) !important;
     text-shadow: none !important;
 }
 
+.blog-hero .page-hero-subtitle {
+    color: var(--text-muted) !important;
+    text-shadow: none !important;
+    font-weight: 500;
+}
+
 .blog-hero .hero-badge {
-    color: var(--bg-dark) !important;
-    background: rgba(0,0,0,0.1) !important;
+    color: var(--secondary) !important;
+    background: rgba(8, 28, 59, 0.1) !important;
 }
