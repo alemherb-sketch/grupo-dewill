@@ -17,7 +17,7 @@
         <div class="top-header-container">
             <div class="top-header-info">
                 <span><i class="fas fa-map-marker-alt"></i> Av. Guillermo Dansey N° 595, Lima, Perú</span>
-                <span><i class="fas fa-phone-alt"></i> Llámanos: 01 123 4567</span>
+                <span><i class="fas fa-phone-alt"></i> Llámanos: 01 4240995</span>
                 <span><i class="fas fa-envelope"></i> Escribenos: ventas@grupodewill.com</span>
             </div>
             <div class="top-header-social">
@@ -118,15 +118,16 @@
                     <div class="footer-logo">
                         <img src="{{ url_for('static', filename='assets/logo.png') }}" alt="Grupo Dewill S.A.C." class="logo-img" style="height: 45px;">
                     </div>
-                    <p>Tu aliado estratégico en suministros industriales. Calidad, confianza y servicio al mejor precio.</p>
+                    <p style="margin-top: 1rem; margin-bottom: 1rem;">Ofrecemos productos de alta calidad para la construcción, industria y hogar. Confianza, innovación y compromiso en cada proyecto.</p>
                     <div class="footer-social">
                         <a href="{{ site.get('facebook', '#') }}" class="social-link"><i class="fab fa-facebook-f"></i></a>
                         <a href="{{ site.get('instagram', '#') }}" class="social-link"><i class="fab fa-instagram"></i></a>
-                        <a href="https://wa.me/{{ site.get('whatsapp', '51977585654') }}" target="_blank" class="social-link"><i class="fab fa-whatsapp"></i></a>
+                        <a href="{{ site.get('youtube', '#') }}" class="social-link"><i class="fab fa-youtube"></i></a>
+                        <a href="{{ site.get('linkedin', '#') }}" class="social-link"><i class="fab fa-linkedin-in"></i></a>
                     </div>
                 </div>
                 <div class="footer-links-group">
-                    <h4>Navegación</h4>
+                    <h4 style="text-transform: uppercase;">Navegación</h4>
                     <a href="{{ url_for('index') }}">Inicio</a>
                     <a href="{{ url_for('nosotros') }}">Nosotros</a>
                     <a href="{{ url_for('productos') }}">Productos</a>
@@ -136,16 +137,42 @@
                     <a href="{{ url_for('contacto') }}">Contacto</a>
                 </div>
                 <div class="footer-links-group">
-                    <h4>Categorías</h4>
+                    <h4 style="text-transform: uppercase;">Categorías</h4>
                     <a href="{{ url_for('productos', cat='pinturas') }}">Pinturas</a>
-                    <a href="{{ url_for('productos', cat='epoxicos') }}">Epóxicos</a>
-                    <a href="{{ url_for('productos', cat='solventes') }}">Solventes</a>
-                    <a href="{{ url_for('productos', cat='trafico') }}">Tráfico</a>
-                    <a href="{{ url_for('productos', cat='accesorios') }}">Accesorios</a>
+                    <a href="{{ url_for('productos', cat='herramientas') }}">Herramientas</a>
+                    <a href="{{ url_for('productos', cat='impermeabilizantes') }}">Impermeabilizantes</a>
+                    <a href="{{ url_for('productos', cat='complementos') }}">Complementos</a>
+                    <a href="{{ url_for('productos', cat='soluciones') }}">Soluciones para el hogar</a>
+                </div>
+                <div class="footer-links-group">
+                    <h4 style="text-transform: uppercase;">Ayuda</h4>
+                    <a href="#">Preguntas frecuentes</a>
+                    <a href="#">Envíos y entregas</a>
+                    <a href="#">Políticas de devolución</a>
+                    <a href="#">Términos y condiciones</a>
+                </div>
+                <div class="footer-links-group contact-info">
+                    <h4 style="text-transform: uppercase;">Contáctanos</h4>
+                    <div class="contact-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Av. Guillermo Dansey N° 995,<br>Lima, Perú</span>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-phone-alt"></i>
+                        <span>01 4240995</span>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-envelope"></i>
+                        <span>ventas@grupodewill.com</span>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-clock"></i>
+                        <span>Lunes a Viernes: 8:00 am - 6:00 pm<br>Sábados: 8:00 am - 1:00 pm</span>
+                    </div>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2026 Grupo Dewill. Todos los derechos reservados.</p>
+                <p>&copy; 2024 Grupo Dewill S.A.C. Todos los derechos reservados.</p>
                 <p style="font-size: 0.8rem; color: rgba(255,255,255,0.5); margin-top: 0.5rem; letter-spacing: 0.5px;">Desarrollado por Logicdata Perú</p>
             </div>
         </div>
