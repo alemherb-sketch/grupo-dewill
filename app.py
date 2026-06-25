@@ -132,6 +132,33 @@ def load_user(user_id):
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
+
+def _attach_card_data(products):
+    """Adjunta a cada producto los datos que muestra la tarjeta, reflejando lo del admin:
+    - card_colors: colores con su hex (desde los colores de presentación o desde la paleta)
+    - card_specs:  especificaciones técnicas que NO son 'Color'
+    """
+    if not products:
+        return
+    palette = {c.name.strip().lower(): c.hex_code for c in PaintColor.query.all() if c.name}
+    for p in products:
+        colors, seen = [], set()
+        # 1) Colores de presentación (traen hex directo del import)
+        for pc in p.presentation_colors:
+            k = (pc.color_name or '').strip().lower()
+            if k and k not in seen:
+                seen.add(k)
+                colors.append({'name': pc.color_name, 'hex': pc.hex_code or palette.get(k) or '#cccccc'})
+        # 2) Specs con key 'Color' (hex desde la paleta de colores)
+        for s in p.specs:
+            if s.key and s.key.strip().lower() == 'color':
+                k = (s.value or '').strip().lower()
+                if k and k not in seen:
+                    seen.add(k)
+                    colors.append({'name': s.value, 'hex': palette.get(k, '#cccccc')})
+        p.card_colors = colors
+        p.card_specs = [s for s in p.specs if s.key and s.key.strip().lower() != 'color']
+
 def save_upload(file, subfolder=''):
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
@@ -170,6 +197,7 @@ def slugify(value):
 def index():
     banners = Banner.query.filter_by(is_active=True).order_by(Banner.order).all()
     featured = Product.query.filter_by(is_featured=True, is_active=True).limit(8).all()
+    _attach_card_data(featured)
     categories = Category.query.order_by(Category.order).all()
     brands = Brand.query.all()
     return render_template('index.html', banners=banners, featured_products=featured,
@@ -248,7 +276,8 @@ def productos():
             )))
             
     prods = query.order_by(Product.name).paginate(page=page, per_page=12, error_out=False)
-    
+    _attach_card_data(prods.items)
+
     # Gather distinct specs for sidebar
     exclude_keys = ['Norma', 'Durabilidad', 'Descripción', 'Resistencia', 'Calidad']
     all_keys = db.session.query(ProductSpec.key).distinct().all()
@@ -329,7 +358,8 @@ def producto_detalle(product_id):
     product = Product.query.get_or_404(product_id)
     related = Product.query.filter(Product.category_id == product.category_id,
         Product.id != product.id, Product.is_active == True).limit(4).all()
-        
+    _attach_card_data(related)
+
     product_color_specs = list(set([spec.value for spec in product.specs if spec.key.lower() == 'color']))
     
     paint_colors = []

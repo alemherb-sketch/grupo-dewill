@@ -100,10 +100,32 @@
                         <span class="pcr-brand">{{ product.brand.name }}</span>
                         {% endif %}
 
-                        {% set chip_specs = product.specs | rejectattr('key', 'equalto', 'Color') | list %}
-                        {% if chip_specs %}
+                        {% if product.card_colors %}
+                        <div class="pcr-colors">
+                            {% for c in product.card_colors[:7] %}
+                            <span class="pcr-color-dot" title="{{ c.name }}" style="background: {{ c.hex }};"></span>
+                            {% endfor %}
+                            {% if product.card_colors|length > 7 %}
+                            <span class="pcr-color-more">+{{ product.card_colors|length - 7 }}</span>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        {% if product.presentations %}
+                        <div class="pcr-presentations">
+                            <i class="fas fa-box-open"></i>
+                            {% for pres in product.presentations[:4] %}
+                            <span class="pcr-pres-badge">{{ pres.name }}</span>
+                            {% endfor %}
+                            {% if product.presentations|length > 4 %}
+                            <span class="pcr-pres-more">+{{ product.presentations|length - 4 }}</span>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        {% if product.card_specs %}
                         <div class="pcr-specs">
-                            {% for spec in chip_specs[:3] %}
+                            {% for spec in product.card_specs[:3] %}
                             <span class="pcr-spec-chip"><i class="fas fa-check"></i> {{ spec.value }}</span>
                             {% endfor %}
                         </div>

@@ -4962,7 +4962,7 @@ section,
 /* --- Vitrina de imagen --- */
 .pcr-image-section {
     position: relative;
-    padding: 1.75rem 1.5rem;
+    padding: 1rem 1rem 0.8rem;
     text-align: center;
     background: radial-gradient(circle at 50% 32%, #ffffff 0%, #eef1f7 100%);
     overflow: hidden;
@@ -4985,18 +4985,16 @@ section,
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 210px;
+    height: 200px;
     margin: 0 auto;
     position: relative;
     z-index: 1;
 }
 .pcr-image-section img {
-    max-width: 100%;
-    max-height: 100%;
-    width: auto;
-    height: auto;
-    object-fit: contain;
-    mix-blend-mode: multiply; /* funde el fondo blanco de la imagen con la vitrina */
+    width: 100%;
+    height: 100%;
+    object-fit: contain;            /* la imagen escala para llenar el recuadro manteniendo proporción */
+    mix-blend-mode: multiply;        /* funde el fondo blanco de la imagen con la vitrina */
     transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
     filter: drop-shadow(0 14px 18px rgba(8, 28, 59, 0.14));
 }
@@ -5135,6 +5133,58 @@ section,
 }
 .pcr-spec-chip i { color: var(--primary); font-size: 0.7rem; }
 
+/* Vista previa de colores reales del producto */
+.pcr-colors {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.32rem;
+    margin-bottom: 0.7rem;
+}
+.pcr-color-dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 0 1px rgba(8, 28, 59, 0.18), inset 0 1px 2px rgba(0, 0, 0, 0.18);
+}
+.pcr-color-more {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-left: 0.1rem;
+}
+
+/* Presentaciones disponibles (lo que se asigna en el admin) */
+.pcr-presentations {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.32rem;
+    margin-bottom: 0.85rem;
+}
+.pcr-presentations > i {
+    color: var(--secondary);
+    font-size: 0.8rem;
+    margin-right: 0.1rem;
+}
+.pcr-pres-badge {
+    background: rgba(8, 28, 59, 0.06);
+    color: var(--secondary);
+    border: 1px solid rgba(8, 28, 59, 0.1);
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    padding: 0.24rem 0.5rem;
+    border-radius: 6px;
+    line-height: 1;
+}
+.pcr-pres-more {
+    font-size: 0.66rem;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
 .pcr-actions {
     display: flex;
     flex-wrap: nowrap;
@@ -5220,7 +5270,7 @@ section,
     .premium-product-card { border-radius: 16px !important; }
     .pcr-body-section { padding: 0.85rem !important; }
     .pcr-image-section { padding: 1rem !important; }
-    .pcr-image-link { height: 115px !important; }
+    .pcr-image-link { height: 130px !important; }
     .pcr-badges { top: 0.5rem !important; left: 0.5rem !important; max-width: calc(100% - 3.2rem) !important; }
     /* Etiqueta de categoria: rectangulo redondeado (no pastilla) para que el texto largo
        quepa en 2 lineas sin que las esquinas lo recorten; mas ancho y sin icono en movil */
@@ -5239,6 +5289,9 @@ section,
     .pcr-brand { font-size: 0.68rem !important; margin-bottom: 0.5rem !important; }
     .pcr-specs { gap: 0.3rem !important; margin-bottom: 0.6rem !important; }
     .pcr-spec-chip { font-size: 0.55rem !important; padding: 0.25rem 0.45rem !important; }
+    .pcr-colors, .pcr-presentations { gap: 0.25rem !important; margin-bottom: 0.5rem !important; }
+    .pcr-color-dot { width: 15px !important; height: 15px !important; }
+    .pcr-pres-badge { font-size: 0.56rem !important; padding: 0.2rem 0.4rem !important; }
     .pcr-actions { flex-direction: column !important; display: flex !important; gap: 0.4rem !important; padding-top: 0.6rem !important; }
     .pcr-btn-details, .pcr-btn-quote { font-size: 0.62rem !important; padding: 0.45rem !important; flex: 1 1 auto !important; }
 
