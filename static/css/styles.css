@@ -5195,8 +5195,9 @@ section,
     .ncc-count { font-size: 0.7rem !important; margin-bottom: 0.4rem !important; }
     .ncc-btn { font-size: 0.7rem !important; padding: 0.2rem 0.6rem !important; display: inline-block; }
 
-    /* Productos Generales y Destacados - 2 columnas */
-    .products-grid {
+    /* Productos Generales, Destacados y Catálogo (pág. Productos) - 2 columnas */
+    .products-grid,
+    .products-grid-new {
         grid-template-columns: repeat(2, 1fr) !important;
         gap: 0.5rem !important;
     }
