@@ -5331,11 +5331,20 @@ section,
         gap: 0.5rem !important;
     }
 
-    /* Beneficios y Marcas - 2 columnas */
-    .benefits-grid, .brands-grid {
+    /* Marcas - 2 columnas */
+    .brands-grid {
         grid-template-columns: repeat(2, 1fr) !important;
         gap: 0.5rem !important;
     }
+
+    /* Beneficios: 1 columna apilada en móvil (texto largo + icono no caben en 2 columnas) */
+    .benefits-bar { padding: 1.5rem 0 !important; margin-top: 0.5rem !important; }
+    .benefits-grid { grid-template-columns: 1fr !important; gap: 1.1rem !important; }
+    .benefit-item { min-width: 0; gap: 0.9rem; }
+    .benefit-item i { font-size: 2rem !important; flex-shrink: 0; width: 2.2rem; text-align: center; }
+    .benefit-item > div { min-width: 0; }
+    .benefit-item strong { font-size: 0.98rem !important; }
+    .benefit-item span { font-size: 0.82rem !important; }
 
     /* Por qué elegirnos / Ventajas - 2 columnas */
     .why-grid-modern, .why-grid { 
