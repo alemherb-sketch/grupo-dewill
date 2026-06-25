@@ -5220,6 +5220,24 @@ section,
     .pcr-actions { flex-direction: column !important; display: flex !important; gap: 0.4rem !important; padding-top: 0.6rem !important; }
     .pcr-btn-details, .pcr-btn-quote { font-size: 0.62rem !important; padding: 0.45rem !important; flex: 1 1 auto !important; }
 
+    /* Filtros (sidebar de Productos) en 2 columnas en móvil */
+    .sidebar-box { padding: 1rem !important; }
+    .sidebar-filter-scroll {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr;
+        column-gap: 0.6rem;
+        row-gap: 0.15rem;
+        max-height: 220px !important;
+    }
+    .filter-checkbox-label {
+        align-items: flex-start;
+        font-size: 0.78rem;
+        margin-bottom: 0.55rem;
+        line-height: 1.2;
+    }
+    .filter-checkbox-label .custom-checkbox { margin-right: 0.5rem; margin-top: 1px; flex-shrink: 0; }
+    .filter-checkbox-label .cat-count { flex-shrink: 0; }
+
     /* Blog - 2 columnas */
     .blog-grid {
         grid-template-columns: repeat(2, 1fr) !important;
