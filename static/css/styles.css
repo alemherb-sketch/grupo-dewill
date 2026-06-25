@@ -2325,6 +2325,12 @@ img {
     .nav-search input,
     .nav-search input:focus { width: 100%; flex: 1; }
     .search-results-dropdown { width: 100% !important; }
+    /* Acciones (carrito, engranaje, menú) agrupadas a la derecha; logo más compacto para caber en una fila */
+    .logo-img { height: 40px; }
+    .nav-actions { margin-left: auto; gap: 0.6rem; }
+    /* Ocultar el globo flotante de cotizaciones en móvil para que no tape el buscador */
+    #btnCart.has-items-alert::after,
+    #btnCart.has-items-alert::before { display: none; }
     .about-stat-item { width: 100%; justify-content: center; }
     .section-title { font-size: 2rem; }
     
