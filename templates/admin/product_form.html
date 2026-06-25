@@ -93,17 +93,28 @@
                         font-size: 1rem; line-height: 1; padding: 0; transition: background 0.2s; }
                     .pres-chip-remove:hover { background: rgba(0,0,0,0.4); }
                     .pres-empty { color: var(--text-muted, #8a93a6); font-style: italic; font-size: 0.85rem; }
+                    .pres-combo { position: relative; flex: 1; min-width: 180px; }
+                    .pres-combo > input { width: 100%; }
+                    .pres-results { position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 30;
+                        background: #ffffff; color: #1a2238; border: 1px solid rgba(0,0,0,0.15); border-radius: 6px;
+                        max-height: 240px; overflow-y: auto; box-shadow: 0 10px 28px rgba(0,0,0,0.22); }
+                    .pres-result-item { padding: 0.5rem 0.8rem; cursor: pointer; font-size: 0.88rem; }
+                    .pres-result-item:hover, .pres-result-item.active { background: var(--primary, #e60000); color: #fff; }
+                    .pres-result-empty { padding: 0.55rem 0.8rem; color: #8a93a6; font-style: italic; font-size: 0.84rem; }
                 </style>
                 {% if presentations %}
                 <div class="pres-picker-row">
-                    <select id="presSelect" class="form-input">
-                        <option value="">Seleccionar presentación...</option>
-                        {% for p in presentations %}
-                        <option value="{{ p.id }}">{{ p.name }}</option>
-                        {% endfor %}
-                    </select>
+                    <div class="pres-combo">
+                        <input type="text" id="presSearch" class="form-input" placeholder="Buscar presentación..." autocomplete="off">
+                        <div id="presResults" class="pres-results" hidden></div>
+                    </div>
                     <button type="button" class="btn btn-outline btn-sm" id="presAddBtn"><i class="fas fa-plus"></i> Agregar</button>
                 </div>
+                {# Fuente de datos (oculta): las opciones disponibles para el buscador #}
+                <select id="presSelect" hidden aria-hidden="true" tabindex="-1">
+                    <option value=""></option>
+                    {% for p in presentations %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}
+                </select>
                 <div id="presChips" class="pres-chips">
                     {% for p in (product.presentations if product else []) %}
                     <span class="pres-chip" data-id="{{ p.id }}">
@@ -152,11 +163,13 @@ function addSpecRow(){
     c.appendChild(row);
 }
 
-// === Presentaciones: selector desplegable + chips ===
+// === Presentaciones: buscador + selector con chips ===
 (function(){
-    const select = document.getElementById('presSelect');
-    const addBtn = document.getElementById('presAddBtn');
-    const chips  = document.getElementById('presChips');
+    const select  = document.getElementById('presSelect');
+    const search  = document.getElementById('presSearch');
+    const results = document.getElementById('presResults');
+    const addBtn  = document.getElementById('presAddBtn');
+    const chips   = document.getElementById('presChips');
     if (!select || !chips) return;
 
     function optionFor(id){ return select.querySelector('option[value="' + id + '"]'); }
@@ -188,20 +201,88 @@ function addSpecRow(){
         chips.insertBefore(chip, empty);
     }
 
-    // Sincronizar el dropdown con las presentaciones ya asignadas (modo edición)
-    chips.querySelectorAll('.pres-chip').forEach(c => setOptionUsed(c.getAttribute('data-id'), true));
-    updateEmpty();
-
-    addBtn.addEventListener('click', function(){
-        const id = select.value;
+    function addPresentation(id){
         if (!id) return;
         if (!chips.querySelector('.pres-chip[data-id="' + id + '"]')) {
             const opt = optionFor(id);
             addChip(id, opt ? opt.textContent.trim() : id);
             setOptionUsed(id, true);
         }
-        select.value = '';
         updateEmpty();
+    }
+
+    // --- Buscador en vivo ---
+    function availableOptions(){
+        return Array.from(select.options).filter(o => o.value && !o.disabled);
+    }
+
+    function renderResults(){
+        const q = (search.value || '').trim().toLowerCase();
+        const matches = availableOptions().filter(o => o.textContent.toLowerCase().includes(q));
+        results.innerHTML = '';
+        if (!matches.length){
+            const e = document.createElement('div');
+            e.className = 'pres-result-empty';
+            e.textContent = 'Sin coincidencias';
+            results.appendChild(e);
+        } else {
+            matches.slice(0, 50).forEach((o, i) => {
+                const item = document.createElement('div');
+                item.className = 'pres-result-item' + (i === 0 ? ' active' : '');
+                item.setAttribute('data-id', o.value);
+                item.textContent = o.textContent.trim();
+                item.addEventListener('mousedown', function(ev){
+                    ev.preventDefault();           // evita perder el foco antes del click
+                    addPresentation(o.value);
+                    search.value = '';
+                    renderResults();
+                    search.focus();
+                });
+                results.appendChild(item);
+            });
+        }
+        results.hidden = false;
+    }
+
+    function moveActive(dir){
+        const items = Array.from(results.querySelectorAll('.pres-result-item'));
+        if (!items.length) return;
+        let idx = items.findIndex(it => it.classList.contains('active'));
+        items.forEach(it => it.classList.remove('active'));
+        idx = (idx + dir + items.length) % items.length;
+        items[idx].classList.add('active');
+        items[idx].scrollIntoView({ block: 'nearest' });
+    }
+
+    function addActive(){
+        const active = results.querySelector('.pres-result-item.active') || results.querySelector('.pres-result-item');
+        if (active){
+            addPresentation(active.getAttribute('data-id'));
+            search.value = '';
+            renderResults();
+            search.focus();
+        }
+    }
+
+    if (search){
+        search.addEventListener('focus', renderResults);
+        search.addEventListener('input', renderResults);
+        search.addEventListener('keydown', function(e){
+            if (e.key === 'ArrowDown'){ e.preventDefault(); moveActive(1); }
+            else if (e.key === 'ArrowUp'){ e.preventDefault(); moveActive(-1); }
+            else if (e.key === 'Enter'){ e.preventDefault(); addActive(); }
+            else if (e.key === 'Escape'){ results.hidden = true; }
+        });
+        // cerrar al hacer clic fuera del combo
+        document.addEventListener('click', function(e){
+            if (!e.target.closest('.pres-combo')) results.hidden = true;
+        });
+    }
+
+    // El botón "Agregar" añade la coincidencia resaltada / primera de la lista
+    addBtn.addEventListener('click', function(){
+        if (results.hidden) renderResults();
+        addActive();
     });
 
     chips.addEventListener('click', function(e){
@@ -212,6 +293,10 @@ function addSpecRow(){
         chip.remove();
         updateEmpty();
     });
+
+    // Sincronizar el dropdown con las presentaciones ya asignadas (modo edición)
+    chips.querySelectorAll('.pres-chip').forEach(c => setOptionUsed(c.getAttribute('data-id'), true));
+    updateEmpty();
 })();
 
 function deleteProductImage(imgId) {
