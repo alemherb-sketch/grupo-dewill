@@ -80,16 +80,43 @@
 
             <h3><i class="fas fa-box-open"></i> Presentaciones</h3>
             <div class="form-group">
-                <div class="checkbox-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 0.5rem; background: rgba(255,255,255,0.02); padding: 0.8rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 1.5rem;">
-                    {% for p in presentations %}
-                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--text-light); font-size: 0.9rem;">
-                        <input type="checkbox" name="presentation_ids" value="{{ p.id }}" {% if product and p in product.presentations %}checked{% endif %}>
-                        {{ p.name }}
-                    </label>
-                    {% else %}
-                    <p style="color: var(--text-muted); font-style: italic; font-size: 0.9rem; grid-column: 1 / -1;">No hay presentaciones registradas.</p>
-                    {% endfor %}
+                <style>
+                    .pres-picker-row { display: flex; gap: 0.5rem; margin-bottom: 0.8rem; flex-wrap: wrap; align-items: stretch; }
+                    .pres-picker-row select { flex: 1; min-width: 180px; }
+                    .pres-picker-row .btn { white-space: nowrap; }
+                    .pres-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; min-height: 2.4rem; align-items: center;
+                        background: rgba(255,255,255,0.02); padding: 0.7rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.08); margin-bottom: 1.5rem; }
+                    .pres-chip { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--primary, #e60000);
+                        color: #fff; padding: 0.35rem 0.45rem 0.35rem 0.8rem; border-radius: 50px; font-size: 0.85rem; font-weight: 600; line-height: 1; }
+                    .pres-chip-remove { background: rgba(255,255,255,0.25); border: none; color: #fff; width: 18px; height: 18px;
+                        border-radius: 50%; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+                        font-size: 1rem; line-height: 1; padding: 0; transition: background 0.2s; }
+                    .pres-chip-remove:hover { background: rgba(0,0,0,0.4); }
+                    .pres-empty { color: var(--text-muted, #8a93a6); font-style: italic; font-size: 0.85rem; }
+                </style>
+                {% if presentations %}
+                <div class="pres-picker-row">
+                    <select id="presSelect" class="form-input">
+                        <option value="">Seleccionar presentación...</option>
+                        {% for p in presentations %}
+                        <option value="{{ p.id }}">{{ p.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="button" class="btn btn-outline btn-sm" id="presAddBtn"><i class="fas fa-plus"></i> Agregar</button>
                 </div>
+                <div id="presChips" class="pres-chips">
+                    {% for p in (product.presentations if product else []) %}
+                    <span class="pres-chip" data-id="{{ p.id }}">
+                        {{ p.name }}
+                        <input type="hidden" name="presentation_ids" value="{{ p.id }}">
+                        <button type="button" class="pres-chip-remove" aria-label="Quitar presentación">&times;</button>
+                    </span>
+                    {% endfor %}
+                    <span class="pres-empty">Aún no se han agregado presentaciones.</span>
+                </div>
+                {% else %}
+                <p style="color: var(--text-muted); font-style: italic; font-size: 0.9rem;">No hay presentaciones registradas.</p>
+                {% endif %}
             </div>
 
             <h3><i class="fas fa-list-check"></i> Especificaciones Técnicas</h3>
@@ -124,6 +151,68 @@ function addSpecRow(){
     row.innerHTML = '<input type="text" name="spec_key[]" placeholder="Ej: Tipo" class="form-input"><input type="text" name="spec_value[]" placeholder="Ej: Acrílico" class="form-input"><button type="button" class="btn-sm btn-delete" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>';
     c.appendChild(row);
 }
+
+// === Presentaciones: selector desplegable + chips ===
+(function(){
+    const select = document.getElementById('presSelect');
+    const addBtn = document.getElementById('presAddBtn');
+    const chips  = document.getElementById('presChips');
+    if (!select || !chips) return;
+
+    function optionFor(id){ return select.querySelector('option[value="' + id + '"]'); }
+
+    function setOptionUsed(id, used){
+        const opt = optionFor(id);
+        if (opt){ opt.disabled = used; opt.hidden = used; }
+    }
+
+    function updateEmpty(){
+        const empty = chips.querySelector('.pres-empty');
+        if (empty) empty.style.display = chips.querySelectorAll('.pres-chip').length ? 'none' : '';
+    }
+
+    function addChip(id, name){
+        const chip = document.createElement('span');
+        chip.className = 'pres-chip';
+        chip.setAttribute('data-id', id);
+        chip.appendChild(document.createTextNode(name + ' '));
+        const hidden = document.createElement('input');
+        hidden.type = 'hidden'; hidden.name = 'presentation_ids'; hidden.value = id;
+        chip.appendChild(hidden);
+        const rm = document.createElement('button');
+        rm.type = 'button'; rm.className = 'pres-chip-remove';
+        rm.setAttribute('aria-label', 'Quitar presentación');
+        rm.textContent = '×';
+        chip.appendChild(rm);
+        const empty = chips.querySelector('.pres-empty');
+        chips.insertBefore(chip, empty);
+    }
+
+    // Sincronizar el dropdown con las presentaciones ya asignadas (modo edición)
+    chips.querySelectorAll('.pres-chip').forEach(c => setOptionUsed(c.getAttribute('data-id'), true));
+    updateEmpty();
+
+    addBtn.addEventListener('click', function(){
+        const id = select.value;
+        if (!id) return;
+        if (!chips.querySelector('.pres-chip[data-id="' + id + '"]')) {
+            const opt = optionFor(id);
+            addChip(id, opt ? opt.textContent.trim() : id);
+            setOptionUsed(id, true);
+        }
+        select.value = '';
+        updateEmpty();
+    });
+
+    chips.addEventListener('click', function(e){
+        const btn = e.target.closest('.pres-chip-remove');
+        if (!btn) return;
+        const chip = btn.closest('.pres-chip');
+        setOptionUsed(chip.getAttribute('data-id'), false);
+        chip.remove();
+        updateEmpty();
+    });
+})();
 
 function deleteProductImage(imgId) {
     if (confirm('¿Estás seguro de eliminar esta imagen?')) {
