@@ -4915,20 +4915,49 @@ section,
     .ncc-count { font-size: 0.7rem !important; margin-bottom: 0.4rem !important; }
     .ncc-btn { font-size: 0.7rem !important; padding: 0.2rem 0.6rem !important; display: inline-block; }
 
-    /* Productos Destacados (Slider/Grid) - 2 columnas */
+    /* Productos Generales y Destacados - 2 columnas */
+    .products-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.5rem !important;
+    }
     .products-slider .product-card {
         flex: 0 0 calc(50% - 0.5rem) !important;
         min-width: 140px !important;
-        padding: 0.8rem !important;
     }
+    .product-card { padding: 0.8rem !important; }
     .product-img-wrap { height: 120px !important; margin-bottom: 0.8rem !important; }
+    .product-info { padding: 0 !important; }
     .product-info h3 { font-size: 0.8rem !important; line-height: 1.2 !important; margin-bottom: 0.3rem !important; }
     .product-desc { display: none !important; } /* Ocultar para ahorrar espacio */
     .product-actions { flex-direction: column !important; gap: 0.3rem !important; }
     .btn-detail, .btn-add { font-size: 0.7rem !important; padding: 0.4rem !important; width: 100%; text-align: center; }
 
+    /* Blog - 2 columnas */
+    .blog-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.5rem !important;
+    }
+    .blog-card-img { height: 120px !important; }
+    .blog-card-body { padding: 0.8rem !important; }
+    .blog-card-title { font-size: 0.8rem !important; margin-bottom: 0.3rem !important; line-height: 1.2 !important; }
+    .blog-card-excerpt { display: none !important; }
+    .blog-card-meta { padding-bottom: 0.5rem !important; margin-bottom: 0.5rem !important; font-size: 0.7rem !important; gap: 0.5rem !important; }
+    .blog-card-badge { padding: 0.2rem 0.5rem !important; font-size: 0.6rem !important; }
+
+    /* Galerías (Ambientes y General) - 2 columnas */
+    .ambientes-grid, .gallery-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.5rem !important;
+    }
+
+    /* Beneficios y Marcas - 2 columnas */
+    .benefits-grid, .brands-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.5rem !important;
+    }
+
     /* Por qué elegirnos / Ventajas - 2 columnas */
-    .why-grid-modern { 
+    .why-grid-modern, .why-grid { 
         grid-template-columns: repeat(2, 1fr) !important; 
         gap: 0.5rem !important; 
     }
