@@ -101,15 +101,23 @@
                     .pres-result-item { padding: 0.5rem 0.8rem; cursor: pointer; font-size: 0.88rem; }
                     .pres-result-item:hover, .pres-result-item.active { background: var(--primary, #e60000); color: #fff; }
                     .pres-result-empty { padding: 0.55rem 0.8rem; color: #8a93a6; font-style: italic; font-size: 0.84rem; }
+                    .pres-feedback { margin: 0 0 0.7rem; font-size: 0.85rem; font-weight: 600; color: #16a34a;
+                        display: flex; align-items: center; gap: 0.4rem; }
+                    .pres-chip.just-added { animation: presPop 0.85s ease; }
+                    @keyframes presPop {
+                        0%   { transform: scale(0.5); opacity: 0; }
+                        55%  { transform: scale(1.14); }
+                        100% { transform: scale(1); opacity: 1; }
+                    }
                 </style>
                 {% if presentations %}
                 <div class="pres-picker-row">
                     <div class="pres-combo">
-                        <input type="text" id="presSearch" class="form-input" placeholder="Buscar presentación..." autocomplete="off">
+                        <input type="text" id="presSearch" class="form-input" placeholder="Buscar y agregar presentación..." autocomplete="off">
                         <div id="presResults" class="pres-results" hidden></div>
                     </div>
-                    <button type="button" class="btn btn-outline btn-sm" id="presAddBtn"><i class="fas fa-plus"></i> Agregar</button>
                 </div>
+                <div id="presFeedback" class="pres-feedback" hidden></div>
                 {# Fuente de datos (oculta): las opciones disponibles para el buscador #}
                 <select id="presSelect" hidden aria-hidden="true" tabindex="-1">
                     <option value=""></option>
@@ -165,12 +173,14 @@ function addSpecRow(){
 
 // === Presentaciones: buscador + selector con chips ===
 (function(){
-    const select  = document.getElementById('presSelect');
-    const search  = document.getElementById('presSearch');
-    const results = document.getElementById('presResults');
-    const addBtn  = document.getElementById('presAddBtn');
-    const chips   = document.getElementById('presChips');
+    const select   = document.getElementById('presSelect');
+    const search   = document.getElementById('presSearch');
+    const results  = document.getElementById('presResults');
+    const feedback = document.getElementById('presFeedback');
+    const chips    = document.getElementById('presChips');
     if (!select || !chips) return;
+
+    let feedbackTimer = null;
 
     function optionFor(id){ return select.querySelector('option[value="' + id + '"]'); }
 
@@ -184,9 +194,9 @@ function addSpecRow(){
         if (empty) empty.style.display = chips.querySelectorAll('.pres-chip').length ? 'none' : '';
     }
 
-    function addChip(id, name){
+    function addChip(id, name, animate){
         const chip = document.createElement('span');
-        chip.className = 'pres-chip';
+        chip.className = 'pres-chip' + (animate ? ' just-added' : '');
         chip.setAttribute('data-id', id);
         chip.appendChild(document.createTextNode(name + ' '));
         const hidden = document.createElement('input');
@@ -199,16 +209,31 @@ function addSpecRow(){
         chip.appendChild(rm);
         const empty = chips.querySelector('.pres-empty');
         chips.insertBefore(chip, empty);
+        if (animate) chip.addEventListener('animationend', () => chip.classList.remove('just-added'), { once: true });
     }
 
-    function addPresentation(id){
+    function showFeedback(name){
+        if (!feedback) return;
+        feedback.textContent = '✓ "' + name + '" agregada';
+        feedback.hidden = false;
+        if (feedbackTimer) clearTimeout(feedbackTimer);
+        feedbackTimer = setTimeout(() => { feedback.hidden = true; }, 2400);
+    }
+
+    // Agrega la presentación, CIERRA la lista y confirma con un mensaje + chip resaltado
+    function commitAdd(id){
         if (!id) return;
+        const opt = optionFor(id);
+        const name = opt ? opt.textContent.trim() : id;
         if (!chips.querySelector('.pres-chip[data-id="' + id + '"]')) {
-            const opt = optionFor(id);
-            addChip(id, opt ? opt.textContent.trim() : id);
+            addChip(id, name, true);
             setOptionUsed(id, true);
+            showFeedback(name);
         }
         updateEmpty();
+        search.value = '';
+        results.hidden = true;   // salir de la lista para ver el chip recién agregado
+        search.blur();
     }
 
     // --- Buscador en vivo ---
@@ -223,7 +248,7 @@ function addSpecRow(){
         if (!matches.length){
             const e = document.createElement('div');
             e.className = 'pres-result-empty';
-            e.textContent = 'Sin coincidencias';
+            e.textContent = availableOptions().length ? 'Sin coincidencias' : 'Todas las presentaciones ya fueron agregadas';
             results.appendChild(e);
         } else {
             matches.slice(0, 50).forEach((o, i) => {
@@ -233,10 +258,7 @@ function addSpecRow(){
                 item.textContent = o.textContent.trim();
                 item.addEventListener('mousedown', function(ev){
                     ev.preventDefault();           // evita perder el foco antes del click
-                    addPresentation(o.value);
-                    search.value = '';
-                    renderResults();
-                    search.focus();
+                    commitAdd(o.value);
                 });
                 results.appendChild(item);
             });
@@ -256,12 +278,7 @@ function addSpecRow(){
 
     function addActive(){
         const active = results.querySelector('.pres-result-item.active') || results.querySelector('.pres-result-item');
-        if (active){
-            addPresentation(active.getAttribute('data-id'));
-            search.value = '';
-            renderResults();
-            search.focus();
-        }
+        if (active) commitAdd(active.getAttribute('data-id'));
     }
 
     if (search){
@@ -271,19 +288,13 @@ function addSpecRow(){
             if (e.key === 'ArrowDown'){ e.preventDefault(); moveActive(1); }
             else if (e.key === 'ArrowUp'){ e.preventDefault(); moveActive(-1); }
             else if (e.key === 'Enter'){ e.preventDefault(); addActive(); }
-            else if (e.key === 'Escape'){ results.hidden = true; }
+            else if (e.key === 'Escape'){ results.hidden = true; search.blur(); }
         });
         // cerrar al hacer clic fuera del combo
         document.addEventListener('click', function(e){
             if (!e.target.closest('.pres-combo')) results.hidden = true;
         });
     }
-
-    // El botón "Agregar" añade la coincidencia resaltada / primera de la lista
-    addBtn.addEventListener('click', function(){
-        if (results.hidden) renderResults();
-        addActive();
-    });
 
     chips.addEventListener('click', function(e){
         const btn = e.target.closest('.pres-chip-remove');
