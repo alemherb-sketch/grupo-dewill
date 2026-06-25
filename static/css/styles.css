@@ -5209,8 +5209,18 @@ section,
     .pcr-body-section { padding: 0.85rem !important; }
     .pcr-image-section { padding: 1rem !important; }
     .pcr-image-link { height: 115px !important; }
-    .pcr-badges { top: 0.5rem !important; left: 0.5rem !important; }
-    .pcr-category-tag { font-size: 0.5rem !important; padding: 0.2rem 0.5rem !important; }
+    .pcr-badges { top: 0.5rem !important; left: 0.5rem !important; max-width: calc(100% - 3.2rem) !important; }
+    /* Etiqueta de categoria: rectangulo redondeado (no pastilla) para que el texto largo
+       quepa en 2 lineas sin que las esquinas lo recorten; mas ancho y sin icono en movil */
+    .pcr-category-tag {
+        font-size: 0.5rem !important;
+        padding: 0.3rem 0.5rem !important;
+        border-radius: 9px !important;
+        line-height: 1.25 !important;
+        letter-spacing: 0.2px !important;
+        white-space: normal !important;
+    }
+    .pcr-category-tag i { display: none !important; }
     .pcr-favorite-btn { width: 30px !important; height: 30px !important; top: 0.5rem !important; right: 0.5rem !important; }
     .pcr-subcategory-tag { font-size: 0.52rem !important; padding: 0.18rem 0.5rem !important; margin-bottom: 0.4rem !important; }
     .pcr-title { font-size: 0.82rem !important; min-height: auto !important; margin-bottom: 0.2rem !important; }
