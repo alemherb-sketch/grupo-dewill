@@ -147,34 +147,29 @@
                     {% for product in products.items %}
                     <div class="premium-product-card animate-fade-up">
                         <div class="pcr-image-section">
-                            <div class="pcr-top-bar">
+                            <div class="pcr-badges">
                                 <span class="pcr-category-tag"><i class="fas fa-tools"></i> {{ product.category.name|upper if product.category else 'PRODUCTO' }}</span>
-                                <button class="pcr-favorite-btn"><i class="far fa-heart"></i></button>
                             </div>
-                            <a href="{{ url_for('producto_detalle', product_id=product.id) }}">
+                            <button class="pcr-favorite-btn" type="button" aria-label="Agregar a favoritos"><i class="far fa-heart"></i></button>
+                            <a href="{{ url_for('producto_detalle', product_id=product.id) }}" class="pcr-image-link">
                                 <img src="{{ url_for('static', filename=product.main_image or 'assets/product_paint.png') }}" alt="{{ product.name }}">
                             </a>
-                            <div class="pcr-top-features">
-                                <div class="pcr-feature"><i class="fas fa-shield-alt"></i> <span>Productos<br>de calidad</span></div>
-                                <div class="pcr-feature"><i class="fas fa-award"></i> <span>Marcas<br>confiables</span></div>
-                                <div class="pcr-feature"><i class="fas fa-box"></i> <span>Ideal para<br>profesionales</span></div>
-                            </div>
                         </div>
-                        
+
                         <div class="pcr-body-section">
                             {% if product.subcategory %}
                             <span class="pcr-subcategory-tag">{{ product.subcategory.name|upper }}</span>
                             {% endif %}
-                            
+
                             <h3 class="pcr-title">{{ product.name }}</h3>
-                            
+
                             {% if product.brand %}
                             <span class="pcr-brand">{{ product.brand.name }}</span>
                             {% endif %}
-                            
+
                             {% set colors = product.specs | selectattr('key', 'equalto', 'Color') | list %}
                             {% if colors %}
-                            <div class="product-card-colors" style="margin-bottom: 0.5rem;">
+                            <div class="product-card-colors" style="margin-bottom: 0.75rem;">
                                 {% for c in colors[:6] %}
                                 <span class="product-color-dot" title="{{ c.value }}" style="background: #cccccc;"></span>
                                 {% endfor %}
@@ -183,26 +178,22 @@
                                 {% endif %}
                             </div>
                             {% endif %}
-                            
-                            <hr class="pcr-divider">
-                            
+
+                            {% set chip_specs = product.specs | rejectattr('key', 'equalto', 'Color') | list %}
+                            {% if chip_specs %}
+                            <div class="pcr-specs">
+                                {% for spec in chip_specs[:3] %}
+                                <span class="pcr-spec-chip"><i class="fas fa-check"></i> {{ spec.value }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+
                             <div class="pcr-actions">
                                 <a href="{{ url_for('producto_detalle', product_id=product.id) }}" class="pcr-btn-details"><i class="far fa-eye"></i> VER DETALLES</a>
                                 <button class="pcr-btn-quote" onclick="addToQuote({{ product.id }}, '{{ product.name|e }}', '{{ product.main_image or 'assets/product_paint.png' }}')">
                                     <i class="fas fa-shopping-cart"></i> COTIZAR
                                 </button>
                             </div>
-                            
-                            {% if product.specs %}
-                            <div class="pcr-bottom-features">
-                                {% for spec in product.specs[:3] %}
-                                <div class="pcr-b-feature">
-                                    <i class="far fa-check-circle"></i> 
-                                    <span>{{ spec.value }}</span>
-                                </div>
-                                {% endfor %}
-                            </div>
-                            {% endif %}
                         </div>
                     </div>
                     {% else %}
