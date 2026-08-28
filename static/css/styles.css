@@ -4961,49 +4961,28 @@ section,
 .premium-product-card:hover::before { transform: scaleX(1); }
 
 /* --- Vitrina de imagen --- */
+/* Un solo fondo: la vitrina y el cuerpo comparten el blanco de la tarjeta, asi la
+   foto no queda dentro de un recuadro sobre otro recuadro. Como casi todas las
+   fotos vienen con fondo blanco, se funden con la tarjeta y el producto flota. */
 .pcr-image-section {
     position: relative;
-    padding: 0.85rem 0.85rem 0.55rem;
+    padding: 0.9rem 1.1rem 1rem;
     text-align: center;
-    background: linear-gradient(180deg, #f3f6fb 0%, #e9edf5 100%);
+    background: #ffffff;
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    gap: 0.55rem;
+    gap: 0.5rem;
 }
-/* Halo decorativo que aparece al pasar el cursor */
-.pcr-image-section::after {
-    content: "";
-    position: absolute;
-    width: 170px; height: 170px;
-    top: -55px; right: -45px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(230, 0, 0, 0.10), transparent 70%);
-    opacity: 0;
-    transition: opacity 0.45s ease;
-    z-index: 0;
-}
-.premium-product-card:hover .pcr-image-section::after { opacity: 1; }
 
-/* Panel blanco donde vive la foto: funde el fondo blanco de las fotos subidas
-   y garantiza aire alrededor para que el producto se vea COMPLETO, nunca recortado */
 .pcr-image-link {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 215px;
-    padding: 0.9rem;
+    height: 205px;
     margin: 0 auto;
     position: relative;
     z-index: 1;
-    background: #ffffff;
-    border: 1px solid rgba(8, 28, 59, 0.05);
-    border-radius: 14px;
-    overflow: hidden;
-    transition: box-shadow 0.4s ease;
-}
-.premium-product-card:hover .pcr-image-link {
-    box-shadow: inset 0 0 0 1px rgba(230, 0, 0, 0.08);
 }
 .pcr-image-section img {
     max-width: 100%;
@@ -5012,9 +4991,9 @@ section,
     height: auto;
     object-fit: contain;             /* la foto entra entera, sea vertical u horizontal */
     transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
-    filter: drop-shadow(0 8px 14px rgba(8, 28, 59, 0.12));
+    filter: drop-shadow(0 6px 12px rgba(8, 28, 59, 0.11));
 }
-/* zoom suave: cabe dentro del padding del panel, asi no se recorta en hover */
+/* zoom suave: cabe dentro del padding de la vitrina, asi no se recorta en hover */
 .premium-product-card:hover .pcr-image-section img {
     transform: scale(1.05);
 }
@@ -5078,8 +5057,9 @@ section,
 
 /* --- Cuerpo --- */
 .pcr-body-section {
-    padding: 1.35rem 1.4rem 1.4rem;
+    padding: 1.2rem 1.4rem 1.4rem;
     background: #ffffff;
+    border-top: 1px solid rgba(8, 28, 59, 0.07);
     flex-grow: 1;
     display: flex;
     flex-direction: column;
@@ -5286,8 +5266,8 @@ section,
     }
     .premium-product-card { border-radius: 16px !important; }
     .pcr-body-section { padding: 0.85rem !important; }
-    .pcr-image-section { padding: 0.5rem !important; gap: 0.4rem !important; }
-    .pcr-image-link { height: 148px !important; padding: 0.55rem !important; border-radius: 11px !important; }
+    .pcr-image-section { padding: 0.6rem 0.6rem 0.7rem !important; gap: 0.35rem !important; }
+    .pcr-image-link { height: 138px !important; }
     .pcr-badges { min-height: 20px !important; max-width: calc(100% - 2.4rem) !important; }
     /* Etiqueta de categoria: rectangulo redondeado (no pastilla) para que el texto largo
        quepa en 2 lineas sin que las esquinas lo recorten; mas ancho y sin icono en movil */
