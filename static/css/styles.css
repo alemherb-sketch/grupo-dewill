@@ -4961,53 +4961,45 @@ section,
 .premium-product-card:hover::before { transform: scaleX(1); }
 
 /* --- Vitrina de imagen --- */
-/* Un solo fondo: la vitrina y el cuerpo comparten el blanco de la tarjeta, asi la
-   foto no queda dentro de un recuadro sobre otro recuadro. Como casi todas las
-   fotos vienen con fondo blanco, se funden con la tarjeta y el producto flota. */
+/* La foto va a sangre: ocupa toda la zona superior de la tarjeta, de borde a borde.
+   Asi el unico fondo visible ahi es el de la propia imagen, sin ninguna superficie
+   de la tarjeta rodeandola (nada de recuadro dentro de recuadro). La zona es
+   cuadrada porque esa es la proporcion de casi todas las fotos del catalogo. */
 .pcr-image-section {
     position: relative;
-    padding: 0.9rem 1.1rem 1rem;
-    text-align: center;
+    aspect-ratio: 1 / 1;
     background: #ffffff;
     overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
 }
 
 .pcr-image-link {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 205px;
-    margin: 0 auto;
+    display: block;
+    width: 100%;
+    height: 100%;
     position: relative;
     z-index: 1;
 }
 .pcr-image-section img {
-    max-width: 100%;
-    max-height: 100%;
-    width: auto;
-    height: auto;
-    object-fit: contain;             /* la foto entra entera, sea vertical u horizontal */
-    transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
-    filter: drop-shadow(0 6px 12px rgba(8, 28, 59, 0.11));
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
 }
-/* zoom suave: cabe dentro del padding de la vitrina, asi no se recorta en hover */
 .premium-product-card:hover .pcr-image-section img {
     transform: scale(1.05);
 }
 
-/* Etiqueta de categoría: franja propia sobre el panel, nunca encima de la foto */
+/* Etiqueta de categoria: flota sobre la foto, ya no hay franja donde apoyarla */
 .pcr-badges {
-    position: relative;
+    position: absolute;
+    top: 0.8rem; left: 0.8rem;
     z-index: 3;
     display: flex;
     flex-wrap: wrap;
     align-items: flex-start;
     gap: 0.4rem;
-    min-height: 25px;
-    max-width: calc(100% - 3.2rem); /* deja libre la esquina del boton de favorito */
+    max-width: calc(100% - 3.8rem); /* deja libre la esquina del boton de favorito */
 }
 .pcr-category-tag {
     background: rgba(8, 28, 59, 0.92);
@@ -5031,7 +5023,7 @@ section,
 
 .pcr-favorite-btn {
     position: absolute;
-    top: 0.6rem; right: 0.6rem;
+    top: 0.8rem; right: 0.8rem;
     z-index: 3;
     background: rgba(255, 255, 255, 0.92);
     border: 1px solid rgba(8, 28, 59, 0.06);
@@ -5059,7 +5051,6 @@ section,
 .pcr-body-section {
     padding: 1.2rem 1.4rem 1.4rem;
     background: #ffffff;
-    border-top: 1px solid rgba(8, 28, 59, 0.07);
     flex-grow: 1;
     display: flex;
     flex-direction: column;
@@ -5266,9 +5257,9 @@ section,
     }
     .premium-product-card { border-radius: 16px !important; }
     .pcr-body-section { padding: 0.85rem !important; }
-    .pcr-image-section { padding: 0.6rem 0.6rem 0.7rem !important; gap: 0.35rem !important; }
-    .pcr-image-link { height: 138px !important; }
-    .pcr-badges { min-height: 20px !important; max-width: calc(100% - 2.4rem) !important; }
+    .pcr-image-section { padding: 0 !important; }
+    .pcr-image-link { height: 100% !important; }
+    .pcr-badges { top: 0.5rem !important; left: 0.5rem !important; max-width: calc(100% - 2.8rem) !important; }
     /* Etiqueta de categoria: rectangulo redondeado (no pastilla) para que el texto largo
        quepa en 2 lineas sin que las esquinas lo recorten; mas ancho y sin icono en movil */
     .pcr-category-tag {
@@ -5280,7 +5271,7 @@ section,
         white-space: normal !important;
     }
     .pcr-category-tag i { display: none !important; }
-    .pcr-favorite-btn { width: 28px !important; height: 28px !important; top: 0.35rem !important; right: 0.35rem !important; }
+    .pcr-favorite-btn { width: 28px !important; height: 28px !important; top: 0.5rem !important; right: 0.5rem !important; }
     .pcr-subcategory-tag { font-size: 0.52rem !important; padding: 0.18rem 0.5rem !important; margin-bottom: 0.4rem !important; }
     .pcr-title { font-size: 0.82rem !important; min-height: auto !important; margin-bottom: 0.2rem !important; }
     .pcr-brand { font-size: 0.68rem !important; margin-bottom: 0.5rem !important; }
