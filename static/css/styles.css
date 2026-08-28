@@ -88,7 +88,7 @@ img {
 }
 
 .section {
-    padding: 6rem 0;
+    padding: 3.8rem 0;
 }
 
 .gradient-text {
@@ -922,7 +922,7 @@ img {
 /* ========== SECTION HEADERS ========== */
 .section-header {
     text-align: center;
-    margin-bottom: 4rem;
+    margin-bottom: 2.4rem;
 }
 
 .section-tag {
@@ -932,12 +932,12 @@ img {
     letter-spacing: 2px;
     font-size: 0.85rem;
     display: block;
-    margin-bottom: 1rem;
+    margin-bottom: 0.55rem;
 }
 
 .section-title {
-    font-size: clamp(2rem, 5vw, 3rem);
-    margin-bottom: 1rem;
+    font-size: clamp(1.85rem, 4.4vw, 2.6rem);
+    margin-bottom: 0.7rem;
 }
 
 .section-subtitle {
@@ -2307,7 +2307,7 @@ img {
     .about-new-content { padding-right: 0; text-align: center; }
     .about-stats-bar { width: 100%; margin-top: 2rem; border-radius: var(--radius-lg); }
     .about-stats-container { flex-wrap: wrap; gap: 0.8rem; }
-    .section { padding: 4rem 0; }
+    .section { padding: 2.6rem 0; }
 }
 
 @media (max-width: 768px) {
@@ -2579,12 +2579,12 @@ img {
 ======================================================== */
 
 /* ====== 1. MARCAS (Representaciones) ====== */
-.brands-section { padding: 4rem 0; background: var(--bg-surface); }
+.brands-section { padding: 3rem 0; background: var(--bg-surface); }
 .brands-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 0.8rem;
-    margin-top: 2rem;
+    margin-top: 0;
 }
 .brand-card {
     background: #ffffff;
@@ -2985,7 +2985,7 @@ img {
 .benefit-item span { display: block; font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
 
 /* ====== 7. PRODUCTOS DESTACADOS (FEATURED) ====== */
-.featured-section { padding: 5rem 0; background: var(--bg-surface); overflow: hidden; }
+.featured-section { padding: 3.4rem 0; background: var(--bg-surface); overflow: hidden; }
 .product-slider-container { position: relative; max-width: 1200px; margin: 0 auto; display: flex; align-items: center; }
 .products-slider { 
     display: flex; 
@@ -3122,7 +3122,7 @@ img {
 .slider-btn.prev { left: -22px; }
 .slider-btn.next { right: -22px; }
 @media (max-width: 1240px) { .slider-btn.prev { left: 10px; } .slider-btn.next { right: 10px; } }
-.section-cta { text-align: center; margin-top: 3rem; }
+.section-cta { text-align: center; margin-top: 1.9rem; }
 
 /* ====== 8. PRODUCT DETAILS PAGE (RESPONSIVE SPEC) ====== */
 .product-detail-page { padding: 3rem 0 5rem; background: var(--bg-surface); }
@@ -3630,13 +3630,13 @@ section,
 }
 
 /* ====== 1.5 CATEGORIES / LÍNEA DE PRODUCTOS ====== */
-.categories-section { padding: 4rem 0; background: #ffffff; }
+.categories-section { padding: 3rem 0; background: #ffffff; }
 /* NEW CATEGORIES GRID */
 .new-categories-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 0.8rem;
-    margin-top: 2rem;
+    margin-top: 0;
 }
 @media (max-width: 1200px) { .new-categories-grid { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 992px) { .new-categories-grid { grid-template-columns: repeat(2, 1fr); } }
@@ -3823,7 +3823,7 @@ section,
     font-size: 0.9rem;
 }/* ====== 1.6 BRANDS / MARCAS REPRESENTADAS ====== */
 .brands-section {
-    padding: 4rem 0;
+    padding: 3rem 0;
     background-color: #f4f6f9;
 }
 
@@ -3974,7 +3974,7 @@ section,
 /* ====== NEW WHY CHOOSE US (DARK GLASSMORPHISM) ====== */
 .why-section-dark {
     position: relative;
-    padding: 5rem 0;
+    padding: 3.6rem 0;
     background-color: #080c16 !important;
     color: #fff;
     overflow: hidden;
@@ -4832,7 +4832,7 @@ section,
 /* ============================================================
    COMUNIDAD DEWILL — CTA pre-footer + barra de beneficios
    ============================================================ */
-.community-cta { background: #f1f5f9; padding: 3.5rem 0; }
+.community-cta { background: #f1f5f9; padding: 2.6rem 0; }
 .community-inner { display: flex; align-items: center; gap: 2.5rem; flex-wrap: wrap; }
 
 .community-phone { flex: 0 0 auto; width: 130px; position: relative; }
@@ -4963,10 +4963,13 @@ section,
 /* --- Vitrina de imagen --- */
 .pcr-image-section {
     position: relative;
-    padding: 1rem 1rem 0.8rem;
+    padding: 0.85rem 0.85rem 0.55rem;
     text-align: center;
-    background: radial-gradient(circle at 50% 32%, #ffffff 0%, #eef1f7 100%);
+    background: linear-gradient(180deg, #f3f6fb 0%, #e9edf5 100%);
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
 }
 /* Halo decorativo que aparece al pasar el cursor */
 .pcr-image-section::after {
@@ -4982,37 +4985,50 @@ section,
 }
 .premium-product-card:hover .pcr-image-section::after { opacity: 1; }
 
+/* Panel blanco donde vive la foto: funde el fondo blanco de las fotos subidas
+   y garantiza aire alrededor para que el producto se vea COMPLETO, nunca recortado */
 .pcr-image-link {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 200px;
+    height: 215px;
+    padding: 0.9rem;
     margin: 0 auto;
     position: relative;
     z-index: 1;
+    background: #ffffff;
+    border: 1px solid rgba(8, 28, 59, 0.05);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: box-shadow 0.4s ease;
+}
+.premium-product-card:hover .pcr-image-link {
+    box-shadow: inset 0 0 0 1px rgba(230, 0, 0, 0.08);
 }
 .pcr-image-section img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;            /* la imagen escala para llenar el recuadro manteniendo proporción */
-    mix-blend-mode: multiply;        /* funde el fondo blanco de la imagen con la vitrina */
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;             /* la foto entra entera, sea vertical u horizontal */
     transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
-    filter: drop-shadow(0 14px 18px rgba(8, 28, 59, 0.14));
+    filter: drop-shadow(0 8px 14px rgba(8, 28, 59, 0.12));
 }
+/* zoom suave: cabe dentro del padding del panel, asi no se recorta en hover */
 .premium-product-card:hover .pcr-image-section img {
-    transform: scale(1.07) translateY(-3px);
+    transform: scale(1.05);
 }
 
-/* Etiqueta de categoría flotante (vidrio) */
+/* Etiqueta de categoría: franja propia sobre el panel, nunca encima de la foto */
 .pcr-badges {
-    position: absolute;
-    top: 1rem; left: 1rem;
+    position: relative;
     z-index: 3;
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
     align-items: flex-start;
     gap: 0.4rem;
-    max-width: calc(100% - 4.5rem); /* deja libre la esquina del boton de favorito */
+    min-height: 25px;
+    max-width: calc(100% - 3.2rem); /* deja libre la esquina del boton de favorito */
 }
 .pcr-category-tag {
     background: rgba(8, 28, 59, 0.92);
@@ -5036,7 +5052,7 @@ section,
 
 .pcr-favorite-btn {
     position: absolute;
-    top: 1rem; right: 1rem;
+    top: 0.6rem; right: 0.6rem;
     z-index: 3;
     background: rgba(255, 255, 255, 0.92);
     border: 1px solid rgba(8, 28, 59, 0.06);
@@ -5270,9 +5286,9 @@ section,
     }
     .premium-product-card { border-radius: 16px !important; }
     .pcr-body-section { padding: 0.85rem !important; }
-    .pcr-image-section { padding: 1rem !important; }
-    .pcr-image-link { height: 130px !important; }
-    .pcr-badges { top: 0.5rem !important; left: 0.5rem !important; max-width: calc(100% - 3.2rem) !important; }
+    .pcr-image-section { padding: 0.5rem !important; gap: 0.4rem !important; }
+    .pcr-image-link { height: 148px !important; padding: 0.55rem !important; border-radius: 11px !important; }
+    .pcr-badges { min-height: 20px !important; max-width: calc(100% - 2.4rem) !important; }
     /* Etiqueta de categoria: rectangulo redondeado (no pastilla) para que el texto largo
        quepa en 2 lineas sin que las esquinas lo recorten; mas ancho y sin icono en movil */
     .pcr-category-tag {
@@ -5284,7 +5300,7 @@ section,
         white-space: normal !important;
     }
     .pcr-category-tag i { display: none !important; }
-    .pcr-favorite-btn { width: 30px !important; height: 30px !important; top: 0.5rem !important; right: 0.5rem !important; }
+    .pcr-favorite-btn { width: 28px !important; height: 28px !important; top: 0.35rem !important; right: 0.35rem !important; }
     .pcr-subcategory-tag { font-size: 0.52rem !important; padding: 0.18rem 0.5rem !important; margin-bottom: 0.4rem !important; }
     .pcr-title { font-size: 0.82rem !important; min-height: auto !important; margin-bottom: 0.2rem !important; }
     .pcr-brand { font-size: 0.68rem !important; margin-bottom: 0.5rem !important; }
