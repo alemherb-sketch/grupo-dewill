@@ -5,6 +5,22 @@
 {% block admin_content %}
 <form method="POST" class="admin-form">
     <div class="form-grid-2">
+        <!-- Modo mantenimiento -->
+        <div class="form-section" style="grid-column: 1 / -1;{% if site.get('maintenance_mode') == '1' %} border: 2px solid #f59e0b; background: #fffbeb;{% endif %}">
+            <h3><i class="fas fa-tools"></i> Modo Mantenimiento</h3>
+            <div class="form-group form-check">
+                <label>
+                    <input type="checkbox" name="maintenance_mode" value="1" {% if site.get('maintenance_mode') == '1' %}checked{% endif %} style="width: auto; margin-right: 0.5rem;">
+                    Mostrar aviso de mantenimiento a los visitantes
+                </label>
+            </div>
+            <div class="form-group"><label>Mensaje para los visitantes (opcional)</label><textarea name="maintenance_message" rows="2" class="form-input" placeholder="Estamos realizando mejoras en nuestro sitio web. Volveremos muy pronto.">{{ site.get('maintenance_message', '') }}</textarea></div>
+            <p style="font-size: 0.85rem; color: var(--admin-text-muted, #64748b); margin: 0;">
+                {% if site.get('maintenance_mode') == '1' %}<strong style="color:#b45309;"><i class="fas fa-exclamation-triangle"></i> El modo mantenimiento está ACTIVO.</strong> {% endif %}
+                Con el modo activo, los visitantes ven la página de mantenimiento; tú sigues viendo el sitio completo mientras tengas la sesión iniciada en este panel.
+            </p>
+        </div>
+
         <!-- Contacto -->
         <div class="form-section">
             <h3><i class="fas fa-address-book"></i> Datos de Contacto</h3>

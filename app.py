@@ -184,6 +184,29 @@ def get_site_config():
 def inject_site_config():
     return {'site': get_site_config()}
 
+# ==================== MODO MANTENIMIENTO ====================
+# Se activa desde Admin > Configuración. Los visitantes ven la página de mantenimiento (503);
+# el panel /admin, los archivos estáticos y los administradores con sesión iniciada siguen funcionando.
+MAINTENANCE_OPEN_PREFIXES = ('/admin', '/static')
+MAINTENANCE_DEFAULT_MESSAGE = 'Estamos realizando mejoras en nuestro sitio web. Volveremos muy pronto.'
+
+@app.before_request
+def maintenance_mode():
+    if request.path.startswith(MAINTENANCE_OPEN_PREFIXES):
+        return None
+    try:
+        if SiteConfig.get('maintenance_mode', '') != '1' or current_user.is_authenticated:
+            return None
+        message = SiteConfig.get('maintenance_message', '') or MAINTENANCE_DEFAULT_MESSAGE
+    except Exception:
+        # Si la base falla, mejor dejar pasar la petición que bloquear todo el sitio
+        db.session.rollback()
+        return None
+    headers = {'Retry-After': '3600', 'Cache-Control': 'no-store'}
+    if request.path.startswith('/api/'):
+        return jsonify({'success': False, 'error': message}), 503, headers
+    return render_template('mantenimiento.html', maintenance_message=message), 503, headers
+
 @app.context_processor
 def inject_community_photos():
     try:
@@ -1259,7 +1282,8 @@ def admin_gallery():
 def admin_settings():
     if request.method == 'POST':
         for key in ['phone','whatsapp','whatsapp_2','whatsapp_3','email','notify_email','address','facebook','instagram','tiktok',
-                     'hero_title','hero_subtitle','hero_badge','meta_title','meta_description','meta_keywords','maps_embed']:
+                     'hero_title','hero_subtitle','hero_badge','meta_title','meta_description','meta_keywords','maps_embed',
+                     'maintenance_mode','maintenance_message']:
             SiteConfig.set(key, request.form.get(key, ''))
         flash('Configuración guardada', 'success')
         return redirect(url_for('admin_settings'))

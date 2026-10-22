@@ -13,6 +13,12 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
+    {% if site.get('maintenance_mode') == '1' and current_user.is_authenticated %}
+    <div style="background:#f59e0b;color:#1a1d26;text-align:center;padding:.5rem 1rem;font-size:.85rem;font-weight:600;">
+        <i class="fas fa-tools"></i> Modo mantenimiento ACTIVO: los visitantes ven la página de mantenimiento; tú ves el sitio porque tienes la sesión de admin iniciada.
+        <a href="{{ url_for('admin_settings') }}" style="color:#1a1d26;text-decoration:underline;margin-left:.5rem;">Desactivar</a>
+    </div>
+    {% endif %}
     <div class="top-header">
         <div class="top-header-container">
             <div class="top-header-info">
