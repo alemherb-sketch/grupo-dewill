@@ -17,8 +17,8 @@ from seed_data import seed as seed_database
 
 app = Flask(__name__)
 app.config.from_object(Config)
-# Detras de nginx en el VPS: respetar Host / X-Forwarded-Proto para generar URLs https del dominio
-app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
+# Detrás de Nginx: confiar en X-Forwarded-* (HTTPS, host)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(os.path.join(app.instance_path), exist_ok=True)
 
@@ -90,12 +90,15 @@ with app.app_context():
     except Exception as e:
         print(f"Migration error: {e}")
 
-    # Asegurar que existe al menos un admin
-    if not AdminUser.query.filter_by(username='admin').first():
-        admin = AdminUser(username='admin')
-        admin.set_password('admin123')
-        db.session.add(admin)
-        db.session.commit()
+    # Asegurar que existe al menos un admin (seguro con varios workers gunicorn)
+    try:
+        if not AdminUser.query.filter_by(username='admin').first():
+            admin = AdminUser(username='admin')
+            admin.set_password('admin123')
+            db.session.add(admin)
+            db.session.commit()
+    except Exception:
+        db.session.rollback()
 
 mail = Mail(app)
 login_manager = LoginManager(app)
