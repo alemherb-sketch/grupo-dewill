@@ -6,6 +6,7 @@ from flask import (Flask, render_template, request, redirect, url_for, flash,
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_mail import Mail, Message
 from werkzeug.utils import secure_filename
+from werkzeug.middleware.proxy_fix import ProxyFix
 from config import Config
 from models import db, AdminUser, Category, SubCategory, Brand, Product, ProductImage, ProductSpec, Presentation
 from models import QuoteRequest, QuoteItem, Banner, GalleryCategory, GalleryImage, AmbientCategory, AmbientImage, SiteConfig, PaintColor, BlogCategory, BlogPost, ProductPresentationColor
@@ -16,6 +17,8 @@ from seed_data import seed as seed_database
 
 app = Flask(__name__)
 app.config.from_object(Config)
+# Detras de nginx en el VPS: respetar Host / X-Forwarded-Proto para generar URLs https del dominio
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(os.path.join(app.instance_path), exist_ok=True)
 
@@ -415,7 +418,7 @@ def api_cotizacion():
                 f"MENSAJE:\n{quote.message or 'Sin mensaje'}\n\n"
                 f"PRODUCTOS:\n{items_text}\n"
                 f"----------------------------------------\n"
-                f"Ver en el panel: {url_for('admin_quote_detail', qid=quote.id, _external=True)}"
+                f"Ver en el panel: {app.config['SITE_URL']}{url_for('admin_quote_detail', qid=quote.id)}"
             )
             
             msg_data = {

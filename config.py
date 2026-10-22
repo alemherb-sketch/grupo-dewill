@@ -14,6 +14,9 @@ class Config:
     SQLALCHEMY_DATABASE_URI = database_url or ('sqlite:///' + os.path.join(basedir, 'instance', 'dewill.db'))
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+    # Dominio publico del sitio (se usa para armar enlaces absolutos fuera del request)
+    SITE_URL = os.environ.get('SITE_URL', 'https://www.grupodewill.com').rstrip('/')
+
     # Upload settings
     UPLOAD_FOLDER = os.path.join(basedir, 'static', 'uploads')
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16 MB max
