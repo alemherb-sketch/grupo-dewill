@@ -1,13 +1,17 @@
 import os
 import re
 import unicodedata
+from datetime import datetime, timedelta
+from functools import wraps
 from flask import (Flask, render_template, request, redirect, url_for, flash,
-                   jsonify)
+                   jsonify, g)
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_mail import Mail, Message
+from sqlalchemy import func
 from werkzeug.utils import secure_filename
 from werkzeug.middleware.proxy_fix import ProxyFix
 from config import Config
+from permissions import MODULES, MODULE_GROUPS, PRESETS, LEVEL_LABELS, VIEW, MANAGE, clean_permissions
 from models import db, AdminUser, Category, SubCategory, Brand, Product, ProductImage, ProductSpec, Presentation
 from models import QuoteRequest, QuoteItem, Banner, GalleryCategory, GalleryImage, AmbientCategory, AmbientImage, SiteConfig, PaintColor, BlogCategory, BlogPost, ProductPresentationColor
 import time
@@ -87,13 +91,29 @@ with app.app_context():
             db.session.commit()
         except Exception:
             db.session.rollback()
+        # Usuarios del panel: nombre, correo, rol, estado, permisos y ultimo acceso
+        for column, ddl in (('full_name', 'VARCHAR(120)'), ('email', 'VARCHAR(150)'), ('is_admin', 'BOOLEAN'),
+                            ('is_active', 'BOOLEAN'), ('permissions', 'TEXT'), ('last_login', 'TIMESTAMP')):
+            try:
+                db.session.execute(text(f"ALTER TABLE admin_users ADD COLUMN {column} {ddl}"))
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+        # Los usuarios anteriores a este modulo eran todos administradores con acceso total
+        try:
+            db.session.execute(text("UPDATE admin_users SET is_admin = :v WHERE is_admin IS NULL"), {'v': True})
+            db.session.execute(text("UPDATE admin_users SET is_active = :v WHERE is_active IS NULL"), {'v': True})
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
     except Exception as e:
         print(f"Migration error: {e}")
 
-    # Asegurar que existe al menos un admin (seguro con varios workers gunicorn)
+    # Crear el administrador inicial solo si no hay ningun usuario (seguro con varios workers gunicorn).
+    # No se recrea si alguien renombra o elimina 'admin': eso reabriria una cuenta con clave conocida.
     try:
-        if not AdminUser.query.filter_by(username='admin').first():
-            admin = AdminUser(username='admin')
+        if AdminUser.query.count() == 0:
+            admin = AdminUser(username='admin', full_name='Administrador', is_admin=True, is_active=True)
             admin.set_password('admin123')
             db.session.add(admin)
             db.session.commit()
@@ -133,7 +153,55 @@ def send_async_email(app, msg_data):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return AdminUser.query.get(int(user_id))
+    user = db.session.get(AdminUser, int(user_id))
+    # Un usuario desactivado pierde la sesion de inmediato, sin esperar a que cierre sesion
+    return user if user and user.is_active else None
+
+
+def _access_denied(message):
+    return render_template('admin/forbidden.html', message=message), 403
+
+
+def module_required(module):
+    """Sustituye a @login_required en las rutas del panel: exige sesion y permiso sobre el modulo.
+    GET/HEAD piden 'ver'; cualquier otro metodo (guardar, eliminar) pide 'gestionar'."""
+    def decorator(view):
+        @wraps(view)
+        def wrapper(*args, **kwargs):
+            needed = VIEW if request.method in ('GET', 'HEAD', 'OPTIONS') else MANAGE
+            if not current_user.can(module, needed):
+                if needed == VIEW:
+                    return _access_denied('No tienes permiso para acceder a esta sección.')
+                return _access_denied('Tu usuario solo puede consultar esta sección; no tiene permiso para guardar cambios.')
+            # Los modulos de solo lectura (dashboard) no muestran el aviso de "modo lectura"
+            g.admin_readonly = not MODULES[module]['view_only'] and not current_user.can(module, MANAGE)
+            return view(*args, **kwargs)
+        return login_required(wrapper)
+    return decorator
+
+
+def admin_required(view):
+    """Solo administradores (gestion de usuarios y herramientas de mantenimiento)."""
+    @wraps(view)
+    def wrapper(*args, **kwargs):
+        if not current_user.is_admin:
+            return _access_denied('Esta sección es solo para administradores.')
+        return view(*args, **kwargs)
+    return login_required(wrapper)
+
+
+def admin_landing_endpoint(user):
+    """Primera pantalla del panel a la que el usuario tiene acceso."""
+    for module in MODULES.values():
+        if user.can(module['key']):
+            return module['endpoint']
+    return 'admin_account'
+
+
+@app.context_processor
+def inject_admin_access():
+    home = url_for(admin_landing_endpoint(current_user)) if current_user.is_authenticated else None
+    return {'admin_readonly': g.get('admin_readonly', False), 'admin_home': home}
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
@@ -214,6 +282,13 @@ def inject_community_photos():
     except Exception:
         photos = []
     return {'community_photos': photos}
+
+PERU_UTC_OFFSET = timedelta(hours=-5)  # Peru no usa horario de verano
+
+@app.template_filter('lima')
+def to_lima(value, fmt='%d/%m/%Y %H:%M'):
+    """Muestra en hora de Peru una fecha guardada en UTC."""
+    return (value + PERU_UTC_OFFSET).strftime(fmt) if value else ''
 
 def slugify(value):
     value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
@@ -559,13 +634,19 @@ def api_ambiente(id):
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
     if current_user.is_authenticated:
-        return redirect(url_for('admin_dashboard'))
+        return redirect(url_for(admin_landing_endpoint(current_user)))
     if request.method == 'POST':
-        user = AdminUser.query.filter_by(username=request.form.get('username')).first()
-        if user and user.check_password(request.form.get('password')):
-            login_user(user)
-            return redirect(url_for('admin_dashboard'))
-        flash('Credenciales inválidas', 'error')
+        user = AdminUser.query.filter_by(username=(request.form.get('username') or '').strip()).first()
+        if user and user.check_password(request.form.get('password') or ''):
+            if not user.is_active:
+                flash('Tu cuenta está desactivada. Contacta al administrador.', 'error')
+            else:
+                login_user(user)
+                user.last_login = datetime.utcnow()
+                db.session.commit()
+                return redirect(url_for(admin_landing_endpoint(user)))
+        else:
+            flash('Credenciales inválidas', 'error')
     return render_template('admin/login.html')
 
 @app.route('/admin/logout')
@@ -574,8 +655,177 @@ def admin_logout():
     logout_user()
     return redirect(url_for('admin_login'))
 
-@app.route('/admin/')
+
+# ==================== USUARIOS Y PERMISOS ====================
+
+USERNAME_RE = re.compile(r'^[A-Za-z0-9._-]{3,40}$')
+EMAIL_RE = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
+MIN_PASSWORD_LENGTH = 8
+
+
+def _validate_password(password, confirm):
+    if len(password) < MIN_PASSWORD_LENGTH:
+        return f'La contraseña debe tener al menos {MIN_PASSWORD_LENGTH} caracteres.'
+    if password != confirm:
+        return 'Las contraseñas no coinciden.'
+    return None
+
+
+def _form_permissions():
+    return clean_permissions({key: request.form.get(f'perm_{key}', '') for key in MODULES})
+
+
+def _user_form_values(user):
+    """Valores que muestra el formulario: lo enviado si hubo un error al guardar, o lo guardado."""
+    if request.method == 'POST':
+        f = request.form
+        is_self = user.id is not None and user.id == current_user.id
+        return {
+            'full_name': f.get('full_name', ''), 'username': f.get('username', ''), 'email': f.get('email', ''),
+            'is_admin': user.is_admin if is_self else f.get('is_admin') == '1',
+            'is_active': user.is_active if is_self else f.get('is_active') == '1',
+            'permissions': _form_permissions(),
+        }
+    return {
+        'full_name': user.full_name or '', 'username': user.username or '', 'email': user.email or '',
+        'is_admin': bool(user.is_admin), 'is_active': bool(user.is_active),
+        'permissions': user.get_permissions(),
+    }
+
+
+def _render_user_form(user):
+    return render_template('admin/user_form.html', edited_user=user, values=_user_form_values(user),
+                           module_groups=MODULE_GROUPS, presets=PRESETS, level_labels=LEVEL_LABELS,
+                           is_self=user.id is not None and user.id == current_user.id)
+
+
+def _apply_user_form(user):
+    """Valida el formulario y lo aplica a `user`. Devuelve la lista de errores (vacia si todo esta bien)."""
+    f = request.form
+    is_new = user.id is None
+    username = (f.get('username') or '').strip()
+    email = (f.get('email') or '').strip()
+    password = f.get('password') or ''
+    errors = []
+
+    if not USERNAME_RE.match(username):
+        errors.append('El usuario debe tener entre 3 y 40 caracteres: letras, números, punto, guion o guion bajo.')
+    elif AdminUser.query.filter(func.lower(AdminUser.username) == username.lower(), AdminUser.id != (user.id or 0)).first():
+        errors.append('Ya existe un usuario con ese nombre.')
+    if email and not EMAIL_RE.match(email):
+        errors.append('El correo no es válido.')
+    if is_new or password:
+        error = _validate_password(password, f.get('password_confirm') or '')
+        if error:
+            errors.append(error)
+    if errors:
+        return errors
+
+    user.username = username
+    user.full_name = (f.get('full_name') or '').strip() or None
+    user.email = email or None
+    if password:
+        user.set_password(password)
+    # Cada administrador conserva su propio rol y estado: asi el panel nunca se queda sin administrador activo
+    if is_new or user.id != current_user.id:
+        user.is_admin = f.get('is_admin') == '1'
+        user.is_active = f.get('is_active') == '1'
+    user.set_permissions({} if user.is_admin else _form_permissions())
+    return []
+
+
+@app.route('/admin/usuarios')
+@admin_required
+def admin_users():
+    users = AdminUser.query.order_by(func.lower(AdminUser.username)).all()
+    return render_template('admin/users.html', users=users)
+
+@app.route('/admin/usuarios/nuevo', methods=['GET', 'POST'])
+@admin_required
+def admin_user_new():
+    user = AdminUser(is_admin=False, is_active=True)
+    if request.method == 'POST':
+        errors = _apply_user_form(user)
+        if not errors:
+            db.session.add(user)
+            db.session.commit()
+            flash(f'Usuario "{user.username}" creado', 'success')
+            return redirect(url_for('admin_users'))
+        for error in errors:
+            flash(error, 'error')
+    return _render_user_form(user)
+
+@app.route('/admin/usuarios/<int:uid>/editar', methods=['GET', 'POST'])
+@admin_required
+def admin_user_edit(uid):
+    user = db.get_or_404(AdminUser, uid)
+    if request.method == 'POST':
+        errors = _apply_user_form(user)
+        if not errors:
+            db.session.commit()
+            flash(f'Usuario "{user.username}" actualizado', 'success')
+            return redirect(url_for('admin_users'))
+        db.session.rollback()
+        for error in errors:
+            flash(error, 'error')
+    return _render_user_form(user)
+
+@app.route('/admin/usuarios/<int:uid>/estado', methods=['POST'])
+@admin_required
+def admin_user_toggle(uid):
+    user = db.get_or_404(AdminUser, uid)
+    if user.id == current_user.id:
+        flash('No puedes desactivar tu propia cuenta.', 'error')
+    else:
+        user.is_active = not user.is_active
+        db.session.commit()
+        flash(f'Usuario "{user.username}" {"activado" if user.is_active else "desactivado"}', 'success')
+    return redirect(url_for('admin_users'))
+
+@app.route('/admin/usuarios/<int:uid>/eliminar', methods=['POST'])
+@admin_required
+def admin_user_delete(uid):
+    user = db.get_or_404(AdminUser, uid)
+    if user.id == current_user.id:
+        flash('No puedes eliminar tu propia cuenta.', 'error')
+    else:
+        db.session.delete(user)
+        db.session.commit()
+        flash(f'Usuario "{user.username}" eliminado', 'success')
+    return redirect(url_for('admin_users'))
+
+@app.route('/admin/cuenta', methods=['GET', 'POST'])
 @login_required
+def admin_account():
+    """Perfil y cambio de contraseña del usuario con sesion iniciada (no requiere permisos de modulo)."""
+    user = db.session.get(AdminUser, current_user.id)
+    if request.method == 'POST':
+        f = request.form
+        if f.get('action') == 'password':
+            if not user.check_password(f.get('current_password') or ''):
+                error = 'La contraseña actual no es correcta.'
+            else:
+                error = _validate_password(f.get('password') or '', f.get('password_confirm') or '')
+            if error:
+                flash(error, 'error')
+            else:
+                user.set_password(f.get('password'))
+                db.session.commit()
+                flash('Contraseña actualizada', 'success')
+        else:
+            email = (f.get('email') or '').strip()
+            if email and not EMAIL_RE.match(email):
+                flash('El correo no es válido.', 'error')
+            else:
+                user.full_name = (f.get('full_name') or '').strip() or None
+                user.email = email or None
+                db.session.commit()
+                flash('Datos actualizados', 'success')
+        return redirect(url_for('admin_account'))
+    return render_template('admin/account.html', level_labels=LEVEL_LABELS)
+
+@app.route('/admin/')
+@module_required('dashboard')
 def admin_dashboard():
     total_q = QuoteRequest.query.count()
     responded_q = QuoteRequest.query.filter_by(status='respondida').count()
@@ -601,7 +851,7 @@ def admin_dashboard():
     return render_template('admin/dashboard.html', stats=stats, recent_quotes=recent)
 
 @app.route('/admin/sync-colors', methods=['POST'])
-@login_required
+@module_required('colores')
 def admin_sync_colors():
     # Extended dictionary of common paint colors in Spanish
     hex_map = {
@@ -712,7 +962,7 @@ def admin_sync_colors():
     return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/productos')
-@login_required
+@module_required('productos')
 def admin_products():
     q = request.args.get('q', '')
     cat_id = request.args.get('cat', '')
@@ -731,7 +981,7 @@ def admin_products():
     return render_template('admin/products.html', products=products, categories=categories, q=q, cat_id=cat_id)
 
 @app.route('/admin/productos/importar', methods=['GET', 'POST'])
-@login_required
+@module_required('productos')
 def admin_product_import():
     if request.method == 'POST':
         if 'excel_file' not in request.files:
@@ -913,7 +1163,7 @@ def admin_product_import():
     return render_template('admin/product_import.html')
 
 @app.route('/admin/productos/nuevo', methods=['GET', 'POST'])
-@login_required
+@module_required('productos')
 def admin_product_new():
     categories = Category.query.order_by(Category.order).all()
     subcategories = SubCategory.query.order_by(SubCategory.name).all()
@@ -957,7 +1207,7 @@ def admin_product_new():
     return render_template('admin/product_form.html', product=None, categories=categories, subcategories=subcategories, brands=brands, presentations=presentations)
 
 @app.route('/admin/productos/<int:pid>/editar', methods=['GET', 'POST'])
-@login_required
+@module_required('productos')
 def admin_product_edit(pid):
     p = Product.query.get_or_404(pid)
     categories = Category.query.order_by(Category.order).all()
@@ -1002,14 +1252,14 @@ def admin_product_edit(pid):
     return render_template('admin/product_form.html', product=p, categories=categories, subcategories=subcategories, brands=brands, presentations=presentations)
 
 @app.route('/admin/productos/<int:pid>/eliminar', methods=['POST'])
-@login_required
+@module_required('productos')
 def admin_product_delete(pid):
     db.session.delete(Product.query.get_or_404(pid)); db.session.commit()
     flash('Producto eliminado', 'success')
     return redirect(url_for('admin_products'))
 
 @app.route('/admin/productos/eliminar-seleccion', methods=['POST'])
-@login_required
+@module_required('productos')
 def admin_products_bulk_delete():
     try:
         product_ids = request.form.get('product_ids', '')
@@ -1042,14 +1292,14 @@ def admin_products_bulk_delete():
     return redirect(url_for('admin_products'))
 
 @app.route('/admin/productos/imagen/<int:img_id>/eliminar', methods=['POST'])
-@login_required
+@module_required('productos')
 def admin_product_image_delete(img_id):
     img = ProductImage.query.get_or_404(img_id); pid = img.product_id
     db.session.delete(img); db.session.commit()
     return redirect(url_for('admin_product_edit', pid=pid))
 
 @app.route('/admin/categorias', methods=['GET', 'POST'])
-@login_required
+@module_required('categorias')
 def admin_categories():
     if request.method == 'POST':
         action = request.form.get('action')
@@ -1082,7 +1332,7 @@ def admin_categories():
     return render_template('admin/categories.html', categories=categories, q=q)
 
 @app.route('/admin/marcas', methods=['GET', 'POST'])
-@login_required
+@module_required('marcas')
 def admin_brands():
     if request.method == 'POST':
         action = request.form.get('action')
@@ -1113,7 +1363,7 @@ def admin_brands():
 
 
 @app.route('/admin/subcategorias', methods=['GET', 'POST'])
-@login_required
+@module_required('subcategorias')
 def admin_subcategories():
     categories = Category.query.order_by(Category.order).all()
     if request.method == 'POST':
@@ -1151,7 +1401,7 @@ def admin_subcategories():
 
 
 @app.route('/admin/presentaciones', methods=['GET', 'POST'])
-@login_required
+@module_required('presentaciones')
 def admin_presentations():
     if request.method == 'POST':
         action = request.form.get('action')
@@ -1185,7 +1435,7 @@ def admin_presentations():
     return render_template('admin/presentations.html', presentations=presentations, q=q)
 
 @app.route('/admin/solicitudes')
-@login_required
+@module_required('solicitudes')
 def admin_quotes():
     status = request.args.get('status', '')
     page = request.args.get('page', 1, type=int)
@@ -1195,12 +1445,12 @@ def admin_quotes():
     return render_template('admin/quotes.html', quotes=quotes, current_status=status)
 
 @app.route('/admin/solicitudes/<int:qid>')
-@login_required
+@module_required('solicitudes')
 def admin_quote_detail(qid):
     return render_template('admin/quote_detail.html', quote=QuoteRequest.query.get_or_404(qid))
 
 @app.route('/admin/solicitudes/<int:qid>/estado', methods=['POST'])
-@login_required
+@module_required('solicitudes')
 def admin_quote_status(qid):
     q = QuoteRequest.query.get_or_404(qid)
     q.status = request.form.get('status', 'pendiente')
@@ -1208,7 +1458,7 @@ def admin_quote_status(qid):
     return redirect(url_for('admin_quote_detail', qid=qid))
 
 @app.route('/admin/banners', methods=['GET', 'POST'])
-@login_required
+@module_required('banners')
 def admin_banners():
     if request.method == 'POST':
         action = request.form.get('action')
@@ -1235,7 +1485,7 @@ def admin_banners():
     return render_template('admin/banners.html', banners=Banner.query.order_by(Banner.order).all())
 
 @app.route('/admin/galeria', methods=['GET', 'POST'])
-@login_required
+@module_required('galeria')
 def admin_gallery():
     if request.method == 'POST':
         action = request.form.get('action')
@@ -1278,7 +1528,7 @@ def admin_gallery():
         all_images=GalleryImage.query.order_by(GalleryImage.order).all())
 
 @app.route('/admin/configuracion', methods=['GET', 'POST'])
-@login_required
+@module_required('configuracion')
 def admin_settings():
     if request.method == 'POST':
         for key in ['phone','whatsapp','whatsapp_2','whatsapp_3','email','notify_email','address','facebook','instagram','tiktok',
@@ -1291,14 +1541,14 @@ def admin_settings():
 
 
 @app.route('/admin/blog')
-@login_required
+@module_required('blog')
 def admin_blog():
     page = request.args.get('page', 1, type=int)
     posts = BlogPost.query.order_by(BlogPost.created_at.desc()).paginate(page=page, per_page=20, error_out=False)
     return render_template('admin/blog.html', posts=posts)
 
 @app.route('/admin/blog/nuevo', methods=['GET', 'POST'])
-@login_required
+@module_required('blog')
 def admin_blog_new():
     categories = BlogCategory.query.order_by(BlogCategory.name).all()
     if request.method == 'POST':
@@ -1329,7 +1579,7 @@ def admin_blog_new():
     return render_template('admin/blog_form.html', post=None, categories=categories)
 
 @app.route('/admin/blog/<int:pid>/editar', methods=['GET', 'POST'])
-@login_required
+@module_required('blog')
 def admin_blog_edit(pid):
     post = BlogPost.query.get_or_404(pid)
     categories = BlogCategory.query.order_by(BlogCategory.name).all()
@@ -1350,7 +1600,7 @@ def admin_blog_edit(pid):
     return render_template('admin/blog_form.html', post=post, categories=categories)
 
 @app.route('/admin/blog/<int:pid>/eliminar', methods=['POST'])
-@login_required
+@module_required('blog')
 def admin_blog_delete(pid):
     db.session.delete(BlogPost.query.get_or_404(pid))
     db.session.commit()
@@ -1358,7 +1608,7 @@ def admin_blog_delete(pid):
     return redirect(url_for('admin_blog'))
 
 @app.route('/admin/blog-categorias', methods=['GET', 'POST'])
-@login_required
+@module_required('blog')
 def admin_blog_categories():
     if request.method == 'POST':
         action = request.form.get('action')
@@ -1389,7 +1639,7 @@ def admin_blog_categories():
     return render_template('admin/blog_categories.html', categories=categories)
 
 @app.route('/admin/seed-db', methods=['POST'])
-@login_required
+@admin_required
 def admin_seed_db():
     try:
         seed_database()
@@ -1400,7 +1650,7 @@ def admin_seed_db():
 
 
 @app.route('/admin/limpiar-duplicados', methods=['POST'])
-@login_required
+@module_required('productos')
 def admin_clean_duplicates():
     """Merge duplicate products (same name) into one, consolidating colors."""
     try:
@@ -1457,14 +1707,14 @@ def admin_clean_duplicates():
 
 
 @app.route('/admin/ambientes')
-@login_required
+@module_required('ambientes')
 def admin_ambientes():
     ambientes = AmbientCategory.query.order_by(AmbientCategory.type, AmbientCategory.order).all()
     return render_template('admin/ambientes.html', ambientes=ambientes)
 
 
 @app.route('/admin/ambientes/nuevo', methods=['GET', 'POST'])
-@login_required
+@module_required('ambientes')
 def admin_ambient_new():
     if request.method == 'POST':
         name = request.form['name']
@@ -1495,7 +1745,7 @@ def admin_ambient_new():
 
 
 @app.route('/admin/ambientes/<int:id>/editar', methods=['GET', 'POST'])
-@login_required
+@module_required('ambientes')
 def admin_ambient_edit(id):
     a = AmbientCategory.query.get_or_404(id)
     if request.method == 'POST':
@@ -1521,7 +1771,7 @@ def admin_ambient_edit(id):
     return render_template('admin/ambient_form.html', ambient=a)
 
 @app.route('/admin/ambientes/<int:id>/eliminar_portada', methods=['POST'])
-@login_required
+@module_required('ambientes')
 def admin_ambient_delete_cover(id):
     a = AmbientCategory.query.get_or_404(id)
     a.cover_image = None
@@ -1531,7 +1781,7 @@ def admin_ambient_delete_cover(id):
 
 
 @app.route('/admin/ambientes/<int:id>/eliminar', methods=['POST'])
-@login_required
+@module_required('ambientes')
 def admin_ambient_delete(id):
     a = AmbientCategory.query.get_or_404(id)
     db.session.delete(a)
@@ -1541,7 +1791,7 @@ def admin_ambient_delete(id):
 
 
 @app.route('/admin/ambientes/imagen/<int:img_id>/eliminar', methods=['POST'])
-@login_required
+@module_required('ambientes')
 def admin_ambient_image_delete(img_id):
     img = AmbientImage.query.get_or_404(img_id)
     parent_id = img.category_id
@@ -1552,7 +1802,7 @@ def admin_ambient_image_delete(img_id):
 
 
 @app.route('/admin/colores', methods=['GET', 'POST'])
-@login_required
+@module_required('colores')
 def admin_colors():
     if request.method == 'POST':
         action = request.form.get('action')

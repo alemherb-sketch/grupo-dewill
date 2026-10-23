@@ -8,6 +8,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 3000);
     });
 
+    // Modo solo lectura: el servidor ya rechaza los cambios; aqui se evita enviar el formulario para no llegar a una pagina de error
+    const readonlyContent = document.querySelector('.admin-content[data-readonly]');
+    if (readonlyContent) {
+        document.addEventListener('submit', (e) => {
+            if (readonlyContent.contains(e.target) && (e.target.method || '').toLowerCase() === 'post') {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                alert('Tu usuario tiene acceso de solo lectura en esta sección.');
+            }
+        }, true);
+    }
+
     // Image preview on file input change
     const fileInputs = document.querySelectorAll('input[type="file"][accept="image/*"]');
     fileInputs.forEach(input => {

@@ -1,0 +1,60 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Usuarios{% endblock %}
+{% block page_title %}Usuarios y Permisos{% endblock %}
+
+{% block admin_content %}
+<div class="admin-toolbar">
+    <h3 style="margin: 0; font-size: 0.9rem; color: var(--admin-text-muted);">{{ users|length }} usuario{{ '' if users|length == 1 else 's' }} del panel</h3>
+    <a href="{{ url_for('admin_user_new') }}" class="btn btn-primary"><i class="fas fa-user-plus"></i> Nuevo Usuario</a>
+</div>
+
+<div class="admin-panel">
+    <div class="table-scroll">
+    <table class="admin-table users-table">
+        <thead><tr><th>Usuario</th><th>Correo</th><th>Rol y acceso</th><th>Estado</th><th>Último acceso</th><th>Acciones</th></tr></thead>
+        <tbody>
+            {% for u in users %}
+            {% set modules = u.accessible_modules() %}
+            <tr>
+                <td>
+                    <div class="user-cell">
+                        <div class="user-avatar {% if not u.is_active %}is-inactive{% endif %}">{{ u.display_name[:1] | upper }}</div>
+                        <div class="user-cell-info">
+                            <strong>{{ u.display_name }}{% if u.id == current_user.id %}<span class="you-tag">tú</span>{% endif %}</strong>
+                            <small>@{{ u.username }}</small>
+                        </div>
+                    </div>
+                </td>
+                <td>{{ u.email or '—' }}</td>
+                <td>
+                    {% if u.is_admin %}
+                    <span class="role-badge role-admin"><i class="fas fa-shield-alt"></i> Administrador</span>
+                    <span class="access-summary">Acceso total y gestión de usuarios</span>
+                    {% elif modules %}
+                    <span class="role-badge role-custom"><i class="fas fa-user-lock"></i> Personalizado</span>
+                    <span class="access-summary" title="{{ modules | map(attribute='label') | join(', ') }}">{{ modules|length }} módulo{{ '' if modules|length == 1 else 's' }}: {{ modules[:3] | map(attribute='label') | join(', ') }}{% if modules|length > 3 %} y {{ modules|length - 3 }} más{% endif %}</span>
+                    {% else %}
+                    <span class="role-badge role-none"><i class="fas fa-ban"></i> Sin permisos</span>
+                    <span class="access-summary">Puede iniciar sesión pero no ve ninguna sección</span>
+                    {% endif %}
+                </td>
+                <td><span class="status-badge {{ 'status-active' if u.is_active else 'status-inactive' }}">{{ 'Activo' if u.is_active else 'Inactivo' }}</span></td>
+                <td>{% if u.last_login %}{{ u.last_login | lima }}{% else %}<span style="color: var(--admin-text-muted);">Nunca</span>{% endif %}</td>
+                <td class="actions-cell">
+                    <a href="{{ url_for('admin_user_edit', uid=u.id) }}" class="btn-sm btn-edit" title="Editar usuario y permisos"><i class="fas fa-edit"></i></a>
+                    {% if u.id != current_user.id %}
+                    <form method="POST" action="{{ url_for('admin_user_toggle', uid=u.id) }}" style="display:inline;">
+                        <button type="submit" class="btn-sm btn-toggle {% if not u.is_active %}is-activate{% endif %}" title="{{ 'Activar' if not u.is_active else 'Desactivar' }} usuario"><i class="fas {{ 'fa-user-check' if not u.is_active else 'fa-user-slash' }}"></i></button>
+                    </form>
+                    <form method="POST" action="{{ url_for('admin_user_delete', uid=u.id) }}" style="display:inline;" onsubmit="return confirm('¿Eliminar al usuario {{ u.username }}? Esta acción no se puede deshacer.')">
+                        <button type="submit" class="btn-sm btn-delete" title="Eliminar usuario"><i class="fas fa-trash"></i></button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+{% endblock %}

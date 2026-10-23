@@ -1,0 +1,113 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}{{ 'Nuevo usuario' if edited_user.id is none else 'Editar usuario' }}{% endblock %}
+{% block page_title %}{{ 'Nuevo Usuario' if edited_user.id is none else 'Editar Usuario' }}{% endblock %}
+
+{% block admin_content %}
+{% set is_new = edited_user.id is none %}
+<form method="POST" class="admin-form" id="userForm" autocomplete="off">
+    <div class="form-grid-2">
+        <div class="form-section">
+            <h3><i class="fas fa-id-card"></i> Datos de la cuenta</h3>
+            <div class="form-group"><label>Nombre completo</label><input type="text" name="full_name" value="{{ values.full_name }}" maxlength="120" class="form-input" placeholder="Ej. María Pérez"></div>
+            <div class="form-row">
+                <div class="form-group"><label>Usuario *</label><input type="text" name="username" value="{{ values.username }}" required minlength="3" maxlength="40" pattern="[A-Za-z0-9._\-]+" class="form-input" autocomplete="off"></div>
+                <div class="form-group"><label>Correo</label><input type="email" name="email" value="{{ values.email }}" maxlength="150" class="form-input" autocomplete="off"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Contraseña {% if is_new %}*{% endif %}</label><input type="password" name="password" {% if is_new %}required{% endif %} minlength="8" class="form-input" autocomplete="new-password"></div>
+                <div class="form-group"><label>Repetir contraseña {% if is_new %}*{% endif %}</label><input type="password" name="password_confirm" {% if is_new %}required{% endif %} minlength="8" class="form-input" autocomplete="new-password"></div>
+            </div>
+            <p class="field-hint">{% if is_new %}Mínimo 8 caracteres. El usuario podrá cambiarla desde "Mi cuenta".{% else %}Déjala en blanco para conservar la contraseña actual. Mínimo 8 caracteres.{% endif %}</p>
+        </div>
+
+        <div class="form-section">
+            <h3><i class="fas fa-user-shield"></i> Rol y estado</h3>
+            <div class="account-switches">
+                <label class="switch-card {% if is_self %}is-locked{% endif %}">
+                    <input type="checkbox" name="is_active" value="1" {% if values.is_active %}checked{% endif %} {% if is_self %}disabled{% endif %}>
+                    <div><strong>Cuenta activa</strong><span>Si se desactiva, el usuario no puede iniciar sesión y su sesión actual se cierra.</span></div>
+                </label>
+                <label class="switch-card {% if is_self %}is-locked{% endif %}">
+                    <input type="checkbox" name="is_admin" id="isAdmin" value="1" {% if values.is_admin %}checked{% endif %} {% if is_self %}disabled{% endif %}>
+                    <div><strong>Administrador</strong><span>Acceso total a todas las secciones, también a las que se agreguen en el futuro, y gestión de usuarios y permisos.</span></div>
+                </label>
+            </div>
+            {% if is_self %}<p class="field-hint"><i class="fas fa-lock"></i> No puedes cambiar tu propio rol ni desactivar tu cuenta; otro administrador puede hacerlo.</p>{% endif %}
+        </div>
+    </div>
+
+    <div class="form-section">
+        <h3><i class="fas fa-key"></i> Permisos por módulo</h3>
+        <div class="perm-admin-note" id="permAdminNote"><i class="fas fa-shield-alt"></i> Los administradores tienen acceso total; no hace falta asignar permisos por módulo.</div>
+        <div class="preset-bar" id="presetBar">
+            <span>Plantillas:</span>
+            {% for preset in presets %}<button type="button" class="preset-btn" data-preset="{{ preset.key }}">{{ preset.label }}</button>{% endfor %}
+            <button type="button" class="preset-btn" data-preset="none"><i class="fas fa-eraser"></i> Limpiar</button>
+        </div>
+        <table class="perm-matrix" id="permMatrix">
+            <thead>
+                <tr><th>Módulo</th><th>{{ level_labels[''] }}</th><th>{{ level_labels['view'] }}</th><th>{{ level_labels['manage'] }}</th></tr>
+            </thead>
+            <tbody>
+                {% for group, items in module_groups %}
+                <tr class="perm-group-row"><td colspan="4">{{ group }}</td></tr>
+                {% for key, label, icon, endpoint, view_only in items %}
+                {% set current = values.permissions.get(key, '') %}
+                <tr data-module="{{ key }}">
+                    <td class="perm-module"><i class="{{ icon }}"></i> {{ label }}</td>
+                    <td class="perm-cell"><label><input type="radio" name="perm_{{ key }}" value="" {% if not current %}checked{% endif %} aria-label="{{ label }}: sin acceso"></label></td>
+                    <td class="perm-cell"><label><input type="radio" name="perm_{{ key }}" value="view" {% if current == 'view' %}checked{% endif %} aria-label="{{ label }}: solo ver"></label></td>
+                    <td class="perm-cell">{% if view_only %}<span class="perm-na" title="Este módulo es solo de consulta">—</span>{% else %}<label><input type="radio" name="perm_{{ key }}" value="manage" {% if current == 'manage' %}checked{% endif %} aria-label="{{ label }}: gestionar"></label>{% endif %}</td>
+                </tr>
+                {% endfor %}
+                {% endfor %}
+            </tbody>
+        </table>
+        <p class="perm-legend">
+            <strong>Sin acceso:</strong> la sección no aparece en el menú. &nbsp;
+            <strong>Solo ver:</strong> puede abrir la sección y consultar, pero no guardar cambios. &nbsp;
+            <strong>Gestionar:</strong> puede crear, editar y eliminar.
+        </p>
+    </div>
+
+    <div class="form-actions" style="display: flex; gap: 1rem;">
+        <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-save"></i> {{ 'Crear usuario' if is_new else 'Guardar cambios' }}</button>
+        <a href="{{ url_for('admin_users') }}" class="btn btn-outline btn-lg">Cancelar</a>
+    </div>
+</form>
+{% endblock %}
+
+{% block admin_js %}
+<script>
+(function () {
+    const presets = {{ presets | tojson }};
+    const matrix = document.getElementById('permMatrix');
+    const adminBox = document.getElementById('isAdmin');
+    const note = document.getElementById('permAdminNote');
+    const presetBtns = document.querySelectorAll('.preset-btn');
+
+    function applyPermissions(perms) {
+        matrix.querySelectorAll('tr[data-module]').forEach(row => {
+            const wanted = perms[row.dataset.module] || '';
+            const radio = row.querySelector('input[value="' + wanted + '"]') || row.querySelector('input[value=""]');
+            radio.checked = true;
+        });
+    }
+
+    presetBtns.forEach(btn => btn.addEventListener('click', () => {
+        const preset = presets.find(p => p.key === btn.dataset.preset);
+        applyPermissions(preset ? preset.permissions : {});
+    }));
+
+    function syncAdminState() {
+        const isAdmin = adminBox.checked;
+        matrix.classList.toggle('is-disabled', isAdmin);
+        note.classList.toggle('show', isAdmin);
+        matrix.querySelectorAll('input').forEach(i => i.disabled = isAdmin);
+        presetBtns.forEach(b => b.disabled = isAdmin);
+    }
+    adminBox.addEventListener('change', syncAdminState);
+    syncAdminState();
+})();
+</script>
+{% endblock %}

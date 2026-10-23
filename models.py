@@ -1,7 +1,9 @@
+import json
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
+from permissions import MODULES, VIEW, clean_permissions, level_allows
 
 db = SQLAlchemy()
 
@@ -12,12 +14,48 @@ class AdminUser(UserMixin, db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    full_name = db.Column(db.String(120))
+    email = db.Column(db.String(150))
+    is_admin = db.Column(db.Boolean, default=False)   # acceso total + gestion de usuarios
+    is_active = db.Column(db.Boolean, default=True)   # desactivado: no puede iniciar sesion
+    permissions = db.Column(db.Text)                  # JSON {modulo: 'view'|'manage'}, ver permissions.py
+    last_login = db.Column(db.DateTime)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+    @property
+    def display_name(self):
+        return self.full_name or self.username
+
+    def get_permissions(self):
+        try:
+            return clean_permissions(json.loads(self.permissions or '{}'))
+        except (ValueError, AttributeError):
+            return {}
+
+    def set_permissions(self, permissions):
+        self.permissions = json.dumps(clean_permissions(permissions))
+
+    def level(self, module):
+        """Nivel efectivo sobre un modulo: '', 'view' o 'manage'."""
+        if not self.is_active or module not in MODULES:
+            return ''
+        if self.is_admin:
+            return clean_permissions({module: 'manage'})[module]
+        return self.get_permissions().get(module, '')
+
+    def can(self, module, needed=VIEW):
+        return level_allows(self.level(module), needed)
+
+    def can_any(self, *modules):
+        return any(self.can(m) for m in modules)
+
+    def accessible_modules(self):
+        return [m for key, m in MODULES.items() if self.can(key)]
 
 
 class Category(db.Model):

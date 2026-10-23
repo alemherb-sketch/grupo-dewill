@@ -1,0 +1,12 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Acceso restringido{% endblock %}
+{% block page_title %}Acceso restringido{% endblock %}
+
+{% block admin_content %}
+<div class="forbidden-box">
+    <i class="fas fa-lock"></i>
+    <h3>No tienes permiso para esto</h3>
+    <p>{{ message }}</p>
+    <a href="{{ admin_home }}" class="btn btn-primary"><i class="fas fa-arrow-left"></i> Volver al panel</a>
+</div>
+{% endblock %}

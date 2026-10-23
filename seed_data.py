@@ -96,7 +96,7 @@ def seed(app=None):
 
         # Admin user
         if not AdminUser.query.first():
-            admin = AdminUser(username='admin')
+            admin = AdminUser(username='admin', full_name='Administrador', is_admin=True, is_active=True)
             admin.set_password('admin123')
             db.session.add(admin)
             print("[OK] Admin user created (admin / admin123)")

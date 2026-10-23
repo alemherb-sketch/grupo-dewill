@@ -5,6 +5,7 @@
 {% block admin_content %}
 <div class="dashboard-stats-compact">
     <!-- Quotes Report -->
+    {% if current_user.can('solicitudes') %}
     <div class="stat-report-card">
         <h4><i class="fas fa-chart-line"></i> Reporte de Solicitudes</h4>
         <div class="report-body">
@@ -23,8 +24,10 @@
             </div>
         </div>
     </div>
+    {% endif %}
 
     <!-- Inventory Report -->
+    {% if current_user.can('productos') %}
     <div class="stat-report-card">
         <h4><i class="fas fa-box"></i> Estado de Inventario</h4>
         <div class="report-body">
@@ -40,8 +43,10 @@
             </div>
         </div>
     </div>
+    {% endif %}
 </div>
 
+{% if current_user.can('solicitudes') %}
 <div class="quotes-list-container" style="margin-bottom: 2rem;">
     <h4 style="margin-bottom: 1rem; color: var(--admin-text); font-size: 1.1rem;"><i class="fas fa-clock" style="color: var(--admin-primary);"></i> Últimas Solicitudes de Cotización</h4>
     <div class="quotes-list">
@@ -95,15 +100,18 @@
         {% endif %}
     </div>
 </div>
+{% endif %}
 
 <div class="quick-actions">
-    <a href="{{ url_for('admin_product_new') }}" class="quick-action-card"><i class="fas fa-plus-circle"></i><span>Nuevo Producto</span></a>
-    <a href="{{ url_for('admin_quotes') }}" class="quick-action-card"><i class="fas fa-file-invoice"></i><span>Ver Solicitudes</span></a>
-    <a href="{{ url_for('admin_banners') }}" class="quick-action-card"><i class="fas fa-image"></i><span>Gestionar Banners</span></a>
+    {% if current_user.can('productos', 'manage') %}<a href="{{ url_for('admin_product_new') }}" class="quick-action-card"><i class="fas fa-plus-circle"></i><span>Nuevo Producto</span></a>{% endif %}
+    {% if current_user.can('solicitudes') %}<a href="{{ url_for('admin_quotes') }}" class="quick-action-card"><i class="fas fa-file-invoice"></i><span>Ver Solicitudes</span></a>{% endif %}
+    {% if current_user.can('banners') %}<a href="{{ url_for('admin_banners') }}" class="quick-action-card"><i class="fas fa-image"></i><span>Gestionar Banners</span></a>{% endif %}
+    {% if current_user.can('colores', 'manage') %}
     <form action="{{ url_for('admin_sync_colors') }}" method="POST" style="display:inline-block; width:100%; height:100%;">
         <button type="submit" class="quick-action-card" style="width:100%; height:100%; border:none; background:white; cursor:pointer;">
             <i class="fas fa-palette" style="color: #3b82f6;"></i><span>Sincronizar Colores HEX</span>
         </button>
     </form>
+    {% endif %}
 </div>
 {% endblock %}
