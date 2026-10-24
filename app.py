@@ -1,6 +1,7 @@
 import os
 import re
 import unicodedata
+from urllib.parse import urlencode
 from datetime import datetime, timedelta
 from functools import wraps
 from flask import (Flask, render_template, request, redirect, url_for, flash,
@@ -396,11 +397,18 @@ def productos():
             if clean_vals:
                 spec_filters[k] = clean_vals
 
+    def page_url(n):
+        # Mismo listado con todos los filtros activos (cat, subcat, marca, pres, spec_*, q, sort) y otra pagina
+        args = request.args.to_dict(flat=False)
+        args['page'] = [n]
+        return url_for('productos') + '?' + urlencode(args, doseq=True)
+
     return render_template('productos.html', products=prods, categories=categories, brands=brands,
                            subcategories=subcategories, presentations=presentations,
-                           current_cats=cat_slugs, current_brands=brand_slugs, 
+                           current_cats=cat_slugs, current_brands=brand_slugs,
                            current_subcats=subcat_slugs, current_pres=pres_slugs,
-                           search_query=q, spec_filters=spec_filters, selected_specs=selected_specs)
+                           search_query=q, spec_filters=spec_filters, selected_specs=selected_specs,
+                           page_url=page_url)
 
 @app.route('/api/productos/search')
 def api_search():

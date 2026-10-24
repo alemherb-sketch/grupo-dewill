@@ -27,94 +27,94 @@
     <div class="container">
         <div class="products-layout">
 
-            <!-- SIDEBAR -->
-            <aside class="products-sidebar">
-                <form id="filterForm" action="{{ url_for('productos') }}" method="GET">
-                    <!-- Categorías -->
-                    <div class="sidebar-box">
-                        <div class="sidebar-box-title">
-                            <i class="fas fa-th-list"></i> CATEGORÍAS
-                        </div>
-                        <div class="sidebar-filter-scroll">
-                            {% for cat in categories %}
-                            <label class="filter-checkbox-label">
-                                <input type="checkbox" name="cat" value="{{ cat.slug }}" {% if cat.slug in current_cats %}checked{% endif %} onchange="document.getElementById('filterForm').submit();">
-                                <span class="custom-checkbox"><i class="fas fa-check"></i></span>
-                                <span class="filter-text">{{ cat.name }}</span>
-                                <span class="cat-count">{{ cat.products|length }}</span>
-                            </label>
-                            {% endfor %}
+            <!-- SIDEBAR: cada filtro muestra solo su nombre; al hacer clic se despliega el buscador y las opciones -->
+            <aside class="products-sidebar filters-init">
+                {% macro filter_group(gid, icon, title, selected=0) %}
+                <div class="sidebar-box" data-filter-group="{{ gid }}">
+                    <button type="button" class="sidebar-box-title" id="fg-{{ gid }}-btn" aria-expanded="false" aria-controls="fg-{{ gid }}-panel">
+                        <i class="fas {{ icon }}"></i>
+                        <span class="sidebar-box-label">{{ title }}</span>
+                        <span class="filter-selected-count" {% if not selected %}hidden{% endif %}>{{ selected }}</span>
+                        <i class="fas fa-chevron-down filter-chevron"></i>
+                    </button>
+                    <div class="filter-panel" id="fg-{{ gid }}-panel" role="group" aria-labelledby="fg-{{ gid }}-btn">
+                        <div class="filter-panel-inner">
+                            <div class="filter-panel-body">
+                                <div class="filter-search">
+                                    <i class="fas fa-search"></i>
+                                    <input type="search" placeholder="Buscar..." autocomplete="off" aria-label="Buscar en {{ title }}">
+                                </div>
+                                <div class="sidebar-filter-scroll">
+                                    {{ caller() }}
+                                </div>
+                                <p class="filter-empty" hidden>Sin resultados</p>
+                            </div>
                         </div>
                     </div>
+                </div>
+                {% endmacro %}
+
+                <form id="filterForm" action="{{ url_for('productos') }}" method="GET">
+                    <!-- Categorías -->
+                    {% call filter_group('cat', 'fa-th-list', 'CATEGORÍAS', current_cats|length) %}
+                        {% for cat in categories %}
+                        <label class="filter-checkbox-label">
+                            <input type="checkbox" name="cat" value="{{ cat.slug }}" {% if cat.slug in current_cats %}checked{% endif %}>
+                            <span class="custom-checkbox"><i class="fas fa-check"></i></span>
+                            <span class="filter-text">{{ cat.name }}</span>
+                            <span class="cat-count">{{ cat.products|length }}</span>
+                        </label>
+                        {% endfor %}
+                    {% endcall %}
 
                     <!-- Subcategorías -->
                     {% if subcategories %}
-                    <div class="sidebar-box" style="margin-top: 1.5rem;">
-                        <div class="sidebar-box-title">
-                            <i class="fas fa-list-ul"></i> SUBCATEGORÍAS
-                        </div>
-                        <div class="sidebar-filter-scroll">
-                            {% for subcat in subcategories %}
-                            <label class="filter-checkbox-label">
-                                <input type="checkbox" name="subcat" value="{{ subcat.slug }}" {% if subcat.slug in current_subcats %}checked{% endif %} onchange="document.getElementById('filterForm').submit();">
-                                <span class="custom-checkbox"><i class="fas fa-check"></i></span>
-                                <span class="filter-text">{{ subcat.name }}</span>
-                            </label>
-                            {% endfor %}
-                        </div>
-                    </div>
+                    {% call filter_group('subcat', 'fa-list-ul', 'SUBCATEGORÍAS', current_subcats|length) %}
+                        {% for subcat in subcategories %}
+                        <label class="filter-checkbox-label">
+                            <input type="checkbox" name="subcat" value="{{ subcat.slug }}" {% if subcat.slug in current_subcats %}checked{% endif %}>
+                            <span class="custom-checkbox"><i class="fas fa-check"></i></span>
+                            <span class="filter-text">{{ subcat.name }}</span>
+                        </label>
+                        {% endfor %}
+                    {% endcall %}
                     {% endif %}
 
                     <!-- Marcas -->
-                    <div class="sidebar-box" style="margin-top: 1.5rem;">
-                        <div class="sidebar-box-title">
-                            <i class="fas fa-filter"></i> FILTRAR POR MARCA
-                        </div>
-                        <div class="sidebar-filter-scroll">
-                            {% for brand in brands %}
-                            <label class="filter-checkbox-label">
-                                <input type="checkbox" name="marca" value="{{ brand.slug }}" {% if brand.slug in current_brands %}checked{% endif %} onchange="document.getElementById('filterForm').submit();">
-                                <span class="custom-checkbox"><i class="fas fa-check"></i></span>
-                                <span class="filter-text">{{ brand.name }}</span>
-                            </label>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    
+                    {% call filter_group('marca', 'fa-filter', 'FILTRAR POR MARCA', current_brands|length) %}
+                        {% for brand in brands %}
+                        <label class="filter-checkbox-label">
+                            <input type="checkbox" name="marca" value="{{ brand.slug }}" {% if brand.slug in current_brands %}checked{% endif %}>
+                            <span class="custom-checkbox"><i class="fas fa-check"></i></span>
+                            <span class="filter-text">{{ brand.name }}</span>
+                        </label>
+                        {% endfor %}
+                    {% endcall %}
+
                     <!-- Presentaciones -->
                     {% if presentations %}
-                    <div class="sidebar-box" style="margin-top: 1.5rem;">
-                        <div class="sidebar-box-title">
-                            <i class="fas fa-box-open"></i> PRESENTACIÓN
-                        </div>
-                        <div class="sidebar-filter-scroll">
-                            {% for pres in presentations %}
-                            <label class="filter-checkbox-label">
-                                <input type="checkbox" name="pres" value="{{ pres.slug }}" {% if pres.slug in current_pres %}checked{% endif %} onchange="document.getElementById('filterForm').submit();">
-                                <span class="custom-checkbox"><i class="fas fa-check"></i></span>
-                                <span class="filter-text">{{ pres.name }}</span>
-                            </label>
-                            {% endfor %}
-                        </div>
-                    </div>
+                    {% call filter_group('pres', 'fa-box-open', 'PRESENTACIÓN', current_pres|length) %}
+                        {% for pres in presentations %}
+                        <label class="filter-checkbox-label">
+                            <input type="checkbox" name="pres" value="{{ pres.slug }}" {% if pres.slug in current_pres %}checked{% endif %}>
+                            <span class="custom-checkbox"><i class="fas fa-check"></i></span>
+                            <span class="filter-text">{{ pres.name }}</span>
+                        </label>
+                        {% endfor %}
+                    {% endcall %}
                     {% endif %}
-                    
+
                     <!-- Filtros Dinámicos -->
                     {% for spec_name, spec_vals in spec_filters.items() %}
-                    <div class="sidebar-box" style="margin-top: 1.5rem;">
-                        <div class="sidebar-box-title">
-                            <i class="fas fa-sliders-h"></i> FILTRAR POR {{ spec_name|upper }}
-                        </div>
-                        <div class="sidebar-filter-scroll">
-                            {% for val in spec_vals %}
-                            <label class="filter-checkbox-label">
-                                <input type="checkbox" name="spec_{{ spec_name }}" value="{{ val }}" {% if selected_specs.get(spec_name) and val in selected_specs[spec_name] %}checked{% endif %} onchange="document.getElementById('filterForm').submit();">
-                                <span class="custom-checkbox"><i class="fas fa-check"></i></span>
-                                <span class="filter-text">{{ val }}</span>
-                            </label>
-                            {% endfor %}
-                        </div>
-                    </div>
+                    {% call filter_group('spec' ~ loop.index, 'fa-sliders-h', 'FILTRAR POR ' ~ spec_name|upper, selected_specs.get(spec_name, [])|length) %}
+                        {% for val in spec_vals %}
+                        <label class="filter-checkbox-label">
+                            <input type="checkbox" name="spec_{{ spec_name }}" value="{{ val }}" {% if selected_specs.get(spec_name) and val in selected_specs[spec_name] %}checked{% endif %}>
+                            <span class="custom-checkbox"><i class="fas fa-check"></i></span>
+                            <span class="filter-text">{{ val }}</span>
+                        </label>
+                        {% endfor %}
+                    {% endcall %}
                     {% endfor %}
                 </form>
             </aside>
@@ -219,17 +219,17 @@
                 {% if products.pages > 1 %}
                 <div class="pagination-new">
                     {% if products.has_prev %}
-                    <a href="{{ url_for('productos', page=products.prev_num, cat=current_cat, marca=current_brand, q=search_query) }}" class="page-btn-new"><i class="fas fa-chevron-left"></i></a>
+                    <a href="{{ page_url(products.prev_num) }}" class="page-btn-new"><i class="fas fa-chevron-left"></i></a>
                     {% endif %}
                     {% for p in products.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
                         {% if p %}
-                        <a href="{{ url_for('productos', page=p, cat=current_cat, marca=current_brand, q=search_query) }}" class="page-btn-new {% if p == products.page %}active{% endif %}">{{ p }}</a>
+                        <a href="{{ page_url(p) }}" class="page-btn-new {% if p == products.page %}active{% endif %}">{{ p }}</a>
                         {% else %}
                         <span class="page-ellipsis">...</span>
                         {% endif %}
                     {% endfor %}
                     {% if products.has_next %}
-                    <a href="{{ url_for('productos', page=products.next_num, cat=current_cat, marca=current_brand, q=search_query) }}" class="page-btn-new"><i class="fas fa-chevron-right"></i></a>
+                    <a href="{{ page_url(products.next_num) }}" class="page-btn-new"><i class="fas fa-chevron-right"></i></a>
                     {% endif %}
                 </div>
                 {% endif %}
@@ -282,5 +282,78 @@ function sortProducts(val) {
     url.searchParams.set('sort', val);
     window.location.href = url.toString();
 }
+
+// Filtros desplegables: abrir/cerrar, buscador por grupo y envio al marcar una opcion
+(function () {
+    const sidebar = document.querySelector('.products-sidebar');
+    const form = document.getElementById('filterForm');
+    if (!sidebar || !form) return;
+
+    const STORE_KEY = 'dewillFiltersOpen';
+    const groups = Array.from(sidebar.querySelectorAll('.sidebar-box'));
+    const normalize = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+
+    function setOpen(group, open) {
+        group.classList.toggle('is-open', open);
+        group.querySelector('.sidebar-box-title').setAttribute('aria-expanded', String(open));
+    }
+
+    function updateCount(group) {
+        const n = group.querySelectorAll('input[type="checkbox"]:checked').length;
+        const badge = group.querySelector('.filter-selected-count');
+        badge.textContent = n;
+        badge.hidden = n === 0;
+    }
+
+    // Al marcar una opcion la pagina se recarga: reabrir los grupos que el usuario tenia abiertos
+    try {
+        const saved = JSON.parse(sessionStorage.getItem(STORE_KEY) || '[]');
+        sessionStorage.removeItem(STORE_KEY);
+        groups.forEach(g => { if (saved.includes(g.dataset.filterGroup)) setOpen(g, true); });
+    } catch (e) {}
+    // Sin animacion en la carga inicial
+    requestAnimationFrame(() => requestAnimationFrame(() => sidebar.classList.remove('filters-init')));
+
+    sidebar.addEventListener('click', e => {
+        const toggle = e.target.closest('.sidebar-box-title');
+        if (!toggle) return;
+        const group = toggle.closest('.sidebar-box');
+        const open = !group.classList.contains('is-open');
+        setOpen(group, open);
+        // En pantallas tactiles no se enfoca el buscador para no abrir el teclado
+        if (open && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+            group.querySelector('.filter-search input').focus({ preventScroll: true });
+        }
+    });
+
+    sidebar.addEventListener('input', e => {
+        const input = e.target.closest('.filter-search input');
+        if (!input) return;
+        const group = input.closest('.sidebar-box');
+        const term = normalize(input.value);
+        let visible = 0;
+        group.querySelectorAll('.filter-checkbox-label').forEach(label => {
+            const show = !term || normalize(label.querySelector('.filter-text').textContent).includes(term);
+            label.hidden = !show;
+            if (show) visible++;
+        });
+        group.querySelector('.filter-empty').hidden = visible > 0;
+    });
+
+    // Enter dentro del buscador del filtro no debe enviar el formulario
+    sidebar.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && e.target.closest('.filter-search input')) e.preventDefault();
+    });
+
+    form.addEventListener('change', e => {
+        if (!e.target.matches('input[type="checkbox"]')) return;
+        updateCount(e.target.closest('.sidebar-box'));
+        try {
+            const open = groups.filter(g => g.classList.contains('is-open')).map(g => g.dataset.filterGroup);
+            sessionStorage.setItem(STORE_KEY, JSON.stringify(open));
+        } catch (err) {}
+        form.submit();
+    });
+})();
 </script>
 {% endblock %}

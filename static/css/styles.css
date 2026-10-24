@@ -2640,27 +2640,92 @@ img {
 .products-sidebar { width: 240px; flex-shrink: 0; }
 @media (max-width: 992px) { .products-sidebar { width: 100%; } }
 
+/* Filtros desplegables: cada grupo muestra solo su nombre; al abrirlo aparecen el buscador y las opciones */
 .sidebar-box {
     background: #ffffff;
     border-radius: var(--radius-md);
-    padding: 1.5rem;
     box-shadow: var(--shadow-sm);
     border: 1px solid rgba(0,0,0,0.05);
+    overflow: hidden;
 }
+.sidebar-box + .sidebar-box { margin-top: 0.75rem; }
 .sidebar-box-title {
-    font-family: var(--font-heading);
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--secondary);
-    margin-bottom: 1rem;
+    width: 100%;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid rgba(0,0,0,0.05);
+    gap: 0.6rem;
+    padding: 1rem 1.25rem;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    text-align: left;
+    font-family: var(--font-heading);
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--secondary);
+    transition: var(--transition);
 }
+.sidebar-box-title:hover,
+.sidebar-box.is-open .sidebar-box-title { color: var(--primary); }
+.sidebar-box-title:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
+.sidebar-box-label { flex: 1; }
+.filter-selected-count {
+    min-width: 1.4rem;
+    height: 1.4rem;
+    padding: 0 0.4rem;
+    border-radius: 999px;
+    background: var(--primary);
+    color: #fff;
+    font-family: var(--font-body, inherit);
+    font-size: 0.72rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.filter-selected-count[hidden] { display: none; }
+.filter-chevron { font-size: 0.72rem; color: var(--text-muted); transition: transform 0.25s ease; }
+.sidebar-box.is-open .filter-chevron { transform: rotate(180deg); }
+
+.filter-panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.25s ease; }
+.sidebar-box.is-open .filter-panel { grid-template-rows: 1fr; }
+.filter-panel-inner { min-height: 0; overflow: hidden; visibility: hidden; transition: visibility 0s linear 0.25s; }
+.sidebar-box.is-open .filter-panel-inner { visibility: visible; transition-delay: 0s; }
+.filter-panel-body { padding: 0.85rem 1.25rem 1.1rem; border-top: 1px solid rgba(0,0,0,0.05); }
+.products-sidebar.filters-init * { transition: none !important; }
+@media (prefers-reduced-motion: reduce) {
+    .filter-panel, .filter-panel-inner, .filter-chevron { transition: none; }
+}
+
+.filter-search { position: relative; margin-bottom: 0.85rem; }
+.filter-search i {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.75rem;
+    color: #94a3b8;
+    pointer-events: none;
+}
+.filter-search input {
+    width: 100%;
+    padding: 0.5rem 0.75rem 0.5rem 2rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: var(--bg-surface);
+    font-family: inherit;
+    font-size: 0.82rem;
+    color: var(--secondary);
+    outline: none;
+    transition: var(--transition);
+}
+.filter-search input:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px var(--primary-light); }
+.filter-empty { margin: 0; font-size: 0.82rem; color: var(--text-muted); }
+.filter-empty[hidden] { display: none; }
+
 .sidebar-filter-scroll { max-height: 250px; overflow-y: auto; padding-right: 0.5rem; }
 .filter-checkbox-label {
+    position: relative;
     display: flex;
     align-items: center;
     margin-bottom: 0.75rem;
@@ -2669,8 +2734,11 @@ img {
     color: var(--text-muted);
     transition: var(--transition);
 }
+.filter-checkbox-label[hidden] { display: none !important; }
 .filter-checkbox-label:hover { color: var(--secondary); }
-.filter-checkbox-label input { display: none; }
+/* Oculto a la vista pero enfocable, para poder marcar con el teclado */
+.filter-checkbox-label input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+.filter-checkbox-label input:focus-visible + .custom-checkbox { outline: 2px solid var(--primary); outline-offset: 2px; }
 .custom-checkbox {
     width: 18px;
     height: 18px;
@@ -5284,7 +5352,8 @@ section,
     .pcr-btn-details, .pcr-btn-quote { font-size: 0.62rem !important; padding: 0.45rem !important; flex: 1 1 auto !important; }
 
     /* Filtros (sidebar de Productos) en 2 columnas en móvil */
-    .sidebar-box { padding: 1rem !important; }
+    .sidebar-box-title { padding: 0.85rem 1rem; font-size: 0.88rem; }
+    .filter-panel-body { padding: 0.75rem 1rem 1rem; }
     .sidebar-filter-scroll {
         display: grid !important;
         grid-template-columns: 1fr 1fr;
