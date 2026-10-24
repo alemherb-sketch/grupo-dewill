@@ -54,6 +54,16 @@
                 </div>
                 {% endmacro %}
 
+                {% set active_filters = current_cats|length + current_subcats|length + current_brands|length + current_pres|length + (selected_specs.values()|map('length')|sum) %}
+                <!-- En móvil todos los filtros se agrupan tras este botón -->
+                <button type="button" class="filters-toggle" id="filtersToggle" aria-expanded="false" aria-controls="filtersDrawer">
+                    <i class="fas fa-sliders-h"></i>
+                    <span class="sidebar-box-label">Filtros</span>
+                    <span class="filter-selected-count" {% if not active_filters %}hidden{% endif %}>{{ active_filters }}</span>
+                    <i class="fas fa-chevron-down filter-chevron"></i>
+                </button>
+
+                <div class="filters-drawer" id="filtersDrawer">
                 <form id="filterForm" action="{{ url_for('productos') }}" method="GET">
                     <!-- Categorías -->
                     {% call filter_group('cat', 'fa-th-list', 'CATEGORÍAS', current_cats|length) %}
@@ -117,6 +127,11 @@
                     {% endcall %}
                     {% endfor %}
                 </form>
+                <div class="filters-actions">
+                    {% if active_filters %}<a href="{{ url_for('productos', q=search_query or None) }}" class="filters-clear">Limpiar</a>{% endif %}
+                    <button type="button" class="filters-apply" id="filtersApply">Ver {{ products.total }} producto{{ '' if products.total == 1 else 's' }}</button>
+                </div>
+                </div>
             </aside>
 
             <!-- MAIN CONTENT -->
@@ -305,11 +320,28 @@ function sortProducts(val) {
         badge.hidden = n === 0;
     }
 
-    // Al marcar una opcion la pagina se recarga: reabrir los grupos que el usuario tenia abiertos
+    // Movil: el boton "Filtros" abre y cierra el cajon con todos los grupos
+    const toggle = document.getElementById('filtersToggle');
+    const drawer = document.getElementById('filtersDrawer');
+    function setDrawer(open) {
+        drawer.classList.toggle('is-open', open);
+        toggle.classList.toggle('is-open', open);
+        toggle.setAttribute('aria-expanded', String(open));
+        document.body.classList.toggle('filters-open', open);
+    }
+    toggle.addEventListener('click', () => setDrawer(!drawer.classList.contains('is-open')));
+    document.getElementById('filtersApply').addEventListener('click', () => {
+        setDrawer(false);
+        document.querySelector('.products-top-controls').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    // Al marcar una opcion la pagina se recarga: reabrir el cajon y los grupos que el usuario tenia abiertos
     try {
-        const saved = JSON.parse(sessionStorage.getItem(STORE_KEY) || '[]');
+        const saved = JSON.parse(sessionStorage.getItem(STORE_KEY) || '{}');
         sessionStorage.removeItem(STORE_KEY);
-        groups.forEach(g => { if (saved.includes(g.dataset.filterGroup)) setOpen(g, true); });
+        const openGroups = saved.groups || [];
+        groups.forEach(g => { if (openGroups.includes(g.dataset.filterGroup)) setOpen(g, true); });
+        if (saved.drawer) setDrawer(true);
     } catch (e) {}
     // Sin animacion en la carga inicial
     requestAnimationFrame(() => requestAnimationFrame(() => sidebar.classList.remove('filters-init')));
@@ -350,7 +382,7 @@ function sortProducts(val) {
         updateCount(e.target.closest('.sidebar-box'));
         try {
             const open = groups.filter(g => g.classList.contains('is-open')).map(g => g.dataset.filterGroup);
-            sessionStorage.setItem(STORE_KEY, JSON.stringify(open));
+            sessionStorage.setItem(STORE_KEY, JSON.stringify({ groups: open, drawer: drawer.classList.contains('is-open') }));
         } catch (err) {}
         form.submit();
     });

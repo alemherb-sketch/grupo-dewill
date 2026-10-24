@@ -1257,13 +1257,17 @@ img {
     background: var(--bg-surface);
     z-index: 1001;
     box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
-    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Cerrado queda oculto: si no, su sombra se asoma por el borde derecho de la pantalla */
+    visibility: hidden;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s linear 0.4s;
     display: flex;
     flex-direction: column;
 }
 
 .quote-panel.open {
     transform: translateX(-400px);
+    visibility: visible;
+    transition-delay: 0s;
 }
 
 .quote-overlay {
@@ -2739,6 +2743,59 @@ img {
 /* Oculto a la vista pero enfocable, para poder marcar con el teclado */
 .filter-checkbox-label input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
 .filter-checkbox-label input:focus-visible + .custom-checkbox { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+/* Tablet y movil: todos los filtros quedan tras un boton "Filtros" que abre un cajon con scroll propio */
+.filters-toggle, .filters-actions { display: none; }
+@media (max-width: 992px) {
+    .products-layout { gap: 1rem; }
+    .products-main-section { padding: 1.5rem 0 3rem; }
+    .filters-toggle {
+        width: 100%;
+        min-height: 50px;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.75rem 1.1rem;
+        background: #ffffff;
+        border: 1px solid rgba(0,0,0,0.05);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        cursor: pointer;
+        text-align: left;
+        font-family: var(--font-heading);
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--secondary);
+    }
+    .filters-toggle.is-open { color: var(--primary); }
+    .filters-toggle.is-open .filter-chevron { transform: rotate(180deg); }
+    .filters-toggle:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+    .filters-drawer { display: none; margin-top: 0.6rem; }
+    .filters-drawer.is-open { display: block; }
+    .filters-drawer form { max-height: 60vh; overflow-y: auto; overscroll-behavior: contain; padding: 2px; }
+    .sidebar-filter-scroll {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        column-gap: 0.75rem;
+        max-height: none;
+        padding-right: 0;
+    }
+    /* El boton flotante de WhatsApp taparia las opciones de la columna derecha */
+    body.filters-open .whatsapp-float { display: none; }
+    .filter-checkbox-label { min-height: 40px; margin-bottom: 0; }
+    .filters-actions { display: flex; gap: 0.6rem; margin-top: 0.75rem; }
+    .filters-clear, .filters-apply {
+        min-height: 46px;
+        border-radius: 10px;
+        font-family: inherit;
+        font-size: 0.9rem;
+        font-weight: 700;
+        cursor: pointer;
+    }
+    .filters-clear { display: flex; align-items: center; padding: 0 1.1rem; background: #ffffff; border: 1px solid #e2e8f0; color: var(--secondary); }
+    .filters-apply { flex: 1; background: var(--primary); border: 0; color: #ffffff; }
+    .products-top-controls { scroll-margin-top: 150px; }
+}
 .custom-checkbox {
     width: 18px;
     height: 18px;
@@ -5339,7 +5396,7 @@ section,
         white-space: normal !important;
     }
     .pcr-category-tag i { display: none !important; }
-    .pcr-favorite-btn { width: 28px !important; height: 28px !important; top: 0.5rem !important; right: 0.5rem !important; }
+    .pcr-favorite-btn { width: 34px !important; height: 34px !important; top: 0.4rem !important; right: 0.4rem !important; }
     .pcr-subcategory-tag { font-size: 0.52rem !important; padding: 0.18rem 0.5rem !important; margin-bottom: 0.4rem !important; }
     .pcr-title { font-size: 0.82rem !important; min-height: auto !important; margin-bottom: 0.2rem !important; }
     .pcr-brand { font-size: 0.68rem !important; margin-bottom: 0.5rem !important; }
@@ -5349,26 +5406,44 @@ section,
     .pcr-color-dot { width: 15px !important; height: 15px !important; }
     .pcr-pres-badge { font-size: 0.56rem !important; padding: 0.2rem 0.4rem !important; }
     .pcr-actions { flex-direction: column !important; display: flex !important; gap: 0.4rem !important; padding-top: 0.6rem !important; }
-    .pcr-btn-details, .pcr-btn-quote { font-size: 0.62rem !important; padding: 0.45rem !important; flex: 1 1 auto !important; }
-
-    /* Filtros (sidebar de Productos) en 2 columnas en móvil */
-    .sidebar-box-title { padding: 0.85rem 1rem; font-size: 0.88rem; }
-    .filter-panel-body { padding: 0.75rem 1rem 1rem; }
-    .sidebar-filter-scroll {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr;
-        column-gap: 0.6rem;
-        row-gap: 0.15rem;
-        max-height: 220px !important;
+    .pcr-btn-details, .pcr-btn-quote {
+        font-size: 0.66rem !important;
+        padding: 0.45rem !important;
+        flex: 1 1 auto !important;
+        min-height: 40px;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
     }
+
+    /* Productos: banner compacto para ver antes los productos */
+    .page-hero-products { padding: 2.25rem 0 !important; }
+    /* El brochazo azul oscuro de la izquierda del banner se come el titulo: encuadrar hacia la pared clara */
+    .page-hero-products .page-hero-bg img { object-position: 75% center; }
+    .page-hero-title-products { font-size: 2.1rem; line-height: 1.15; }
+    .page-hero-subtitle-products { font-size: 0.95rem; padding: 0.35rem 1rem !important; }
+    .products-breadcrumb { padding: 0.75rem 0; font-size: 0.9rem; }
+
+    /* Productos: campos a 16px (iOS hace zoom al enfocar un campo menor) y objetivos tactiles mas grandes */
+    .products-top-controls input,
+    .filter-search input,
+    .products-sort .sort-select { font-size: 16px !important; }
+    .products-top-controls input { min-height: 46px; }
+    .filter-search input { padding: 0.6rem 0.75rem 0.6rem 2.1rem; }
+    .products-sort .sort-select { min-height: 40px; }
+    .pagination-new { flex-wrap: wrap; gap: 0.4rem; margin-top: 2rem; }
+    .page-btn-new, .page-ellipsis { width: 38px; height: 38px; }
+
+    /* Filtros (sidebar de Productos): dentro del cajon, sin scroll anidado */
+    .sidebar-box-title { padding: 0.85rem 1rem; font-size: 0.9rem; }
+    .filter-panel-body { padding: 0.75rem 1rem 1rem; }
     .filter-checkbox-label {
-        align-items: flex-start;
-        font-size: 0.78rem;
-        margin-bottom: 0.55rem;
+        align-items: center;
+        font-size: 0.82rem;
         line-height: 1.2;
     }
-    .filter-checkbox-label .custom-checkbox { margin-right: 0.5rem; margin-top: 1px; flex-shrink: 0; }
-    .filter-checkbox-label .cat-count { flex-shrink: 0; }
+    .filter-checkbox-label .custom-checkbox { margin-right: 0.55rem; flex-shrink: 0; width: 20px; height: 20px; }
+    .filter-checkbox-label .cat-count { flex-shrink: 0; margin-left: 0.4rem; }
 
     /* Blog - 2 columnas */
     .blog-grid {
