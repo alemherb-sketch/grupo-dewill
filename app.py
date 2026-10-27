@@ -18,7 +18,7 @@ from site_pages import (PAGES, PAGES_BY_KEY, PAGE_BY_ENDPOINT, DISABLED_PAGES_KE
                         serialize_disabled_pages, banner_text_fields, resolve_banner)
 from models import db, AdminUser, Category, SubCategory, Brand, Product, ProductImage, ProductSpec, Presentation
 from models import QuoteRequest, QuoteItem, Banner, PageBanner, GalleryCategory, GalleryImage, AmbientCategory, AmbientImage, SiteConfig, PaintColor, BlogCategory, BlogPost, ProductPresentationColor
-from models import split_color_code, color_label
+from models import split_color_code, color_label, ProductVariantCode, find_variant_code
 import time
 import threading
 import resend
@@ -113,6 +113,12 @@ with app.app_context():
         # Codigo de fabrica de los colores de cada presentacion ('AMARILLO LIMON #41')
         try:
             db.session.execute(text("ALTER TABLE product_presentation_colors ADD COLUMN color_code VARCHAR(50)"))
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+        # Codigo (Excel) de la presentacion y el color elegidos en cada item de la cotizacion
+        try:
+            db.session.execute(text("ALTER TABLE quote_items ADD COLUMN code VARCHAR(50)"))
             db.session.commit()
         except Exception:
             db.session.rollback()
@@ -588,8 +594,12 @@ def producto_detalle(product_id):
         all_colors = PaintColor.query.filter_by(is_active=True).all()
         paint_colors = [_color_option(c.name, c.hex_code) for c in all_colors]
         
+    # Codigo (Excel) de cada variante: la ficha muestra el de la presentacion y el color que elige el cliente
+    variant_codes = [{'p': vc.presentation_id, 'c': (vc.color_name or '').strip().upper(), 'code': vc.code}
+                     for vc in product.variant_codes]
     categories = Category.query.order_by(Category.order).all()
-    return render_template('producto_detalle.html', product=product, related=related, paint_colors=paint_colors, categories=categories)
+    return render_template('producto_detalle.html', product=product, related=related, paint_colors=paint_colors,
+                           categories=categories, variant_codes=variant_codes)
 
 DOCUMENT_RE = re.compile(r'^(\d{8}|\d{11})$')   # DNI (8 dígitos) o RUC (11 dígitos)
 MOBILE_RE = re.compile(r'^9\d{8}$')            # celular peruano: 9 dígitos que empiezan en 9
@@ -636,6 +646,16 @@ def _quote_color(product, color):
     return color
 
 
+def _quote_code(product, presentation, color):
+    """Codigo (Excel) de la presentacion y el color elegidos en un item de la cotizacion.
+    Lo calcula el servidor con los datos del producto; None si el producto no tiene codigos cargados."""
+    if product is None or not product.variant_codes:
+        return None
+    wanted = str(presentation or '').strip().upper()
+    pres = next((p for p in product.presentations if (p.name or '').strip().upper() == wanted), None) if wanted else None
+    return find_variant_code(product.variant_codes, pres.id if pres else None, split_color_code(str(color or ''))[0])
+
+
 @app.route('/api/cotizacion', methods=['POST'])
 def api_cotizacion():
     data = request.get_json(silent=True)
@@ -649,8 +669,10 @@ def api_cotizacion():
     db.session.add(quote)
     db.session.flush()
     for item in data['items']:
-        item['color'] = _quote_color(Product.query.get(item['product_id']), item.get('color'))
-        db.session.add(QuoteItem(quote_id=quote.id, product_id=item['product_id'], quantity=item.get('quantity',1), color=item['color'], presentation=item.get('presentation')))
+        prod = Product.query.get(item['product_id'])
+        item['color'] = _quote_color(prod, item.get('color'))
+        item['code'] = _quote_code(prod, item.get('presentation'), item['color'])
+        db.session.add(QuoteItem(quote_id=quote.id, product_id=item['product_id'], quantity=item.get('quantity',1), color=item['color'], presentation=item.get('presentation'), code=item['code']))
     db.session.commit()
     try:
         # Obtener configuración de correo
@@ -663,7 +685,9 @@ def api_cotizacion():
                 if prod:
                     color_info = f" - Color: {item.get('color')}" if item.get('color') else ""
                     pres_info = f" - Presentación: {item.get('presentation')}" if item.get('presentation') else ""
-                    items_text += f"- {prod.name} (SKU: {prod.sku or 'N/A'}){color_info}{pres_info} x {item.get('quantity', 1)}\n"
+                    # el codigo de la presentacion y el color elegidos reemplaza al SKU general del producto
+                    ref = f"Código: {item['code']}" if item.get('code') else f"SKU: {prod.sku or 'N/A'}"
+                    items_text += f"- {prod.name} ({ref}){color_info}{pres_info} x {item.get('quantity', 1)}\n"
             
             body = (
                 f"Nueva Solicitud de Cotización #{quote.id}\n"
@@ -1174,6 +1198,7 @@ def admin_product_import():
                 
                 imported = 0
                 skipped = 0
+                codes_saved = 0
                 cleared_products = set()
                 
                 for row in ws.iter_rows(min_row=2, values_only=True):
@@ -1217,6 +1242,8 @@ def admin_product_import():
                     
                     if product and product.id not in cleared_products:
                         ProductPresentationColor.query.filter_by(product_id=product.id).delete()
+                        if 'Codigo' in col_map:   # el Excel trae un codigo por fila: reemplaza los que tenia el producto
+                            ProductVariantCode.query.filter_by(product_id=product.id).delete()
                         cleared_products.add(product.id)
                         db.session.flush()
                     
@@ -1311,11 +1338,24 @@ def admin_product_import():
                                 color_code=color_code
                             ))
 
+                    # El Codigo de la fila es el de esa variante: la presentacion y el color que elegira el cliente
+                    if codigo:
+                        variant_pres_id = pres.id if pres else None
+                        variant_color = color_val or ''
+                        if not ProductVariantCode.query.filter_by(product_id=product.id, presentation_id=variant_pres_id,
+                                                                  color_name=variant_color).first():
+                            db.session.add(ProductVariantCode(product_id=product.id, presentation_id=variant_pres_id,
+                                                              color_name=variant_color, code=codigo[:50]))
+                            codes_saved += 1
+
                     imported += 1
                     
                 wb.close()
                 db.session.commit()
-                note = '' if 'Codigo' in col_map else ' El archivo no tiene la columna Codigo: solo se actualizaron los productos que ya existían.'
+                if 'Codigo' in col_map:
+                    note = f' {codes_saved} códigos de presentación y color guardados.'
+                else:
+                    note = ' El archivo no tiene la columna Codigo: solo se actualizaron los productos que ya existían.'
                 flash(f'Importación completada. {imported} productos importados, {skipped} omitidos.{note}', 'success')
                 return redirect(url_for('admin_products'))
                 

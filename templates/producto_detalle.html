@@ -156,9 +156,7 @@
                 <!-- Right: Info -->
                 <div class="detail-info-panel">
                     <h1 class="detail-product-name">{{ product.name|upper }}</h1>
-                    {% if product.sku %}
-                    <p class="detail-sku-text">SKU: {{ product.sku }}</p>
-                    {% endif %}
+                    <p class="detail-sku-text" id="skuLine"{% if not product.sku %} style="display:none"{% endif %}>{% if product.sku %}SKU: {{ product.sku }}{% endif %}</p>
                     {% if product.description %}
                     <p class="detail-product-desc">{{ product.description }}</p>
                     {% endif %}
@@ -382,6 +380,30 @@ function escAttr(value) {
     return String(value ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+// Codigo (Excel) de cada variante del producto: p = id de la presentacion (null: sin presentacion), c = color en mayusculas ('' : sin color)
+const VARIANT_CODES = {{ variant_codes|tojson }};
+const PRODUCT_SKU = {{ (product.sku or '')|tojson }};
+
+// Codigo de la presentacion y el color elegidos: la combinacion exacta y, si no existe, la mas general
+function currentVariantCode() {
+    const presBtn = document.querySelector('.pres-btn.selected');
+    const colorBtn = document.querySelector('.color-swatch-new.selected');
+    const presId = presBtn ? parseInt(presBtn.dataset.id, 10) : null;
+    const color = colorBtn ? (colorBtn.dataset.name || '').trim().toUpperCase() : '';
+    const find = (p, c) => { const v = VARIANT_CODES.find(x => x.p === p && x.c === c); return v ? v.code : null; };
+    return find(presId, color) ?? find(presId, '') ?? find(null, color) ?? find(null, '');
+}
+
+// La linea bajo el nombre muestra el codigo de lo elegido; sin codigo cargado, el SKU general del producto
+function updateVariantCode() {
+    const line = document.getElementById('skuLine');
+    if (!line) return;
+    const code = currentVariantCode();
+    const text = code ? `Código: ${code}` : (PRODUCT_SKU ? `SKU: ${PRODUCT_SKU}` : '');
+    line.textContent = text;
+    line.style.display = text ? '' : 'none';
+}
+
 function changeQty(delta) {
     currentQty = Math.max(1, currentQty + delta);
     document.getElementById('qtyDisplay').textContent = currentQty;
@@ -429,6 +451,7 @@ async function selectPresentation(btn, name, presId) {
             console.error(e);
         }
     }
+    updateVariantCode();
 }
 
 // Initial load colors for first presentation
@@ -436,6 +459,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const firstPresBtn = document.querySelector('.pres-btn.selected');
     if (firstPresBtn) {
         firstPresBtn.click();
+    } else {
+        updateVariantCode();
     }
     
     // Lupa / Zoom effect for main image
@@ -466,6 +491,7 @@ function selectColor(btn) {
     display.style.display = 'flex';
     document.getElementById('selectedColorText').textContent = label;
     document.getElementById('colorPreviewDot').style.backgroundColor = btn.dataset.hex;
+    updateVariantCode();
 }
 
 function handleAddToCart() {
@@ -486,7 +512,7 @@ function handleAddToCart() {
             return;
         }
     }
-    addToQuote({{ product.id }}, {{ product.name|tojson }}, '{{ product.main_image or 'assets/product_paint.png' }}', colorName, currentQty, presentationName);
+    addToQuote({{ product.id }}, {{ product.name|tojson }}, '{{ product.main_image or 'assets/product_paint.png' }}', colorName, currentQty, presentationName, currentVariantCode());
 }
 </script>
 {% endblock %}

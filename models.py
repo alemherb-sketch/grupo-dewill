@@ -129,6 +129,29 @@ class ProductPresentationColor(db.Model):
         return color_label(self.color_name, self.color_code)
 
 
+class ProductVariantCode(db.Model):
+    """Codigo (columna Codigo del Excel) de una variante de un producto: la presentacion y el color que elige el cliente.
+    presentation_id NULL = fila sin presentacion; color_name '' = fila sin color."""
+    __tablename__ = 'product_variant_codes'
+    id = db.Column(db.Integer, primary_key=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('products.id', ondelete='CASCADE'), nullable=False)
+    presentation_id = db.Column(db.Integer, db.ForeignKey('presentations.id', ondelete='CASCADE'))
+    color_name = db.Column(db.String(200), nullable=False, default='')
+    code = db.Column(db.String(50), nullable=False)
+    __table_args__ = (db.UniqueConstraint('product_id', 'presentation_id', 'color_name'),)
+
+
+def find_variant_code(codes, presentation_id, color_name=''):
+    """Codigo de la variante elegida entre los ProductVariantCode de un producto.
+    Prueba la combinacion exacta y, si no existe, la mas general: (presentacion, color), (presentacion), (color), (producto)."""
+    color = (color_name or '').strip().upper()
+    index = {(c.presentation_id, (c.color_name or '').strip().upper()): c.code for c in codes}
+    for key in ((presentation_id, color), (presentation_id, ''), (None, color), (None, '')):
+        if key in index:
+            return index[key]
+    return None
+
+
 class Presentation(db.Model):
     __tablename__ = 'presentations'
     id = db.Column(db.Integer, primary_key=True)
@@ -163,6 +186,7 @@ class Product(db.Model):
                             cascade='all, delete-orphan')
     quote_items = db.relationship('QuoteItem', backref='product', lazy=True, cascade='all, delete-orphan')
     presentation_colors = db.relationship('ProductPresentationColor', backref='product_rel', lazy=True, cascade='all, delete-orphan')
+    variant_codes = db.relationship('ProductVariantCode', backref='product_rel', lazy=True, cascade='all, delete-orphan')
 
     def to_dict(self):
         return {
@@ -220,6 +244,7 @@ class QuoteItem(db.Model):
     quantity = db.Column(db.Integer, default=1)
     color = db.Column(db.String(100))
     presentation = db.Column(db.String(100))
+    code = db.Column(db.String(50))   # Codigo (Excel) de la presentacion y el color elegidos; NULL si el producto no los tiene cargados
 
 
 class PaintColor(db.Model):

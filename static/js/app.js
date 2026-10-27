@@ -457,7 +457,7 @@ function filterProducts(category, btn) {
 }
 
 // ========== QUOTE LOGIC ==========
-function addToQuote(productId, productName = null, productImage = null, color = null, quantity = 1, presentation = null) {
+function addToQuote(productId, productName = null, productImage = null, color = null, quantity = 1, presentation = null, code = null) {
     // Try to find in static products array if available
     let product = typeof products !== 'undefined' ? products.find(p => p.id === productId) : null;
     
@@ -488,7 +488,8 @@ function addToQuote(productId, productName = null, productImage = null, color = 
         ...product, 
         quantity: quantity || 1,
         color: color,
-        presentation: presentation
+        presentation: presentation,
+        code: code   // Codigo (Excel) de la presentacion y el color elegidos; el servidor lo vuelve a calcular al recibir la solicitud
     };
 
     // Keep image paths relative to static folder neat under Flask
@@ -573,6 +574,9 @@ function updateQuoteUI() {
                 const isHex = /^#[0-9A-F]{6}$/i.test(item.color);
                 const dot = isHex ? `<span style="background-color:${item.color}; display:inline-block; width:12px; height:12px; border-radius:50%; border:1px solid #ccc; vertical-align:middle; margin-left:4px;"></span>` : '';
                 extraInfo += `<span style="display:block; font-size:0.8rem; color:#666; margin-top:2px;">Color: <strong>${item.color}</strong>${dot}</span>`;
+            }
+            if (item.code) {
+                extraInfo += `<span style="display:block; font-size:0.8rem; color:#666; margin-top:2px;">Código: <strong>${item.code}</strong></span>`;
             }
 
             div.innerHTML = `
@@ -681,7 +685,9 @@ function generateQuoteXML(list) {
         xml += `      <nombre>${xmlEscape(item.name)}</nombre>\n`;
         xml += `      <cantidad>${item.quantity || 1}</cantidad>\n`;
         xml += `      <categoria>${xmlEscape(item.category)}</categoria>\n`;
+        if (item.presentation) xml += `      <presentacion>${xmlEscape(item.presentation)}</presentacion>\n`;
         if (item.color) xml += `      <color>${xmlEscape(item.color)}</color>\n`;
+        if (item.code) xml += `      <codigo>${xmlEscape(item.code)}</codigo>\n`;
         xml += '    </producto>\n';
     });
     xml += '  </productos>\n';
@@ -728,8 +734,13 @@ function sendQuoteToWhatsApp() {
 
     message += "*LISTA DE PRODUCTOS:*\n";
     quoteList.forEach((item, index) => {
-        const color = item.color ? ` - Color: ${item.color}` : '';   // el color va con su codigo: "AMARILLO LIMON #41"
-        message += `${index + 1}. [Cant: ${item.quantity || 1}] ${item.name}${color}\n`;
+        // el color va con su codigo ("AMARILLO LIMON #41") y "Codigo" es el del Excel para esa presentacion y color
+        const details = [
+            item.presentation ? `Presentación: ${item.presentation}` : '',
+            item.color ? `Color: ${item.color}` : '',
+            item.code ? `Código: ${item.code}` : ''
+        ].filter(Boolean).join(' - ');
+        message += `${index + 1}. [Cant: ${item.quantity || 1}] ${item.name}${details ? ' - ' + details : ''}\n`;
     });
 
     // Añadir bloque XML
