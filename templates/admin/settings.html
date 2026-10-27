@@ -21,6 +21,25 @@
             </p>
         </div>
 
+        <!-- Páginas del sitio -->
+        <div class="form-section" style="grid-column: 1 / -1;">
+            <h3><i class="fas fa-file-alt"></i> Páginas del Sitio</h3>
+            <p class="section-help">Elige qué páginas pueden ver los visitantes. Una página deshabilitada desaparece del menú y de los enlaces del sitio, y quien entre a su dirección verá un aviso de «página no disponible». Puedes habilitarla de nuevo cuando quieras; tú la sigues viendo, con un aviso, mientras tengas la sesión iniciada. Pulsa <strong>Guardar Cambios</strong> al final de la página para aplicar.</p>
+            <input type="hidden" name="pages_form" value="1">
+            <div class="page-switch-list">
+                {% for p in site_pages %}
+                <label class="page-switch">
+                    <input type="checkbox" name="pages_enabled" value="{{ p.key }}" {% if p.key not in disabled_page_keys %}checked{% endif %}>
+                    <span class="page-switch-track" aria-hidden="true"></span>
+                    <span class="page-switch-name"><i class="{{ p.icon }}"></i> {{ p.label }}</span>
+                    <span class="page-switch-url">{{ url_for(p.endpoint) }}</span>
+                    <span class="page-switch-state"><span class="on">Visible</span><span class="off">Oculta</span></span>
+                </label>
+                {% endfor %}
+            </div>
+            <p class="section-help" style="margin: 1rem 0 0;"><i class="fas fa-home"></i> La página de Inicio siempre está visible. Para sacar todo el sitio de línea usa el Modo Mantenimiento. Si ocultas Productos, también se ocultan el buscador, la lista de cotización y las secciones de catálogo del Inicio; revisa que los banners del carrusel no enlacen a productos.</p>
+        </div>
+
         <!-- Contacto -->
         <div class="form-section">
             <h3><i class="fas fa-address-book"></i> Datos de Contacto</h3>
@@ -40,6 +59,9 @@
             <div class="form-group"><label><i class="fab fa-facebook" style="color:#1877F2;"></i> URL Facebook</label><input type="url" name="facebook" value="{{ site.get('facebook', '') }}" class="form-input"></div>
             <div class="form-group"><label><i class="fab fa-instagram" style="color:#E4405F;"></i> URL Instagram</label><input type="url" name="instagram" value="{{ site.get('instagram', '') }}" class="form-input"></div>
             <div class="form-group"><label><i class="fab fa-tiktok"></i> URL TikTok</label><input type="url" name="tiktok" value="{{ site.get('tiktok', '') }}" class="form-input"></div>
+            <div class="form-group"><label><i class="fab fa-youtube" style="color:#FF0000;"></i> URL YouTube</label><input type="url" name="youtube" value="{{ site.get('youtube', '') }}" class="form-input" placeholder="https://www.youtube.com/@tu-canal"></div>
+            <div class="form-group"><label><i class="fab fa-linkedin" style="color:#0A66C2;"></i> URL LinkedIn</label><input type="url" name="linkedin" value="{{ site.get('linkedin', '') }}" class="form-input" placeholder="https://www.linkedin.com/company/tu-empresa"></div>
+            <p style="font-size: 0.85rem; color: var(--admin-text-muted, #64748b); margin: 0;">Escribe la dirección completa (con https://). Los iconos del sitio se muestran siempre; solo enlazan a tu perfil cuando la URL está completa.</p>
         </div>
 
         <!-- Home Text -->

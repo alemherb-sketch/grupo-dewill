@@ -3,10 +3,13 @@
 {% block nav_class %}scrolled{% endblock %}
 
 {% block content %}
-<!-- HERO -->
+<!-- HERO (imagen configurable en Admin > Banners) -->
+{% set hero = page_banner('galeria') %}
+{% if hero.active %}
 <section class="page-hero-galeria" style="width: 100%; display: block; overflow: hidden;">
-    <img src="{{ url_for('static', filename='assets/banner_comunidad.png') }}" alt="Comunidad Dewill" style="width: 100%; height: auto; display: block;">
+    <img src="{{ url_for('static', filename=hero.image) }}" alt="Comunidad Dewill" style="width: 100%; height: auto; display: block;">
 </section>
+{% endif %}
 
 <!-- SEO TEXT -->
 <div style="display: none;">

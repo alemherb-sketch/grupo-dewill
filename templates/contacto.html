@@ -1,12 +1,16 @@
 {% extends "base.html" %}
+{% from '_social.html' import social_links %}
 {% block title %}Contacto | Grupo Dewill{% endblock %}
 {% block nav_class %}scrolled{% endblock %}
 
 {% block content %}
-<!-- Top Header Section -->
+<!-- Top Header Section (imagen configurable en Admin > Banners) -->
+{% set hero = page_banner('contacto') %}
+{% if hero.active %}
 <section class="contact-hero-static" style="padding: 0; margin: 0; background: #fff; width: 100%;">
-    <img src="{{ url_for('static', filename='assets/banner_contacto.png') }}" alt="Banner Contacto" style="width: 100%; display: block;">
+    <img src="{{ url_for('static', filename=hero.image) }}" alt="Banner Contacto" style="width: 100%; display: block;">
 </section>
+{% endif %}
 
 <!-- Main Contact Section -->
 <section class="contact-main-section">
@@ -173,9 +177,7 @@
                             <div class="oc-text">
                                 <span>Síguenos en redes</span>
                                 <div class="oc-socials">
-                                    <a href="#"><i class="fab fa-facebook-f"></i></a>
-                                    <a href="#"><i class="fab fa-instagram"></i></a>
-                                    <a href="#"><i class="fab fa-tiktok"></i></a>
+                                    {{ social_links(site, ['facebook', 'instagram', 'tiktok'], 'md') }}
                                 </div>
                             </div>
                         </div>

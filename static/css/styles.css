@@ -124,13 +124,71 @@ img {
 }
 .top-header-social {
     display: flex;
-    gap: 1rem;
+    align-items: center;
 }
-.top-header-social a {
-    color: white;
+
+/* Palabra resaltada del titulo del banner de Productos (se marca con *asteriscos* en Admin > Banners) */
+.hl-primary { color: var(--primary) !important; }
+
+/* ========== PAGINA NO DISPONIBLE (seccion deshabilitada desde el panel) ========== */
+.page-unavailable { max-width: 640px; margin: 0 auto; padding: 4rem 1.5rem 5rem; text-align: center; }
+.page-unavailable-icon { width: 84px; height: 84px; margin: 0 auto 1.25rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--primary-light); color: var(--primary); font-size: 2rem; }
+.page-unavailable-tag { display: inline-block; margin-bottom: 0.9rem; padding: 0.3rem 1rem; border-radius: 9999px; background: var(--bg-section-alt); color: var(--secondary); font-size: 0.8rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+.page-unavailable h1 { font-family: var(--font-heading); font-size: 2rem; line-height: 1.2; color: var(--secondary); margin-bottom: 0.9rem; }
+.page-unavailable p { color: var(--text-muted); font-size: 1.05rem; line-height: 1.6; }
+.page-unavailable-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; margin-top: 2rem; }
+@media (max-width: 480px) { .page-unavailable h1 { font-size: 1.6rem; } .page-unavailable-actions .btn { width: 100%; justify-content: center; } }
+
+/* Catalogo deshabilitado: se oculta lo que depende de los productos (buscador, cotizacion) y el pie pierde una columna */
+.no-catalog .nav-search-container, .no-catalog .btn-cart, .no-catalog .quote-panel, .no-catalog .quote-overlay { display: none !important; }
+.no-catalog .footer-content { grid-template-columns: 2.2fr 1.2fr 1.2fr 2fr; }
+@media (max-width: 992px) { .no-catalog .footer-content { grid-template-columns: 1fr; } }
+
+/* ========== REDES SOCIALES (cabecera, pie de página y contacto) ========== */
+.social-icons {
+    --si-size: 40px;
+    --si-ring: 2px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.6rem;
 }
-.top-header-social a:hover {
-    color: var(--primary);
+.social-icons--sm { --si-size: 28px; --si-ring: 1.5px; gap: 0.5rem; }
+.social-icons--lg { --si-size: 42px; gap: 0.6rem; } /* 4 iconos caben en la columna del pie (~210px) sin saltar de linea */
+
+.social-icon {
+    --brand: #475569;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: var(--si-size);
+    height: var(--si-size);
+    border-radius: 50%;
+    background: var(--brand);
+    color: #ffffff;
+    font-size: calc(var(--si-size) * 0.46);
+    line-height: 1;
+    text-decoration: none;
+    /* El aro blanco separa cada icono del fondo azul oscuro de la cabecera y del pie */
+    box-shadow: 0 0 0 var(--si-ring) rgba(255, 255, 255, 0.92), 0 3px 8px rgba(0, 0, 0, 0.3);
+    transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+}
+.social-icon:hover,
+.social-icon:focus-visible {
+    color: #ffffff;
+    transform: translateY(-3px) scale(1.1);
+    filter: brightness(1.1);
+    box-shadow: 0 0 0 var(--si-ring) #ffffff, 0 8px 18px rgba(0, 0, 0, 0.4);
+}
+.social-icon:focus-visible { outline: 3px solid var(--primary); outline-offset: 4px; }
+.social-icon--facebook { --brand: #1877f2; }
+.social-icon--youtube { --brand: #ff0000; }
+.social-icon--linkedin { --brand: #0a66c2; }
+.social-icon--tiktok { --brand: #000000; }
+.social-icon--tiktok i { filter: drop-shadow(-1px -1px 0 #25f4ee) drop-shadow(1px 1px 0 #fe2c55); }
+.social-icon--instagram {
+    background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%);
 }
 
 /* ========== NAVBAR ========== */
@@ -1802,28 +1860,17 @@ img {
 }
 
 .footer-social {
-    display: flex;
-    gap: 1rem;
     margin-top: 1.5rem;
 }
 
-.social-link {
-    width: 40px;
-    height: 40px;
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: var(--transition);
-    color: #ffffff;
-}
-
-.social-link:hover {
-    background: var(--primary);
-    color: #ffffff;
-    transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(217, 32, 39, 0.4);
+.footer-social-title {
+    display: block;
+    margin-bottom: 0.85rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.9);
 }
 
 .footer-links-group h4 {
@@ -2422,6 +2469,18 @@ img {
 
 .form-input::placeholder {
     color: #6c757d;
+}
+
+.form-input.input-error {
+    border-color: var(--danger);
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+
+.form-hint {
+    display: block;
+    margin-top: 0.3rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
 }
 
 .btn-outline-secondary {
@@ -3095,9 +3154,10 @@ img {
 .oc-text { display: flex; flex-direction: column; }
 .oc-text span { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.25rem; }
 .oc-text strong { font-size: 1.1rem; color: var(--secondary); }
-.oc-socials { display: flex; gap: 0.75rem; margin-top: 0.5rem; }
-.oc-socials a { width: 35px; height: 35px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--secondary); box-shadow: var(--shadow-sm); transition: var(--transition); }
-.oc-socials a:hover { background: var(--primary); color: white; transform: translateY(-3px); }
+.oc-socials { margin-top: 0.6rem; }
+/* Sobre la tarjeta blanca no hace falta el aro; la sombra basta para destacarlos */
+.oc-socials .social-icon { --si-ring: 0px; box-shadow: 0 4px 12px rgba(8, 28, 59, 0.28); }
+.oc-socials .social-icon:hover { box-shadow: 0 8px 18px rgba(8, 28, 59, 0.38); }
 
 /* ====== 6. BENEFITS BAR ====== */
 .benefits-bar { background: transparent; color: var(--text-main); padding: 3rem 0; margin-top: 2rem; }

@@ -3,8 +3,17 @@
 {% block page_title %}Gestión de Banners{% endblock %}
 
 {% block admin_content %}
+<!-- Una pestaña por página: Inicio es el carrusel; las demás tienen un banner de cabecera -->
+<div class="filter-tabs banner-tabs">
+    <a href="{{ url_for('admin_banners') }}" class="filter-tab {% if current_page == 'inicio' %}active{% endif %}"><i class="fas fa-home"></i> Inicio</a>
+    {% for p in pages %}
+    <a href="{{ url_for('admin_banners', pagina=p.key) }}" class="filter-tab {% if current_page == p.key %}active{% endif %}"><i class="{{ p.icon }}"></i> {{ p.label }}{% if p.key in customized_pages %}<span class="tab-dot" title="Banner personalizado"></span>{% endif %}</a>
+    {% endfor %}
+</div>
+
+{% if current_page == 'inicio' %}
 <div class="admin-toolbar">
-    <h3>{{ banners|length }} banners registrados</h3>
+    <h3>{{ banners|length }} banners registrados <small style="font-weight:400;color:var(--admin-text-muted);">· carrusel de la página de Inicio</small></h3>
     <button class="btn btn-primary" onclick="document.getElementById('newBannerModal').classList.add('show')"><i class="fas fa-plus"></i> Nuevo Banner</button>
 </div>
 
@@ -79,6 +88,74 @@
         </form>
     </div>
 </div>
+
+{% else %}
+<!-- Banner de cabecera de {{ page_cfg.label }} -->
+<form method="POST" enctype="multipart/form-data" class="admin-form" id="pageBannerForm">
+    <input type="hidden" name="action" value="save_page">
+    <input type="hidden" name="page" value="{{ current_page }}">
+
+    <div class="admin-toolbar" style="margin-bottom:0;">
+        <h3><i class="{{ page_cfg.icon }}"></i> Banner de {{ page_cfg.label }}
+            {% if current_page in customized_pages %}<span class="status-badge status-active" style="margin-left:.5rem;">Personalizado</span>{% else %}<span class="status-badge status-inactive" style="margin-left:.5rem;">Diseño original</span>{% endif %}
+        </h3>
+        <a href="{{ url_for(page_cfg.endpoint) }}" target="_blank" rel="noopener" class="btn btn-outline"><i class="fas fa-external-link-alt"></i> Ver página</a>
+    </div>
+
+    <div class="form-grid-2">
+        <div class="form-section">
+            <h3><i class="fas fa-image"></i> {{ 'Imágenes' if banner_images|length > 1 else 'Imagen' }}</h3>
+            {% for image in banner_images %}
+            <div class="form-group banner-image-slot">
+                <label>{{ image.label }}</label>
+                <img src="{{ url_for('static', filename=image.url) }}" alt="" class="img-preview banner-image-preview">
+                <input type="file" name="{{ image.key }}" accept="image/*" class="form-input-file">
+                <small class="field-hint">{{ image.hint }} Formatos: JPG, PNG, WEBP o GIF.</small>
+                {% if image.custom %}
+                <label class="form-check" style="margin-top:.5rem;"><input type="checkbox" name="{{ image.key }}_reset" value="1" style="width:auto;"> Volver a la imagen original</label>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="form-section">
+            <h3><i class="fas fa-font"></i> Textos</h3>
+            {% if banner_texts %}
+            <p class="section-help">Rodea con <strong>*asteriscos*</strong> las palabras que quieras resaltar en color; Enter hace un salto de línea. Si dejas un campo vacío, ese texto no se muestra.</p>
+            {% for text in banner_texts %}
+            <div class="form-group">
+                <label for="banner_{{ text.key }}">{{ text.label }}</label>
+                {% if text.rows == 1 %}
+                <input type="text" id="banner_{{ text.key }}" name="{{ text.key }}" value="{{ text.value }}" maxlength="{{ text.maxlength }}" class="form-input">
+                {% else %}
+                <textarea id="banner_{{ text.key }}" name="{{ text.key }}" rows="{{ text.rows }}" maxlength="{{ text.maxlength }}" class="form-input">{{ text.value }}</textarea>
+                {% endif %}
+            </div>
+            {% endfor %}
+            {% else %}
+            <p class="section-help" style="margin:0 0 1rem;">El texto de este banner forma parte de la imagen. Para cambiarlo, sube una imagen nueva con el texto que necesites.</p>
+            {% endif %}
+
+            {% if page_cfg.banner.get('hideable', True) %}
+            <div class="form-group form-check" style="margin:1rem 0 0;">
+                <label><input type="checkbox" name="is_active" {% if current_banner.active %}checked{% endif %} style="width:auto;"> Mostrar el banner en esta página</label>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="banner-actions">
+        <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-save"></i> Guardar Cambios</button>
+        {% if current_page in customized_pages %}
+        <button type="submit" form="resetBannerForm" class="btn btn-outline" onclick="return confirm('¿Restaurar el banner de {{ page_cfg.label }} a su diseño original? Se perderán las imágenes y textos que personalizaste.')"><i class="fas fa-undo"></i> Restaurar diseño original</button>
+        {% endif %}
+    </div>
+</form>
+<form method="POST" id="resetBannerForm" style="display:none;">
+    <input type="hidden" name="action" value="reset_page">
+    <input type="hidden" name="page" value="{{ current_page }}">
+</form>
+{% endif %}
 {% endblock %}
 
 {% block admin_js %}

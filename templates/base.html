@@ -1,3 +1,4 @@
+{% from '_social.html' import social_links -%}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -9,10 +10,16 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=5.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=5.3">
     {% block extra_css %}{% endblock %}
 </head>
-<body>
+<body{% if not page_enabled('productos') %} class="no-catalog"{% endif %}>
+    {% if disabled_page_preview %}
+    <div style="background:#f59e0b;color:#1a1d26;text-align:center;padding:.5rem 1rem;font-size:.85rem;font-weight:600;">
+        <i class="fas fa-eye-slash"></i> La página «{{ disabled_page_preview }}» está deshabilitada: los visitantes no pueden verla; tú sí porque tienes la sesión de admin iniciada.
+        <a href="{{ url_for('admin_settings') }}" style="color:#1a1d26;text-decoration:underline;margin-left:.5rem;">Habilitar</a>
+    </div>
+    {% endif %}
     {% if site.get('maintenance_mode') == '1' and current_user.is_authenticated %}
     <div style="background:#f59e0b;color:#1a1d26;text-align:center;padding:.5rem 1rem;font-size:.85rem;font-weight:600;">
         <i class="fas fa-tools"></i> Modo mantenimiento ACTIVO: los visitantes ven la página de mantenimiento; tú ves el sitio porque tienes la sesión de admin iniciada.
@@ -27,8 +34,7 @@
                 <span><i class="fas fa-envelope"></i> Escribenos: ventas@grupodewill.com</span>
             </div>
             <div class="top-header-social">
-                <a href="{{ site.get('facebook', '#') }}"><i class="fab fa-facebook-f"></i></a>
-                <a href="{{ site.get('instagram', '#') }}"><i class="fab fa-instagram"></i></a>
+                {{ social_links(site, ['facebook', 'instagram'], 'sm') }}
             </div>
         </div>
     </div>
@@ -39,12 +45,12 @@
             </a>
             <ul class="nav-links" id="navLinks" style="margin: 0 auto;">
                 <li><a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">INICIO</a></li>
-                <li><a href="{{ url_for('nosotros') }}" class="nav-link {% if request.endpoint == 'nosotros' %}active{% endif %}">NOSOTROS</a></li>
-                <li><a href="{{ url_for('productos') }}" class="nav-link {% if request.endpoint in ['productos','producto_detalle'] %}active{% endif %}">PRODUCTOS</a></li>
-                <li><a href="{{ url_for('galeria') }}" class="nav-link {% if request.endpoint == 'galeria' %}active{% endif %}">GALERÍA</a></li>
-                <li><a href="{{ url_for('galeria_ambientes') }}" class="nav-link {% if request.endpoint == 'galeria_ambientes' %}active{% endif %}">AMBIENTES</a></li>
-                <li><a href="{{ url_for('blog') }}" class="nav-link {% if request.endpoint in ['blog', 'blog_post'] %}active{% endif %}">BLOG</a></li>
-                <li><a href="{{ url_for('contacto') }}" class="nav-link {% if request.endpoint == 'contacto' %}active{% endif %}">CONTACTO</a></li>
+                {% if page_enabled('nosotros') %}<li><a href="{{ url_for('nosotros') }}" class="nav-link {% if request.endpoint == 'nosotros' %}active{% endif %}">NOSOTROS</a></li>{% endif %}
+                {% if page_enabled('productos') %}<li><a href="{{ url_for('productos') }}" class="nav-link {% if request.endpoint in ['productos','producto_detalle'] %}active{% endif %}">PRODUCTOS</a></li>{% endif %}
+                {% if page_enabled('galeria') %}<li><a href="{{ url_for('galeria') }}" class="nav-link {% if request.endpoint == 'galeria' %}active{% endif %}">GALERÍA</a></li>{% endif %}
+                {% if page_enabled('ambientes') %}<li><a href="{{ url_for('galeria_ambientes') }}" class="nav-link {% if request.endpoint == 'galeria_ambientes' %}active{% endif %}">AMBIENTES</a></li>{% endif %}
+                {% if page_enabled('blog') %}<li><a href="{{ url_for('blog') }}" class="nav-link {% if request.endpoint in ['blog', 'blog_post'] %}active{% endif %}">BLOG</a></li>{% endif %}
+                {% if page_enabled('contacto') %}<li><a href="{{ url_for('contacto') }}" class="nav-link {% if request.endpoint == 'contacto' %}active{% endif %}">CONTACTO</a></li>{% endif %}
             </ul>
             <div class="nav-search-container" style="margin-right: 1.5rem;">
                 <form action="{{ url_for('productos') }}" method="GET" class="nav-search" id="globalSearchForm">
@@ -126,22 +132,21 @@
                     </div>
                     <p style="margin-top: 1rem; margin-bottom: 1rem;">Ofrecemos productos de alta calidad para la construcción, industria y hogar. Confianza, innovación y compromiso en cada proyecto.</p>
                     <div class="footer-social">
-                        <a href="{{ site.get('facebook', '#') }}" class="social-link"><i class="fab fa-facebook-f"></i></a>
-                        <a href="{{ site.get('instagram', '#') }}" class="social-link"><i class="fab fa-instagram"></i></a>
-                        <a href="{{ site.get('youtube', '#') }}" class="social-link"><i class="fab fa-youtube"></i></a>
-                        <a href="{{ site.get('linkedin', '#') }}" class="social-link"><i class="fab fa-linkedin-in"></i></a>
+                        <span class="footer-social-title">Síguenos</span>
+                        {{ social_links(site, ['facebook', 'instagram', 'youtube', 'linkedin'], 'lg') }}
                     </div>
                 </div>
                 <div class="footer-links-group">
                     <h4 style="text-transform: uppercase;">Navegación</h4>
                     <a href="{{ url_for('index') }}">Inicio</a>
-                    <a href="{{ url_for('nosotros') }}">Nosotros</a>
-                    <a href="{{ url_for('productos') }}">Productos</a>
-                    <a href="{{ url_for('galeria') }}">Galería</a>
-                    <a href="{{ url_for('galeria_ambientes') }}">Ambientes</a>
-                    <a href="{{ url_for('blog') }}">Blog</a>
-                    <a href="{{ url_for('contacto') }}">Contacto</a>
+                    {% if page_enabled('nosotros') %}<a href="{{ url_for('nosotros') }}">Nosotros</a>{% endif %}
+                    {% if page_enabled('productos') %}<a href="{{ url_for('productos') }}">Productos</a>{% endif %}
+                    {% if page_enabled('galeria') %}<a href="{{ url_for('galeria') }}">Galería</a>{% endif %}
+                    {% if page_enabled('ambientes') %}<a href="{{ url_for('galeria_ambientes') }}">Ambientes</a>{% endif %}
+                    {% if page_enabled('blog') %}<a href="{{ url_for('blog') }}">Blog</a>{% endif %}
+                    {% if page_enabled('contacto') %}<a href="{{ url_for('contacto') }}">Contacto</a>{% endif %}
                 </div>
+                {% if page_enabled('productos') %}
                 <div class="footer-links-group">
                     <h4 style="text-transform: uppercase;">Categorías</h4>
                     <a href="{{ url_for('productos', cat='pinturas') }}">Pinturas</a>
@@ -150,6 +155,7 @@
                     <a href="{{ url_for('productos', cat='complementos') }}">Complementos</a>
                     <a href="{{ url_for('productos', cat='soluciones') }}">Soluciones para el hogar</a>
                 </div>
+                {% endif %}
                 <div class="footer-links-group">
                     <h4 style="text-transform: uppercase;">Ayuda</h4>
                     <a href="#">Preguntas frecuentes</a>
@@ -200,11 +206,15 @@
             <div class="quote-items" id="quoteItems"></div>
             <div class="client-info-form" id="clientInfoForm" style="display:none;">
                 <h4><i class="fas fa-user-edit"></i> Mis Datos</h4>
-                <div class="form-group"><input type="text" id="clientName" class="form-input" placeholder="Nombre completo *"></div>
-                <div class="form-group"><input type="text" id="clientCompany" class="form-input" placeholder="Empresa"></div>
-                <div class="form-group"><input type="email" id="clientEmail" class="form-input" placeholder="Email *"></div>
-                <div class="form-group"><input type="tel" id="clientPhone" class="form-input" placeholder="Teléfono / WhatsApp *"></div>
-                <div class="form-group"><textarea id="clientMessage" class="form-input" placeholder="Mensaje adicional (opcional)" rows="2"></textarea></div>
+                <div class="form-group"><input type="text" id="clientName" class="form-input" placeholder="Nombre completo *" autocomplete="name" maxlength="200"></div>
+                <div class="form-group">
+                    <input type="text" id="clientDocument" class="form-input" placeholder="DNI / RUC *" inputmode="numeric" autocomplete="off" maxlength="11" aria-describedby="clientDocumentHint">
+                    <small class="form-hint" id="clientDocumentHint">DNI: 8 dígitos · RUC: 11 dígitos</small>
+                </div>
+                <div class="form-group"><input type="text" id="clientCompany" class="form-input" placeholder="Empresa (opcional)" autocomplete="organization" maxlength="200"></div>
+                <div class="form-group"><input type="tel" id="clientPhone" class="form-input" placeholder="Celular *" inputmode="tel" autocomplete="tel-national" maxlength="16"></div>
+                <div class="form-group"><input type="email" id="clientEmail" class="form-input" placeholder="Email (opcional)" autocomplete="email" maxlength="200"></div>
+                <div class="form-group"><textarea id="clientMessage" class="form-input" placeholder="Mensaje (opcional)" rows="2" maxlength="2000"></textarea></div>
             </div>
         </div>
         <div class="quote-footer" id="quoteFooter" style="display:none;">
@@ -283,7 +293,7 @@
     </div>
 
     <script>const WHATSAPP_NUMBER = "{{ site.get('whatsapp', '51977585654') }}";</script>
-    <script src="{{ url_for('static', filename='js/app.js') }}?v=2.4"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}?v=2.5"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

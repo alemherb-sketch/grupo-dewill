@@ -166,24 +166,27 @@
 </style>
 {% endblock %}
 
-<!-- NEW HERO & BENEFITS -->
+<!-- NEW HERO & BENEFITS (imágenes y textos configurables en Admin > Banners) -->
+{% set hero = page_banner('ambientes') %}
+{% if hero.active %}
 <section class="new-ambientes-hero">
-    <div class="new-amb-img-left" style="background-image: url('{{ url_for('static', filename='assets/ambiente_sala.png') }}');">
+    <div class="new-amb-img-left" style="background-image: url('{{ url_for('static', filename=hero.image) }}');">
         <div class="nav-btn-box"><i class="fas fa-chevron-left"></i></div>
     </div>
     
     <div class="new-amb-hero-content">
-        <div class="new-amb-badge">
-            <i class="fas fa-paint-roller"></i> INSPIRACIÓN REAL
-        </div>
-        <h1>Galería de<br><span class="text-red">Ambientes</span></h1>
-        <p>Visualiza la armonía de colores en espacios reales<br>y elige el estilo que mejor se adapte a ti.</p>
+        {% if hero.badge %}<div class="new-amb-badge">
+            <i class="fas fa-paint-roller"></i> {{ hero.badge }}
+        </div>{% endif %}
+        {% if hero.title %}<h1>{{ hero.title|banner_text }}</h1>{% endif %}
+        {% if hero.subtitle %}<p>{{ hero.subtitle|banner_text }}</p>{% endif %}
     </div>
 
-    <div class="new-amb-img-right" style="background-image: url('{{ url_for('static', filename='assets/ambiente_dormitorio.png') }}');">
+    <div class="new-amb-img-right" style="background-image: url('{{ url_for('static', filename=hero.image2) }}');">
         <div class="nav-btn-box"><i class="fas fa-chevron-right"></i></div>
     </div>
 </section>
+{% endif %}
 
 <section class="new-ambientes-benefits">
     <div class="container">

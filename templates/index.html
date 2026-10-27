@@ -36,8 +36,8 @@
     {% endif %}
 </section>
 
-<!-- PRODUCT LINES / CATEGORIES -->
-{% if categories %}
+<!-- PRODUCT LINES / CATEGORIES (enlazan al catálogo: se ocultan si la página Productos está deshabilitada) -->
+{% if categories and page_enabled('productos') %}
 <section class="section categories-section">
     <div class="container">
         <div class="section-header">
@@ -66,7 +66,7 @@
 {% endif %}
 
 <!-- FEATURED PRODUCTS -->
-{% if featured_products %}
+{% if featured_products and page_enabled('productos') %}
 <section class="section featured-section">
     <div class="container">
         <div class="section-header">
@@ -151,7 +151,7 @@
 {% endif %}
 
 <!-- BRANDS / REPRESENTATIONS -->
-{% if brands %}
+{% if brands and page_enabled('productos') %}
 <section class="section brands-section">
     <div class="container">
         <div class="section-header">

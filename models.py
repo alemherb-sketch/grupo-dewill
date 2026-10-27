@@ -178,9 +178,10 @@ class QuoteRequest(db.Model):
     __tablename__ = 'quote_requests'
     id = db.Column(db.Integer, primary_key=True)
     client_name = db.Column(db.String(200))
+    client_document = db.Column(db.String(20))   # DNI (8 digitos) o RUC (11 digitos)
     client_company = db.Column(db.String(200))
-    client_email = db.Column(db.String(200))
-    client_phone = db.Column(db.String(50))
+    client_email = db.Column(db.String(200))     # opcional
+    client_phone = db.Column(db.String(50))      # celular
     message = db.Column(db.Text)
     status = db.Column(db.String(20), default='pendiente')  # pendiente, en_proceso, respondida
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -215,6 +216,21 @@ class Banner(db.Model):
     cta_text = db.Column(db.String(100))
     cta_link = db.Column(db.String(300))
     order = db.Column(db.Integer, default=0)
+    is_active = db.Column(db.Boolean, default=True)
+
+
+class PageBanner(db.Model):
+    """Banner de cabecera de una pagina interna (ver site_pages.py).
+    Una fila guarda solo lo que se personalizo: un valor NULL usa el de fabrica; sin fila, todo es de fabrica."""
+    __tablename__ = 'page_banners'
+    id = db.Column(db.Integer, primary_key=True)
+    page = db.Column(db.String(30), unique=True, nullable=False)
+    image_url = db.Column(db.String(300))
+    image2_url = db.Column(db.String(300))   # segunda imagen (solo la pagina Ambientes usa dos)
+    badge = db.Column(db.String(100))
+    title = db.Column(db.String(200))
+    subtitle = db.Column(db.Text)
+    description = db.Column(db.Text)
     is_active = db.Column(db.Boolean, default=True)
 
 

@@ -73,7 +73,8 @@
                     </div>
                 </div>
                 <div class="col-products" style="width: 25%">
-                    <span class="contact-item"><i class="fas fa-envelope"></i> {{ q.client_email or '-' }}</span>
+                    <span class="contact-item"><i class="fas fa-phone"></i> {{ q.client_phone or '-' }}</span>
+                    {% if q.client_email %}<span class="contact-item"><i class="fas fa-envelope"></i> {{ q.client_email }}</span>{% endif %}
                 </div>
                 <div class="col-products">
                     <div class="prod-count"><i class="fas fa-box-open"></i> {{ q.items|length }} prod.</div>

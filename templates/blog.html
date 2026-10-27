@@ -3,18 +3,21 @@
 {% block nav_class %}scrolled{% endblock %}
 
 {% block content %}
-<!-- HERO -->
+<!-- HERO (imagen y textos configurables en Admin > Banners) -->
+{% set hero = page_banner('blog') %}
+{% if hero.active %}
 <section class="page-hero blog-hero">
     <div class="page-hero-bg">
-        <img src="{{ url_for('static', filename='assets/blog_bg.png') }}" alt="Blog" class="hero-bg-img">
+        <img src="{{ url_for('static', filename=hero.image) }}" alt="Blog" class="hero-bg-img">
         <div class="hero-overlay"></div>
     </div>
     <div class="page-hero-content">
-        <div class="hero-badge"><i class="fas fa-blog"></i> BLOG</div>
-        <h1 class="page-hero-title animate-fade-up delay-1">Consejos, ideas y <span class="gradient-text">soluciones</span></h1>
-        <p class="page-hero-subtitle animate-fade-up delay-2">Encuentra recomendaciones prácticas, inspiración y todo lo que necesitas saber para lograr los mejores acabados.</p>
+        {% if hero.badge %}<div class="hero-badge"><i class="fas fa-blog"></i> {{ hero.badge }}</div>{% endif %}
+        {% if hero.title %}<h1 class="page-hero-title animate-fade-up delay-1">{{ hero.title|banner_text('gradient-text') }}</h1>{% endif %}
+        {% if hero.subtitle %}<p class="page-hero-subtitle animate-fade-up delay-2">{{ hero.subtitle|banner_text }}</p>{% endif %}
     </div>
 </section>
+{% endif %}
 
 <section class="blog-section section">
     <div class="container">

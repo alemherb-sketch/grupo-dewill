@@ -21,10 +21,12 @@
         <div class="panel-header"><h3><i class="fas fa-user"></i> Datos del Cliente</h3></div>
         <div class="panel-body">
             <p><strong>Fecha de solicitud:</strong> {{ quote.created_at.strftime('%d/%m/%Y %H:%M') }}</p>
+            {% set document = quote.client_document or '' %}
             <p><strong>Nombre:</strong> {{ quote.client_name or 'No especificado' }}</p>
+            <p><strong>{{ 'DNI' if document|length == 8 else ('RUC' if document else 'DNI / RUC') }}:</strong> {{ document or 'No especificado' }}</p>
             <p><strong>Empresa:</strong> {{ quote.client_company or 'No especificado' }}</p>
+            <p><strong>Celular:</strong> {% if quote.client_phone %}<a href="https://wa.me/{{ quote.client_phone | wa_number }}" target="_blank" rel="noopener" title="Abrir en WhatsApp"><i class="fab fa-whatsapp"></i> {{ quote.client_phone }}</a>{% else %}No especificado{% endif %}</p>
             <p><strong>Email:</strong> {% if quote.client_email %}<a href="mailto:{{ quote.client_email }}">{{ quote.client_email }}</a>{% else %}No especificado{% endif %}</p>
-            <p><strong>Teléfono / WhatsApp:</strong> {% if quote.client_phone %}<a href="https://wa.me/{{ quote.client_phone | replace('+','') | replace(' ','') }}" target="_blank">{{ quote.client_phone }}</a>{% else %}No especificado{% endif %}</p>
             {% if quote.message %}
             <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.1);">
                 <strong>Mensaje adicional:</strong>

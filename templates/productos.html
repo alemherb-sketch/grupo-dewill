@@ -3,16 +3,19 @@
 {% block nav_class %}scrolled{% endblock %}
 
 {% block content %}
-<!-- PAGE HERO -->
+<!-- PAGE HERO (imagen y textos configurables en Admin > Banners) -->
+{% set hero = page_banner('productos') %}
+{% if hero.active %}
 <section class="page-hero-products" style="background: #f4f6f9; padding: 6rem 0;">
     <div class="page-hero-bg">
-        <img src="{{ url_for('static', filename='assets/banner_productos_new.png') }}" alt="Productos" class="hero-bg-img" style="opacity: 1 !important;">
+        <img src="{{ url_for('static', filename=hero.image) }}" alt="{{ hero.title_plain or 'Productos' }}" class="hero-bg-img" style="opacity: 1 !important;">
     </div>
     <div class="page-hero-content">
-        <h1 class="page-hero-title-products" style="color: var(--secondary) !important; font-weight: 800 !important; text-shadow: none !important;">Nuestros <span style="color: var(--primary) !important;">Productos</span></h1>
-        <p class="page-hero-subtitle-products" style="color: var(--secondary) !important; font-weight: 600 !important; text-shadow: none !important; display: inline-block; background: rgba(255,255,255,0.85); padding: 0.4rem 1.5rem; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-top: 0.5rem;">Pinturas de alta calidad para cada necesidad.</p>
+        {% if hero.title %}<h1 class="page-hero-title-products" style="color: var(--secondary) !important; font-weight: 800 !important; text-shadow: none !important;">{{ hero.title|banner_text('hl-primary') }}</h1>{% endif %}
+        {% if hero.subtitle %}<p class="page-hero-subtitle-products" style="color: var(--secondary) !important; font-weight: 600 !important; text-shadow: none !important; display: inline-block; background: rgba(255,255,255,0.85); padding: 0.4rem 1.5rem; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-top: 0.5rem;">{{ hero.subtitle|banner_text }}</p>{% endif %}
     </div>
 </section>
+{% endif %}
 
 <!-- BREADCRUMB -->
 <div class="products-breadcrumb">

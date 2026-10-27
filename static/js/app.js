@@ -604,26 +604,83 @@ function toggleQuotePanel() {
     overlay.classList.toggle('open');
 }
 
+// ========== QUOTE CLIENT FORM ==========
+// DNI/RUC y celular son obligatorios; correo y mensaje, opcionales. El servidor aplica las mismas reglas.
+const QUOTE_DOCUMENT_RE = /^(\d{8}|\d{11})$/;
+const QUOTE_MOBILE_RE = /^9\d{8}$/;
+const QUOTE_EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
+function onlyDigits(value) {
+    return (value || '').replace(/\D/g, '');
+}
+
+function normalizeMobile(value) {
+    let digits = onlyDigits(value);
+    if (digits.length === 11 && digits.startsWith('51')) digits = digits.slice(2);   // +51 987 654 321
+    return digits;
+}
+
+function readQuoteClient() {
+    const read = id => (document.getElementById(id)?.value || '').trim();
+    return {
+        name: read('clientName'),
+        document: onlyDigits(read('clientDocument')),
+        company: read('clientCompany'),
+        phone: normalizeMobile(read('clientPhone')),
+        email: read('clientEmail'),
+        message: read('clientMessage')
+    };
+}
+
+// Devuelve { field, message } con el primer problema del formulario, o null si todo está bien
+function validateQuoteClient(client) {
+    if (!client.name) return { field: 'clientName', message: 'Ingresa tu nombre completo.' };
+    if (!QUOTE_DOCUMENT_RE.test(client.document)) return { field: 'clientDocument', message: 'Ingresa un DNI (8 dígitos) o un RUC (11 dígitos).' };
+    if (!QUOTE_MOBILE_RE.test(client.phone)) return { field: 'clientPhone', message: 'Ingresa un celular válido de 9 dígitos (ej. 987654321).' };
+    if (client.email && !QUOTE_EMAIL_RE.test(client.email)) return { field: 'clientEmail', message: 'El correo electrónico no es válido.' };
+    return null;
+}
+
+function documentLabel(documentNumber) {
+    return documentNumber.length === 8 ? 'DNI' : 'RUC';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    // DNI/RUC solo admite dígitos; el celular, dígitos y los signos habituales (+ - espacio paréntesis)
+    const documentInput = document.getElementById('clientDocument');
+    if (documentInput) documentInput.addEventListener('input', () => { documentInput.value = onlyDigits(documentInput.value); });
+    const phoneInput = document.getElementById('clientPhone');
+    if (phoneInput) phoneInput.addEventListener('input', () => { phoneInput.value = phoneInput.value.replace(/[^\d+\s()-]/g, ''); });
+    // El borde rojo de un campo con error se quita en cuanto se vuelve a escribir en él
+    document.querySelectorAll('#clientInfoForm .form-input').forEach(input =>
+        input.addEventListener('input', () => input.classList.remove('input-error')));
+});
+
+function xmlEscape(value) {
+    return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 function generateQuoteXML(list) {
-    const clientName = document.getElementById('clientName')?.value || 'No especificado';
-    const clientCompany = document.getElementById('clientCompany')?.value || 'No especificado';
-    const clientEmail = document.getElementById('clientEmail')?.value || 'No especificado';
+    const client = readQuoteClient();
+    const unspecified = 'No especificado';
 
     let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
     xml += '<cotizacion>\n';
     xml += `  <fecha>${new Date().toISOString().split('T')[0]}</fecha>\n`;
     xml += '  <cliente>\n';
-    xml += `    <nombre>${clientName}</nombre>\n`;
-    xml += `    <empresa>${clientCompany}</empresa>\n`;
-    xml += `    <contacto>${clientEmail}</contacto>\n`;
+    xml += `    <nombre>${xmlEscape(client.name) || unspecified}</nombre>\n`;
+    xml += `    <documento>${client.document || unspecified}</documento>\n`;
+    xml += `    <empresa>${xmlEscape(client.company) || unspecified}</empresa>\n`;
+    xml += `    <celular>${client.phone || unspecified}</celular>\n`;
+    xml += `    <contacto>${xmlEscape(client.email) || unspecified}</contacto>\n`;
     xml += '  </cliente>\n';
     xml += '  <productos>\n';
     list.forEach(item => {
         xml += '    <producto>\n';
         xml += `      <id>${item.id}</id>\n`;
-        xml += `      <nombre>${item.name}</nombre>\n`;
+        xml += `      <nombre>${xmlEscape(item.name)}</nombre>\n`;
         xml += `      <cantidad>${item.quantity || 1}</cantidad>\n`;
-        xml += `      <categoria>${item.category}</categoria>\n`;
+        xml += `      <categoria>${xmlEscape(item.category)}</categoria>\n`;
         xml += '    </producto>\n';
     });
     xml += '  </productos>\n';
@@ -651,18 +708,21 @@ function downloadQuoteXML() {
 function sendQuoteToWhatsApp() {
     if (quoteList.length === 0) return;
 
-    const clientName = document.getElementById('clientName')?.value;
-    const clientCompany = document.getElementById('clientCompany')?.value;
-    const clientEmail = document.getElementById('clientEmail')?.value;
+    const client = readQuoteClient();
 
     let message = "Hola Grupo Dewill, solicito una cotización para los siguientes productos:\n\n";
-    
-    if (clientName || clientCompany) {
-        message += "*DATOS DEL CLIENTE:*\n";
-        if (clientName) message += `- Nombre: ${clientName}\n`;
-        if (clientCompany) message += `- Empresa: ${clientCompany}\n`;
-        if (clientEmail) message += `- Contacto: ${clientEmail}\n`;
-        message += "\n";
+
+    const clientLines = [];
+    if (client.name) clientLines.push(`- Nombre: ${client.name}`);
+    if (client.document) clientLines.push(`- ${documentLabel(client.document)}: ${client.document}`);
+    if (client.company) clientLines.push(`- Empresa: ${client.company}`);
+    if (client.phone) clientLines.push(`- Celular: ${client.phone}`);
+    if (client.email) clientLines.push(`- Email: ${client.email}`);
+    if (clientLines.length) {
+        message += "*DATOS DEL CLIENTE:*\n" + clientLines.join('\n') + "\n\n";
+    }
+    if (client.message) {
+        message += `*MENSAJE:*\n${client.message}\n\n`;
     }
 
     message += "*LISTA DE PRODUCTOS:*\n";
@@ -683,30 +743,34 @@ function sendQuoteToWhatsApp() {
     window.open(`https://wa.me/${targetNumber}?text=${encodedMessage}`, '_blank');
 }
 
+class QuoteError extends Error {}
+
 function submitQuoteRequest() {
     if (quoteList.length === 0) {
         showToast('La lista de cotización está vacía.', 'error');
         return;
     }
 
-    const clientName = document.getElementById('clientName')?.value.trim();
-    const clientCompany = document.getElementById('clientCompany')?.value.trim();
-    const clientEmail = document.getElementById('clientEmail')?.value.trim();
-    const clientPhone = document.getElementById('clientPhone')?.value.trim();
-    const clientMessage = document.getElementById('clientMessage')?.value.trim();
-
-    if (!clientName || !clientEmail || !clientPhone) {
-        showToast('Por favor, complete los campos obligatorios (*).', 'error');
+    const client = readQuoteClient();
+    const problem = validateQuoteClient(client);
+    if (problem) {
+        showToast(problem.message, 'error');
+        const field = document.getElementById(problem.field);
+        if (field) {
+            field.classList.add('input-error');
+            field.focus();
+        }
         return;
     }
 
     // Prepare JSON payload
     const payload = {
-        name: clientName,
-        company: clientCompany || '',
-        email: clientEmail,
-        phone: clientPhone,
-        message: clientMessage || '',
+        name: client.name,
+        document: client.document,
+        company: client.company,
+        phone: client.phone,
+        email: client.email,
+        message: client.message,
         items: quoteList.map(item => ({
             product_id: parseInt(item.id),
             quantity: parseInt(item.quantity) || 1,
@@ -731,34 +795,32 @@ function submitQuoteRequest() {
         },
         body: JSON.stringify(payload)
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Error al enviar la cotización');
+    .then(async response => {
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.success) {
+            // El servidor explica qué dato falta o es inválido; se muestra tal cual
+            throw new QuoteError(data.error || 'Ocurrió un error. Inténtelo de nuevo.');
         }
-        return response.json();
+        return data;
     })
     .then(data => {
-        if (data.success) {
-            showToast('¡Solicitud de cotización enviada con éxito!', 'success');
-            
-            setTimeout(() => {
-                if (confirm('¿Desea enviar también una copia de su cotización por WhatsApp para acelerar la atención?')) {
-                    sendQuoteToWhatsApp();
-                }
-                
-                // Clear the quote
-                quoteList = [];
-                saveQuote();
-                updateQuoteUI();
-                toggleQuotePanel();
-            }, 500);
-        } else {
-            showToast('Ocurrió un error. Inténtelo de nuevo.', 'error');
-        }
+        showToast('¡Solicitud de cotización enviada con éxito!', 'success');
+
+        setTimeout(() => {
+            if (confirm('¿Desea enviar también una copia de su cotización por WhatsApp para acelerar la atención?')) {
+                sendQuoteToWhatsApp();
+            }
+
+            // Clear the quote
+            quoteList = [];
+            saveQuote();
+            updateQuoteUI();
+            toggleQuotePanel();
+        }, 500);
     })
     .catch(error => {
         console.error('Error submitting quote:', error);
-        showToast('Error de conexión. Inténtelo más tarde.', 'error');
+        showToast(error instanceof QuoteError ? error.message : 'Error de conexión. Inténtelo más tarde.', 'error');
     })
     .finally(() => {
         if (btn) {

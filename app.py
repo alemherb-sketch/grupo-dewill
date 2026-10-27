@@ -8,13 +8,16 @@ from flask import (Flask, render_template, request, redirect, url_for, flash,
                    jsonify, g)
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_mail import Mail, Message
+from markupsafe import Markup, escape
 from sqlalchemy import func
 from werkzeug.utils import secure_filename
 from werkzeug.middleware.proxy_fix import ProxyFix
 from config import Config
 from permissions import MODULES, MODULE_GROUPS, PRESETS, LEVEL_LABELS, VIEW, MANAGE, clean_permissions
+from site_pages import (PAGES, PAGES_BY_KEY, PAGE_BY_ENDPOINT, DISABLED_PAGES_KEY, EMPHASIS_RE, disabled_pages,
+                        serialize_disabled_pages, banner_text_fields, resolve_banner)
 from models import db, AdminUser, Category, SubCategory, Brand, Product, ProductImage, ProductSpec, Presentation
-from models import QuoteRequest, QuoteItem, Banner, GalleryCategory, GalleryImage, AmbientCategory, AmbientImage, SiteConfig, PaintColor, BlogCategory, BlogPost, ProductPresentationColor
+from models import QuoteRequest, QuoteItem, Banner, PageBanner, GalleryCategory, GalleryImage, AmbientCategory, AmbientImage, SiteConfig, PaintColor, BlogCategory, BlogPost, ProductPresentationColor
 import time
 import threading
 import resend
@@ -100,6 +103,12 @@ with app.app_context():
                 db.session.commit()
             except Exception:
                 db.session.rollback()
+        # DNI / RUC del cliente en las solicitudes de cotizacion
+        try:
+            db.session.execute(text("ALTER TABLE quote_requests ADD COLUMN client_document VARCHAR(20)"))
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
         # Los usuarios anteriores a este modulo eran todos administradores con acceso total
         try:
             db.session.execute(text("UPDATE admin_users SET is_admin = :v WHERE is_admin IS NULL"), {'v': True})
@@ -245,9 +254,29 @@ def save_upload(file, subfolder=''):
         return f"uploads/{subfolder}/{filename}" if subfolder else f"uploads/{filename}"
     return None
 
+IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp', 'gif'}
+
+def save_image_upload(file, subfolder=''):
+    """Como save_upload, pero solo acepta imágenes reales (no PDF ni video). Devuelve la ruta o None si no es válida."""
+    if not file or not file.filename or file.filename.rsplit('.', 1)[-1].lower() not in IMAGE_EXTENSIONS:
+        return None
+    try:
+        from PIL import Image
+    except ImportError:
+        Image = None  # sin Pillow se confía en la extensión
+    if Image is not None:
+        try:
+            Image.open(file.stream).verify()
+            file.stream.seek(0)
+        except Exception:
+            return None
+    return save_upload(file, subfolder)
+
 def get_site_config():
-    configs = SiteConfig.query.all()
-    return {c.key: c.value for c in configs}
+    """Configuracion del sitio como dict; se lee una sola vez por peticion."""
+    if 'site_config' not in g:
+        g.site_config = {c.key: c.value for c in SiteConfig.query.all()}
+    return g.site_config
 
 @app.context_processor
 def inject_site_config():
@@ -275,6 +304,62 @@ def maintenance_mode():
     if request.path.startswith('/api/'):
         return jsonify({'success': False, 'error': message}), 503, headers
     return render_template('mantenimiento.html', maintenance_message=message), 503, headers
+
+# ==================== PAGINAS HABILITADAS / DESHABILITADAS ====================
+# Se configura en Admin > Configuración > Páginas del sitio (las páginas se listan en site_pages.py).
+# Una página deshabilitada se quita del menú y de los enlaces, y quien entre a su dirección ve un aviso (404).
+# Los usuarios del panel con sesión iniciada sí la ven, con un aviso, para poder prepararla antes de habilitarla.
+
+@app.before_request
+def disabled_page_guard():
+    page_key = PAGE_BY_ENDPOINT.get(request.endpoint)
+    if not page_key:
+        return None
+    try:
+        if page_key not in disabled_pages(get_site_config()):
+            return None
+        if current_user.is_authenticated:
+            g.disabled_page_preview = PAGES_BY_KEY[page_key]['label']
+            return None
+    except Exception:
+        # Si la base falla, mejor dejar pasar la petición que bloquear todo el sitio
+        db.session.rollback()
+        return None
+    headers = {'Cache-Control': 'no-store'}
+    if request.path.startswith('/api/'):
+        return jsonify({'success': False, 'error': 'Esta sección no está disponible por el momento.'}), 404, headers
+    return render_template('pagina_no_disponible.html', page_label=PAGES_BY_KEY[page_key]['label']), 404, headers
+
+def get_page_banner(page_key):
+    """Banner efectivo de una página (personalizado en Admin > Banners o el de fábrica); se lee una vez por petición."""
+    if 'page_banner_rows' not in g:
+        try:
+            g.page_banner_rows = {row.page: row for row in PageBanner.query.all()}
+        except Exception:
+            db.session.rollback()
+            g.page_banner_rows = {}
+    return resolve_banner(page_key, g.page_banner_rows.get(page_key))
+
+@app.context_processor
+def inject_site_pages():
+    disabled = disabled_pages(get_site_config())
+    return {
+        'page_enabled': lambda key: key not in disabled,
+        'page_banner': get_page_banner,
+        'disabled_page_preview': g.get('disabled_page_preview'),
+    }
+
+@app.template_filter('banner_text')
+def banner_text(value, css_class='text-red'):
+    """Texto de un banner: escapa el HTML, resalta lo que va entre *asteriscos* y convierte los saltos de línea."""
+    html = EMPHASIS_RE.sub(lambda m: f'<span class="{css_class}">{m.group(1)}</span>', str(escape(value or '')))
+    return Markup(html.replace('\n', '<br>'))
+
+@app.template_filter('wa_number')
+def wa_number(phone):
+    """Número listo para wa.me: solo dígitos y con el prefijo de Perú si es un celular de 9 dígitos."""
+    digits = re.sub(r'\D', '', phone or '')
+    return '51' + digits if len(digits) == 9 else digits
 
 @app.context_processor
 def inject_community_photos():
@@ -491,13 +576,45 @@ def producto_detalle(product_id):
     categories = Category.query.order_by(Category.order).all()
     return render_template('producto_detalle.html', product=product, related=related, paint_colors=paint_colors, categories=categories)
 
+DOCUMENT_RE = re.compile(r'^(\d{8}|\d{11})$')   # DNI (8 dígitos) o RUC (11 dígitos)
+MOBILE_RE = re.compile(r'^9\d{8}$')            # celular peruano: 9 dígitos que empiezan en 9
+
+
+def _clean_quote_client(data):
+    """Valida y normaliza los datos del cliente de una solicitud de cotización.
+    DNI/RUC y celular son obligatorios; el correo y el mensaje son opcionales. Devuelve (datos, error)."""
+    def text(key, limit):
+        return str(data.get(key) or '').strip()[:limit]
+
+    name = text('name', 200)
+    document = re.sub(r'\D', '', str(data.get('document') or ''))
+    phone = re.sub(r'\D', '', str(data.get('phone') or ''))
+    if len(phone) == 11 and phone.startswith('51'):   # +51 987 654 321
+        phone = phone[2:]
+    email = text('email', 200)
+
+    if not name:
+        return None, 'Ingresa tu nombre completo.'
+    if not DOCUMENT_RE.match(document):
+        return None, 'Ingresa un DNI (8 dígitos) o un RUC (11 dígitos) válido.'
+    if not MOBILE_RE.match(phone):
+        return None, 'Ingresa un número de celular válido de 9 dígitos (por ejemplo 987654321).'
+    if email and not EMAIL_RE.match(email):
+        return None, 'El correo electrónico no es válido.'
+    return {'name': name, 'document': document, 'company': text('company', 200), 'phone': phone,
+            'email': email, 'message': text('message', 2000)}, None
+
+
 @app.route('/api/cotizacion', methods=['POST'])
 def api_cotizacion():
-    data = request.get_json()
+    data = request.get_json(silent=True)
     if not data or not data.get('items'):
-        return jsonify({'error': 'No hay productos'}), 400
-    quote = QuoteRequest(client_name=data.get('name',''), client_company=data.get('company',''),
-        client_email=data.get('email',''), client_phone=data.get('phone',''), message=data.get('message',''))
+        return jsonify({'success': False, 'error': 'No hay productos'}), 400
+    client, error = _clean_quote_client(data)
+    if error:
+        return jsonify({'success': False, 'error': error}), 400
+    quote = QuoteRequest(client_name=client['name'], client_document=client['document'], client_company=client['company'],
+        client_email=client['email'], client_phone=client['phone'], message=client['message'])
     db.session.add(quote)
     db.session.flush()
     for item in data['items']:
@@ -521,9 +638,10 @@ def api_cotizacion():
                 f"----------------------------------------\n"
                 f"CLIENTE:\n"
                 f"Nombre: {quote.client_name}\n"
+                f"{'DNI' if len(quote.client_document) == 8 else 'RUC'}: {quote.client_document}\n"
                 f"Empresa: {quote.client_company or 'No especificada'}\n"
-                f"Email: {quote.client_email}\n"
-                f"Teléfono: {quote.client_phone}\n\n"
+                f"Celular: {quote.client_phone}\n"
+                f"Email: {quote.client_email or 'No especificado'}\n\n"
                 f"MENSAJE:\n{quote.message or 'Sin mensaje'}\n\n"
                 f"PRODUCTOS:\n{items_text}\n"
                 f"----------------------------------------\n"
@@ -1465,11 +1583,70 @@ def admin_quote_status(qid):
     db.session.commit(); flash('Estado actualizado', 'success')
     return redirect(url_for('admin_quote_detail', qid=qid))
 
+BANNER_COLUMNS = ('image_url', 'image2_url', 'badge', 'title', 'subtitle', 'description')
+
+def _save_page_banner(page_key, reset=False):
+    """Guarda (o restaura) el banner de una página interna. Solo se guarda lo que difiere del banner de fábrica:
+    si no queda nada personalizado, la fila se elimina y la página vuelve a su diseño original."""
+    page = PAGES_BY_KEY[page_key]
+    row = PageBanner.query.filter_by(page=page_key).first()
+    if reset:
+        if row:
+            db.session.delete(row)
+            db.session.commit()
+        flash(f'El banner de {page["label"]} volvió a su diseño original', 'success')
+        return
+
+    values = {name: getattr(row, name) if row else None for name in BANNER_COLUMNS}
+    values['is_active'] = 'is_active' in request.form or not page['banner'].get('hideable', True)
+    rejected = []
+    for image in page['banner']['images']:
+        column = image['key'] + '_url'
+        upload = request.files.get(image['key'])
+        if upload and upload.filename:
+            url = save_image_upload(upload, 'banners')
+            if url:
+                values[column] = url
+            else:
+                rejected.append(image['label'])
+        elif request.form.get(image['key'] + '_reset'):
+            values[column] = None
+    for field in banner_text_fields(page_key):
+        posted = (request.form.get(field['key']) or '').replace('\r\n', '\n').strip()[:field['maxlength']]
+        values[field['key']] = None if posted == field['default'] else posted
+
+    customized = not values['is_active'] or any(values[name] is not None for name in BANNER_COLUMNS)
+    if customized:
+        if row is None:
+            row = PageBanner(page=page_key)
+            db.session.add(row)
+        for name, value in values.items():
+            setattr(row, name, value)
+    elif row is not None:
+        db.session.delete(row)
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        flash('No se pudo guardar el banner. Inténtalo de nuevo.', 'error')
+        return
+    if rejected:
+        flash('No se pudo usar la imagen: ' + ', '.join(rejected) + '. Sube un archivo PNG, JPG, WEBP o GIF válido.', 'error')
+    flash(f'Banner de {page["label"]} guardado', 'success')
+
+
 @app.route('/admin/banners', methods=['GET', 'POST'])
 @module_required('banners')
 def admin_banners():
     if request.method == 'POST':
         action = request.form.get('action')
+        if action in ('save_page', 'reset_page'):
+            page_key = request.form.get('page', '')
+            if page_key not in PAGES_BY_KEY:
+                flash('La página elegida no existe.', 'error')
+                return redirect(url_for('admin_banners'))
+            _save_page_banner(page_key, reset=(action == 'reset_page'))
+            return redirect(url_for('admin_banners', pagina=page_key))
         if action == 'create':
             b = Banner(title=request.form.get('title',''), subtitle=request.form.get('subtitle',''),
                 cta_text=request.form.get('cta_text',''), cta_link=request.form.get('cta_link',''),
@@ -1490,7 +1667,23 @@ def admin_banners():
             b = Banner.query.get(request.form['id'])
             if b: db.session.delete(b); db.session.commit(); flash('Banner eliminado', 'success')
         return redirect(url_for('admin_banners'))
-    return render_template('admin/banners.html', banners=Banner.query.order_by(Banner.order).all())
+    # Pestaña 'inicio': carrusel de la portada; cualquier otra: el banner de esa página (ver site_pages.py)
+    current_page = request.args.get('pagina', 'inicio')
+    if current_page not in PAGES_BY_KEY:
+        current_page = 'inicio'
+    context = {'banners': Banner.query.order_by(Banner.order).all(), 'pages': PAGES, 'current_page': current_page,
+               'customized_pages': {row.page for row in PageBanner.query.all()}}
+    if current_page != 'inicio':
+        row = PageBanner.query.filter_by(page=current_page).first()
+        current = resolve_banner(current_page, row)
+        page = PAGES_BY_KEY[current_page]
+        context.update(
+            page_cfg=page, current_banner=current,
+            banner_images=[{**image, 'url': getattr(current, image['key']),
+                            'custom': bool(row and getattr(row, image['key'] + '_url'))}
+                           for image in page['banner']['images']],
+            banner_texts=[{**field, 'value': getattr(current, field['key'])} for field in banner_text_fields(current_page)])
+    return render_template('admin/banners.html', **context)
 
 @app.route('/admin/galeria', methods=['GET', 'POST'])
 @module_required('galeria')
@@ -1540,12 +1733,16 @@ def admin_gallery():
 def admin_settings():
     if request.method == 'POST':
         for key in ['phone','whatsapp','whatsapp_2','whatsapp_3','email','notify_email','address','facebook','instagram','tiktok',
-                     'hero_title','hero_subtitle','hero_badge','meta_title','meta_description','meta_keywords','maps_embed',
+                     'youtube','linkedin','hero_title','hero_subtitle','hero_badge','meta_title','meta_description','meta_keywords','maps_embed',
                      'maintenance_mode','maintenance_message']:
             SiteConfig.set(key, request.form.get(key, ''))
+        # 'pages_form' indica que el bloque de páginas llegó completo; sin esa marca (formulario desactualizado) no se toca
+        if request.form.get('pages_form'):
+            enabled = set(request.form.getlist('pages_enabled'))
+            SiteConfig.set(DISABLED_PAGES_KEY, serialize_disabled_pages({page['key'] for page in PAGES} - enabled))
         flash('Configuración guardada', 'success')
         return redirect(url_for('admin_settings'))
-    return render_template('admin/settings.html')
+    return render_template('admin/settings.html', site_pages=PAGES, disabled_page_keys=disabled_pages(get_site_config()))
 
 
 @app.route('/admin/blog')

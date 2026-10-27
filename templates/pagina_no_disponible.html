@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Página no disponible | Grupo Dewill{% endblock %}
+{% block nav_class %}scrolled{% endblock %}
+
+{# Se muestra (con estado 404) cuando una página fue deshabilitada en Admin > Configuración > Páginas del sitio #}
+{% block content %}
+<section class="section">
+    <div class="container">
+        <div class="page-unavailable">
+            <div class="page-unavailable-icon"><i class="fas fa-eye-slash" aria-hidden="true"></i></div>
+            <span class="page-unavailable-tag">{{ page_label }}</span>
+            <h1>Esta página no está disponible por el momento</h1>
+            <p>Estamos trabajando en esta sección y volverá pronto. Mientras tanto, con gusto te atendemos.</p>
+            <div class="page-unavailable-actions">
+                <a href="{{ url_for('index') }}" class="btn btn-primary"><i class="fas fa-home"></i> Volver al inicio</a>
+                <a href="https://wa.me/{{ site.get('whatsapp') or '51983461199' }}?text={{ 'Hola Grupo Dewill, necesito información' | urlencode }}" target="_blank" rel="noopener" class="btn btn-whatsapp">
+                    <i class="fab fa-whatsapp"></i> Escríbenos por WhatsApp
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

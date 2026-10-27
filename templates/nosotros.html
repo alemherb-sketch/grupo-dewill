@@ -3,18 +3,19 @@
 {% block nav_class %}scrolled{% endblock %}
 
 {% block content %}
-<!-- Section 1: Hero & Experience -->
+<!-- Section 1: Hero & Experience (imagen y textos configurables en Admin > Banners) -->
+{% set hero = page_banner('nosotros') %}
 <section class="about-hero-model">
     <!-- Red/blue corner accent -->
     <div class="about-stripe-bg" aria-hidden="true"></div>
     <div class="container about-hero-container">
         <!-- Left Col -->
         <div class="about-hero-left">
-            <span class="about-hero-tag"><i class="fas fa-users"></i> CONÓCENOS</span>
-            <h1 class="about-hero-title">Sobre<br><span class="text-red">Nosotros</span></h1>
+            {% if hero.badge %}<span class="about-hero-tag"><i class="fas fa-users"></i> {{ hero.badge }}</span>{% endif %}
+            {% if hero.title %}<h1 class="about-hero-title">{{ hero.title|banner_text }}</h1>{% endif %}
             <div class="hero-title-divider"></div>
-            <h3 class="about-hero-subtitle">Más de 20 años construyendo <span class="text-red">confianza</span> en el Perú</h3>
-            <p class="about-hero-desc">Somos aliados estratégicos en pinturas, herramientas, adhesivos y soluciones para la construcción, industria y hogar.</p>
+            {% if hero.subtitle %}<h3 class="about-hero-subtitle">{{ hero.subtitle|banner_text }}</h3>{% endif %}
+            {% if hero.description %}<p class="about-hero-desc">{{ hero.description|banner_text }}</p>{% endif %}
 
             <div class="about-experience-card">
                 <div class="exp-header">
@@ -30,7 +31,7 @@
         <!-- Right Col -->
         <div class="about-hero-right">
             <div class="about-hero-image-wrapper">
-                <img src="{{ url_for('static', filename='assets/local_foto.jpeg') }}" alt="Local Grupo Dewill">
+                <img src="{{ url_for('static', filename=hero.image) }}" alt="Local Grupo Dewill">
                 <!-- Side icons floating -->
                 <div class="side-icons-list left-side">
                     <div class="side-icon-item"><i class="fas fa-shield-alt"></i><span>PRODUCTOS<br>DE CALIDAD</span></div>
@@ -118,7 +119,7 @@
             </div>
         </div>
         <div class="bc-center">
-            <a href="{{ url_for('contacto') }}" class="btn-bc-red">CONOCE NUESTRAS TIENDAS <i class="fas fa-arrow-right"></i></a>
+            {% if page_enabled('contacto') %}<a href="{{ url_for('contacto') }}" class="btn-bc-red">CONOCE NUESTRAS TIENDAS <i class="fas fa-arrow-right"></i></a>{% endif %}
         </div>
         <div class="bc-right">
             <div class="bc-info-item"><i class="fas fa-phone-alt"></i> {{ site.get('phone', '01 123 4567') }}</div>

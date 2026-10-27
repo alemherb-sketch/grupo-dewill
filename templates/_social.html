@@ -1,0 +1,22 @@
+{#- Iconos de redes sociales con el color de cada marca. Las URL se configuran en Admin > Configuración > Redes Sociales.
+    Uso:  {% from '_social.html' import social_links %}
+          {{ social_links(site, ['facebook', 'instagram'], 'sm') }}      tamaños: sm (cabecera), md, lg (pie de página) -#}
+{% set SOCIAL_NETWORKS = {
+    'facebook':  ('Facebook',  'fab fa-facebook-f'),
+    'instagram': ('Instagram', 'fab fa-instagram'),
+    'tiktok':    ('TikTok',    'fab fa-tiktok'),
+    'youtube':   ('YouTube',   'fab fa-youtube'),
+    'linkedin':  ('LinkedIn',  'fab fa-linkedin-in'),
+} %}
+
+{% macro social_links(site, networks, size='md') -%}
+<div class="social-icons social-icons--{{ size }}">
+    {%- for key in networks %}
+    {%- set label, icon = SOCIAL_NETWORKS[key] %}
+    {#- Solo se enlaza una URL http(s) completa; sin configurar queda "#" (el icono se ve igual) #}
+    {%- set url = (site.get(key) or '').strip() %}
+    {%- set is_link = url.startswith('http://') or url.startswith('https://') %}
+    <a href="{{ url if is_link else '#' }}" class="social-icon social-icon--{{ key }}" aria-label="{{ label }}" title="{{ label }}"{% if is_link %} target="_blank" rel="noopener noreferrer"{% endif %}><i class="{{ icon }}" aria-hidden="true"></i></a>
+    {%- endfor %}
+</div>
+{%- endmacro %}

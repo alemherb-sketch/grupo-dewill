@@ -152,6 +152,42 @@ a { text-decoration: none; color: var(--admin-primary); }
 .filter-tab.active { background: #f1f5f9; color: var(--admin-text); border-color: var(--admin-border); }
 .filter-tab:hover { color: var(--admin-text); }
 
+/* Banners: una pestana por pagina */
+.banner-tabs { flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; }
+.banner-tabs .filter-tab { display: inline-flex; align-items: center; gap: 0.45rem; background: var(--admin-surface); border-color: var(--admin-border); }
+.banner-tabs .filter-tab:hover { border-color: #cbd5e1; }
+.banner-tabs .filter-tab.active { background: var(--admin-primary); border-color: var(--admin-primary); color: #fff; }
+.tab-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--admin-warning); }
+.banner-tabs .filter-tab.active .tab-dot { background: #fff; }
+.banner-image-slot + .banner-image-slot { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px dashed var(--admin-border); }
+.banner-image-preview { display: block; width: 100%; max-height: 230px; object-fit: contain; background: #f1f5f9; border: 1px solid var(--admin-border); border-radius: 8px; margin-bottom: 0.75rem; }
+.field-hint { display: block; margin-top: 0.4rem; font-size: 0.8rem; line-height: 1.4; color: var(--admin-text-muted); }
+.banner-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; }
+
+/* Ayuda bajo el titulo de una seccion de formulario */
+.section-help { font-size: 0.875rem; line-height: 1.55; color: var(--admin-text-muted); margin: -0.5rem 0 1.25rem; }
+
+/* Interruptores para habilitar / deshabilitar paginas (Configuracion) */
+.page-switch-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 0.75rem; }
+.page-switch { position: relative; display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1rem; border: 1px solid var(--admin-border); border-radius: 10px; background: #fff; cursor: pointer; transition: background 0.2s, border-color 0.2s; }
+.page-switch:hover { border-color: #cbd5e1; }
+.page-switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.page-switch-track { flex: 0 0 auto; position: relative; width: 44px; height: 24px; border-radius: 9999px; background: #cbd5e1; transition: background 0.2s; }
+.page-switch-track::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); transition: transform 0.2s; }
+.page-switch input:checked ~ .page-switch-track { background: var(--admin-success); }
+.page-switch input:checked ~ .page-switch-track::after { transform: translateX(20px); }
+.page-switch input:focus-visible ~ .page-switch-track { box-shadow: 0 0 0 3px rgba(217, 32, 39, 0.3); }
+.page-switch-name { font-weight: 600; color: var(--admin-text); white-space: nowrap; }
+.page-switch-name i { width: 1.2em; margin-right: 0.25rem; color: var(--admin-text-muted); text-align: center; }
+.page-switch-url { font-size: 0.8rem; color: var(--admin-text-muted); overflow: hidden; text-overflow: ellipsis; }
+.page-switch-state { margin-left: auto; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; }
+.page-switch-state .on { color: #059669; }
+.page-switch-state .off { display: none; color: #b45309; }
+.page-switch input:not(:checked) ~ .page-switch-state .on { display: none; }
+.page-switch input:not(:checked) ~ .page-switch-state .off { display: inline; }
+.page-switch input:not(:checked) ~ .page-switch-name { color: var(--admin-text-muted); text-decoration: line-through; }
+.page-switch:has(input:not(:checked)) { background: #fffbeb; border-color: #fcd34d; }
+
 /* Quick Actions */
 .quick-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
 .quick-action-card { background: var(--admin-surface); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--admin-border); text-align: center; color: var(--admin-text); transition: all 0.2s; display: flex; flex-direction: column; align-items: center; gap: 0.75rem; font-weight: 500; }

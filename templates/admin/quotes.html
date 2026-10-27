@@ -37,8 +37,9 @@
                 </div>
             </div>
             <div class="col-contact">
-                <span class="contact-item"><i class="fas fa-envelope"></i> {{ q.client_email or '-' }}</span>
-                <span class="contact-item"><i class="fas fa-phone"></i> {{ q.client_phone or '-' }}</span>
+                <span class="contact-item" title="DNI / RUC"><i class="fas fa-id-card"></i> {{ q.client_document or '-' }}</span>
+                <span class="contact-item" title="Celular"><i class="fas fa-phone"></i> {{ q.client_phone or '-' }}</span>
+                <span class="contact-item" title="Email"><i class="fas fa-envelope"></i> {{ q.client_email or '-' }}</span>
             </div>
             <div class="col-products">
                 <div class="prod-count"><i class="fas fa-box-open"></i> {{ q.items|length }} prod.</div>
