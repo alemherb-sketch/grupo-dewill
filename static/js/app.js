@@ -681,6 +681,7 @@ function generateQuoteXML(list) {
         xml += `      <nombre>${xmlEscape(item.name)}</nombre>\n`;
         xml += `      <cantidad>${item.quantity || 1}</cantidad>\n`;
         xml += `      <categoria>${xmlEscape(item.category)}</categoria>\n`;
+        if (item.color) xml += `      <color>${xmlEscape(item.color)}</color>\n`;
         xml += '    </producto>\n';
     });
     xml += '  </productos>\n';
@@ -727,7 +728,8 @@ function sendQuoteToWhatsApp() {
 
     message += "*LISTA DE PRODUCTOS:*\n";
     quoteList.forEach((item, index) => {
-        message += `${index + 1}. [Cant: ${item.quantity || 1}] ${item.name}\n`;
+        const color = item.color ? ` - Color: ${item.color}` : '';   // el color va con su codigo: "AMARILLO LIMON #41"
+        message += `${index + 1}. [Cant: ${item.quantity || 1}] ${item.name}${color}\n`;
     });
 
     // Añadir bloque XML

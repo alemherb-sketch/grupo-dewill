@@ -9,12 +9,12 @@
         <p>Sube un archivo de Excel (.xlsx) para importar productos masivamente.</p>
         <p>El archivo <strong>debe contener</strong> las siguientes columnas exactamente (pueden estar en cualquier orden):</p>
         <ul>
-            <li><strong>Codigo</strong>: SKU único del producto. Si ya existe, se ignorará la fila.</li>
             <li><strong>Categoria</strong>: Nombre de la categoría. Si no existe, se creará.</li>
             <li><strong>Sub Categoria</strong>: Nombre de la subcategoría. Si no existe, se creará bajo la categoría indicada.</li>
             <li><strong>Marca</strong>: Nombre de la marca. Si no existe, se creará.</li>
-            <li><strong>Producto</strong>: Nombre del producto.</li>
-            <li><strong>Color</strong>: (Opcional) Color del producto, se guardará como especificación.</li>
+            <li><strong>Producto</strong>: Nombre del producto. Si ya existe (mismo nombre y marca), se actualiza.</li>
+            <li><strong>Codigo</strong>: (Opcional) SKU único del producto. Solo hace falta para crear productos nuevos; si el SKU ya existe, se ignorará la fila.</li>
+            <li><strong>Color</strong>: (Opcional) Color del producto, se guardará como especificación. Si tiene código, va al final con # (ej. <code>AMARILLO LIMON #41</code>) y viaja con el color en la cotización.</li>
             <li><strong>Presentacion</strong>: (Opcional) Presentación del producto. Si no existe, se creará.</li>
         </ul>
         <div class="alert alert-info mt-3" style="background-color: #e9f5ff; border-left: 4px solid #007bff; padding: 15px;">

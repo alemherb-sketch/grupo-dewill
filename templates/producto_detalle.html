@@ -25,6 +25,20 @@
     .color-swatches-grid::-webkit-scrollbar-thumb:hover {
         background: #aaa;
     }
+    /* El codigo del color (p. ej. #41) va bajo su circulo */
+    .color-swatch-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.3rem;
+        flex-shrink: 0;
+    }
+    .color-swatch-code {
+        font-size: 0.7rem;
+        font-weight: 600;
+        line-height: 1;
+        color: #64748b;
+    }
     .presentation-select:focus {
         outline: none;
         border-color: var(--primary);
@@ -170,14 +184,18 @@
                         <p class="detail-section-hint">Elige un color:</p>
                         <div class="color-swatches-grid" style="flex-wrap: nowrap; overflow-x: auto; padding-bottom: 0.5rem; scrollbar-width: thin; -webkit-overflow-scrolling: touch;">
                             {% for color in paint_colors %}
-                            <button class="color-swatch-new"
-                                    data-name="{{ color.name }}"
-                                    data-hex="{{ color.hex_code }}"
-                                    title="{{ color.name }}"
-                                    onclick="selectColor(this, '{{ color.name|e }}', '{{ color.hex_code }}')"
-                                    style="background-color: {{ color.hex_code }};"
-                                    {% if color.hex_code|lower == '#ffffff' %}style="background-color: {{ color.hex_code }}; border: 2px solid #ddd;"{% endif %}>
-                            </button>
+                            <div class="color-swatch-item">
+                                <button class="color-swatch-new"
+                                        data-name="{{ color.name }}"
+                                        data-label="{{ color.label }}"
+                                        data-hex="{{ color.hex_code }}"
+                                        title="{{ color.label }}"
+                                        onclick="selectColor(this)"
+                                        style="background-color: {{ color.hex_code }};"
+                                        {% if color.hex_code|lower == '#ffffff' %}style="background-color: {{ color.hex_code }}; border: 2px solid #ddd;"{% endif %}>
+                                </button>
+                                {% if color.code %}<span class="color-swatch-code">#{{ color.code }}</span>{% endif %}
+                            </div>
                             {% endfor %}
                         </div>
                         <p class="colors-note">Los colores mostrados son referenciales. Puede haber variaciones según la pantalla.</p>
@@ -360,6 +378,10 @@
 <script>
 let currentQty = 1;
 
+function escAttr(value) {
+    return String(value ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 function changeQty(delta) {
     currentQty = Math.max(1, currentQty + delta);
     document.getElementById('qtyDisplay').textContent = currentQty;
@@ -387,11 +409,14 @@ async function selectPresentation(btn, name, presId) {
                 if (colors.length > 0) {
                     grid.innerHTML = colors.map(c => {
                         const extraStyle = c.hex_code.toLowerCase() === '#ffffff' ? 'border: 2px solid #ddd;' : '';
-                        return `<button class="color-swatch-new" 
-                                data-name="${c.name}" data-hex="${c.hex_code}" title="${c.name}"
-                                onclick="selectColor(this, '${c.name.replace(/'/g, "\\'")}', '${c.hex_code}')"
+                        const code = c.code ? `<span class="color-swatch-code">#${escAttr(c.code)}</span>` : '';
+                        return `<div class="color-swatch-item">
+                            <button class="color-swatch-new"
+                                data-name="${escAttr(c.name)}" data-label="${escAttr(c.label)}" data-hex="${c.hex_code}" title="${escAttr(c.label)}"
+                                onclick="selectColor(this)"
                                 style="background-color: ${c.hex_code}; ${extraStyle}">
-                        </button>`;
+                            </button>${code}
+                        </div>`;
                     }).join('');
                 } else {
                     grid.innerHTML = '<p class="colors-empty-msg" style="grid-column: 1 / -1; color: #666; font-size: 0.9rem;">⚠️ No hay colores vinculados a esta presentación. Por favor, actualiza el archivo Excel en el panel de administración.</p>';
@@ -431,14 +456,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-function selectColor(btn, name, hex) {
+// El color elegido viaja a la cotizacion con su codigo: 'AMARILLO LIMON #41' (solo el nombre si no tiene codigo)
+function selectColor(btn) {
+    const label = btn.dataset.label || btn.dataset.name;
     document.querySelectorAll('.color-swatch-new').forEach(b => b.classList.remove('selected'));
     btn.classList.add('selected');
-    document.getElementById('selectedColorName').value = name;
+    document.getElementById('selectedColorName').value = label;
     const display = document.getElementById('selectedColorDisplay');
     display.style.display = 'flex';
-    document.getElementById('selectedColorText').textContent = name;
-    document.getElementById('colorPreviewDot').style.backgroundColor = hex;
+    document.getElementById('selectedColorText').textContent = label;
+    document.getElementById('colorPreviewDot').style.backgroundColor = btn.dataset.hex;
 }
 
 function handleAddToCart() {
@@ -459,7 +486,7 @@ function handleAddToCart() {
             return;
         }
     }
-    addToQuote({{ product.id }}, '{{ product.name|e }}', '{{ product.main_image or 'assets/product_paint.png' }}', colorName, currentQty, presentationName);
+    addToQuote({{ product.id }}, {{ product.name|tojson }}, '{{ product.main_image or 'assets/product_paint.png' }}', colorName, currentQty, presentationName);
 }
 </script>
 {% endblock %}

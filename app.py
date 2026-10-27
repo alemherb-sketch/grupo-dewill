@@ -18,6 +18,7 @@ from site_pages import (PAGES, PAGES_BY_KEY, PAGE_BY_ENDPOINT, DISABLED_PAGES_KE
                         serialize_disabled_pages, banner_text_fields, resolve_banner)
 from models import db, AdminUser, Category, SubCategory, Brand, Product, ProductImage, ProductSpec, Presentation
 from models import QuoteRequest, QuoteItem, Banner, PageBanner, GalleryCategory, GalleryImage, AmbientCategory, AmbientImage, SiteConfig, PaintColor, BlogCategory, BlogPost, ProductPresentationColor
+from models import split_color_code, color_label
 import time
 import threading
 import resend
@@ -106,6 +107,12 @@ with app.app_context():
         # DNI / RUC del cliente en las solicitudes de cotizacion
         try:
             db.session.execute(text("ALTER TABLE quote_requests ADD COLUMN client_document VARCHAR(20)"))
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+        # Codigo de fabrica de los colores de cada presentacion ('AMARILLO LIMON #41')
+        try:
+            db.session.execute(text("ALTER TABLE product_presentation_colors ADD COLUMN color_code VARCHAR(50)"))
             db.session.commit()
         except Exception:
             db.session.rollback()
@@ -513,6 +520,11 @@ def api_search():
     ).limit(8).all()
     return jsonify([p.to_dict() for p in results])
 
+def _color_option(name, hex_code, code=None):
+    """Una opcion del selector de color de la ficha. 'label' (nombre + codigo) es lo que ve y envia el cliente."""
+    return {'name': name, 'code': code, 'label': color_label(name, code), 'hex_code': hex_code}
+
+
 @app.route('/api/producto/<int:product_id>/colores')
 def api_product_colors(product_id):
     """Returns colors available for a product, optionally filtered by presentation_id."""
@@ -524,7 +536,7 @@ def api_product_colors(product_id):
             product_id=product_id,
             presentation_id=pres_id
         ).all()
-        return jsonify([{'name': lk.color_name, 'hex_code': lk.hex_code} for lk in links])
+        return jsonify([_color_option(lk.color_name, lk.hex_code, lk.color_code) for lk in links])
     
     # Fallback if no presentation selected: all colors from specs
     specs = ProductSpec.query.filter(
@@ -536,7 +548,7 @@ def api_product_colors(product_id):
     for s in specs:
         if s.value.lower() not in seen:
             pc = PaintColor.query.filter(PaintColor.name.ilike(s.value)).first()
-            result.append({'name': s.value, 'hex_code': pc.hex_code if pc else '#cccccc'})
+            result.append(_color_option(s.value, pc.hex_code if pc else '#cccccc'))
             seen.add(s.value.lower())
     
     # If still empty and it's a paint product, return all PaintColors
@@ -544,7 +556,7 @@ def api_product_colors(product_id):
         product = Product.query.get(product_id)
         if product and product.category and 'pintura' in product.category.name.lower():
             all_colors = PaintColor.query.filter_by(is_active=True).order_by(PaintColor.name).all()
-            result = [{'name': c.name, 'hex_code': c.hex_code} for c in all_colors]
+            result = [_color_option(c.name, c.hex_code) for c in all_colors]
     
     return jsonify(result)
 
@@ -558,20 +570,23 @@ def producto_detalle(product_id):
     _attach_card_data(related)
 
     product_color_specs = list(set([spec.value for spec in product.specs if spec.key.lower() == 'color']))
-    
+    # Codigo de cada color del producto (el mismo en todas sus presentaciones)
+    color_codes = {lk.color_name.strip().lower(): lk.color_code for lk in product.presentation_colors if lk.color_code}
+
     paint_colors = []
     if product_color_specs:
         for cname in product_color_specs:
             pc = PaintColor.query.filter(PaintColor.name.ilike(cname)).first()
+            code = color_codes.get(cname.strip().lower())
             if pc:
-                paint_colors.append({'name': pc.name, 'hex_code': pc.hex_code})
+                paint_colors.append(_color_option(pc.name, pc.hex_code, code))
             else:
                 # Add a fallback hex code for unknown imported colors
-                paint_colors.append({'name': cname, 'hex_code': '#cccccc'})
+                paint_colors.append(_color_option(cname, '#cccccc', code))
     elif product.category and 'pintura' in product.category.name.lower():
         # Fallback to all active paint colors
         all_colors = PaintColor.query.filter_by(is_active=True).all()
-        paint_colors = [{'name': c.name, 'hex_code': c.hex_code} for c in all_colors]
+        paint_colors = [_color_option(c.name, c.hex_code) for c in all_colors]
         
     categories = Category.query.order_by(Category.order).all()
     return render_template('producto_detalle.html', product=product, related=related, paint_colors=paint_colors, categories=categories)
@@ -605,6 +620,22 @@ def _clean_quote_client(data):
             'email': email, 'message': text('message', 2000)}, None
 
 
+def _quote_color(product, color):
+    """Color de un item de la cotizacion tal como se guarda y se envia: con su codigo ('AMARILLO LIMON #41').
+    Si el cliente mando solo el nombre (p. ej. una lista armada antes de que existieran los codigos),
+    el codigo se toma de los colores del producto."""
+    color = str(color or '').strip()[:100]
+    if not color:
+        return None
+    if product is None or split_color_code(color)[1]:
+        return color
+    key = color.lower()
+    for link in product.presentation_colors:
+        if link.color_code and (link.color_name or '').strip().lower() == key:
+            return link.label[:100]
+    return color
+
+
 @app.route('/api/cotizacion', methods=['POST'])
 def api_cotizacion():
     data = request.get_json(silent=True)
@@ -618,7 +649,8 @@ def api_cotizacion():
     db.session.add(quote)
     db.session.flush()
     for item in data['items']:
-        db.session.add(QuoteItem(quote_id=quote.id, product_id=item['product_id'], quantity=item.get('quantity',1), color=item.get('color'), presentation=item.get('presentation')))
+        item['color'] = _quote_color(Product.query.get(item['product_id']), item.get('color'))
+        db.session.add(QuoteItem(quote_id=quote.id, product_id=item['product_id'], quantity=item.get('quantity',1), color=item['color'], presentation=item.get('presentation')))
     db.session.commit()
     try:
         # Obtener configuración de correo
@@ -1129,7 +1161,8 @@ def admin_product_import():
                 for cell in next(ws.iter_rows(min_row=1, max_row=1)):
                     headers_raw.append(str(cell.value or '').strip().title())
                 
-                required_cols = ['Codigo', 'Categoria', 'Sub Categoria', 'Marca', 'Producto']
+                # 'Codigo' (SKU) solo hace falta para crear productos nuevos; sin esa columna se actualizan los que ya existen
+                required_cols = ['Categoria', 'Sub Categoria', 'Marca', 'Producto']
                 for col in required_cols:
                     if col not in headers_raw:
                         wb.close()
@@ -1155,11 +1188,12 @@ def admin_product_import():
                         return str(v).strip() or None
                     
                     codigo = cell('Codigo')
-                    if not codigo:
+                    prod_name = cell('Producto')
+                    if not prod_name and not codigo:   # fila vacia
                         skipped += 1
                         continue
                         
-                    prod_name = cell('Producto') or 'Sin Nombre'
+                    prod_name = prod_name or 'Sin Nombre'
                     
                     # 1. Handle Brand
                     brand = None
@@ -1168,6 +1202,9 @@ def admin_product_import():
                         marca_slug = slugify(marca_name)
                         brand = Brand.query.filter(Brand.slug == marca_slug).first()
                         if not brand:
+                            if not codigo:   # sin Codigo no se crea nada: la fila solo puede actualizar un producto existente
+                                skipped += 1
+                                continue
                             brand = Brand(name=marca_name, slug=marca_slug)
                             db.session.add(brand)
                             db.session.flush()
@@ -1184,7 +1221,7 @@ def admin_product_import():
                         db.session.flush()
                     
                     if not product:
-                        if Product.query.filter_by(sku=codigo).first():
+                        if not codigo or Product.query.filter_by(sku=codigo).first():
                             skipped += 1
                             continue
                         # Handle Category
@@ -1221,10 +1258,20 @@ def admin_product_import():
                         )
                         db.session.add(product)
                         db.session.flush()
-                        
-                    # Handle Color
-                    color_val = cell('Color')
+                        # producto nuevo: no hay vinculos anteriores que limpiar (sin esto, la 2da fila borraba el color de la 1ra)
+                        cleared_products.add(product.id)
+
+                    # Handle Color: 'AMARILLO LIMON #41' se guarda como nombre 'AMARILLO LIMON' + codigo '41'
+                    color_raw = cell('Color')
+                    color_val, color_code = split_color_code(color_raw)
                     if color_val:
+                        if color_code:
+                            # importaciones anteriores guardaban el texto completo ('AMARILLO LIMON #41') como especificacion
+                            ProductSpec.query.filter(
+                                ProductSpec.product_id == product.id,
+                                ProductSpec.key == 'Color',
+                                ProductSpec.value == color_raw
+                            ).delete()
                         existing_spec = ProductSpec.query.filter(
                             ProductSpec.product_id == product.id,
                             ProductSpec.key == 'Color',
@@ -1260,14 +1307,16 @@ def admin_product_import():
                                 product_id=product.id,
                                 presentation_id=pres.id,
                                 color_name=color_val,
-                                hex_code=hex_code
+                                hex_code=hex_code,
+                                color_code=color_code
                             ))
 
                     imported += 1
                     
                 wb.close()
                 db.session.commit()
-                flash(f'Importación completada. {imported} productos importados, {skipped} omitidos.', 'success')
+                note = '' if 'Codigo' in col_map else ' El archivo no tiene la columna Codigo: solo se actualizaron los productos que ya existían.'
+                flash(f'Importación completada. {imported} productos importados, {skipped} omitidos.{note}', 'success')
                 return redirect(url_for('admin_products'))
                 
             except Exception as e:

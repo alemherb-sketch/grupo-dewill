@@ -1,4 +1,5 @@
 import json
+import re
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
@@ -95,6 +96,23 @@ product_presentations = db.Table('product_presentations',
 )
 
 
+# En el Excel el codigo de fabrica del color va al final del nombre: 'AMARILLO LIMON #41'
+COLOR_CODE_RE = re.compile(r'^(?P<name>\S.*?)\s*#\s*(?P<code>[\w./-]+)\s*$')
+
+
+def split_color_code(text):
+    """'AMARILLO LIMON #41' -> ('AMARILLO LIMON', '41'). Sin codigo devuelve (texto, None).
+    El codigo es texto: '08' conserva el cero."""
+    text = (text or '').strip()
+    m = COLOR_CODE_RE.match(text)
+    return (m.group('name'), m.group('code')) if m else (text, None)
+
+
+def color_label(name, code=None):
+    """El color tal como se muestra y se envia en la cotizacion: 'AMARILLO LIMON #41'."""
+    return f'{name} #{code}' if code else name
+
+
 class ProductPresentationColor(db.Model):
     """Links specific colors to a presentation of a product (from Excel import)."""
     __tablename__ = 'product_presentation_colors'
@@ -103,7 +121,12 @@ class ProductPresentationColor(db.Model):
     presentation_id = db.Column(db.Integer, db.ForeignKey('presentations.id', ondelete='CASCADE'), nullable=False)
     color_name = db.Column(db.String(200), nullable=False)
     hex_code = db.Column(db.String(10), default='#cccccc')
+    color_code = db.Column(db.String(50))   # codigo de fabrica del color (el '41' de 'AMARILLO LIMON #41'); opcional
     __table_args__ = (db.UniqueConstraint('product_id', 'presentation_id', 'color_name'),)
+
+    @property
+    def label(self):
+        return color_label(self.color_name, self.color_code)
 
 
 class Presentation(db.Model):
