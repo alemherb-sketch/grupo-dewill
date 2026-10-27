@@ -5560,3 +5560,142 @@ section,
     .cert-card p { font-size: 0.7rem !important; line-height: 1.3 !important; }
 }
 
+
+/* ================= OFERTAS: carrusel de banners debajo de Marcas ================= */
+.offers-section {
+    background-color: #ffffff;
+    padding: 3rem 0 3.4rem;
+}
+
+.offers-carousel {
+    position: relative;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* El navegador hace el desplazamiento y el arrastre con el dedo (scroll-snap) */
+.offers-track {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    outline-offset: 4px;
+}
+
+.offers-track::-webkit-scrollbar {
+    display: none;
+}
+
+/* Todas las ofertas con la misma proporcion (3:1, p. ej. 1200 x 400 px) para que el carrusel no cambie de alto */
+.offer-slide {
+    flex: 0 0 100%;
+    scroll-snap-align: start;
+    aspect-ratio: 3 / 1;
+    background: var(--bg-surface);
+}
+
+.offer-slide a,
+.offer-slide img {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.offer-slide img {
+    object-fit: cover;
+}
+
+.offers-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 46px;
+    height: 46px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(8, 28, 59, 0.6);
+    color: #ffffff;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 2;
+    transition: background 0.3s, transform 0.2s;
+}
+
+.offers-nav:hover,
+.offers-nav:focus-visible {
+    background: var(--primary);
+    transform: translateY(-50%) scale(1.08);
+}
+
+.offers-nav.prev {
+    left: 14px;
+}
+
+.offers-nav.next {
+    right: 14px;
+}
+
+.offers-dots {
+    display: flex;
+    justify-content: center;
+    gap: 0.55rem;
+    margin-top: 1rem;
+}
+
+.offers-dot {
+    width: 10px;
+    height: 10px;
+    padding: 0;
+    border: none;
+    border-radius: var(--radius-full);
+    background: #c3cad6;
+    cursor: pointer;
+    transition: width 0.3s, background 0.3s;
+}
+
+.offers-dot.active {
+    width: 28px;
+    background: var(--primary);
+}
+
+.offers-dot:focus-visible {
+    outline: 2px solid var(--secondary);
+    outline-offset: 2px;
+}
+
+@media (max-width: 575px) {
+    .offers-section {
+        padding: 2rem 0 2.4rem;
+    }
+    .offers-section .container {
+        padding: 0 0.75rem;
+    }
+    .offers-track {
+        border-radius: var(--radius-md);
+    }
+    .offers-nav {
+        width: 34px;
+        height: 34px;
+        font-size: 0.85rem;
+    }
+    .offers-nav.prev {
+        left: 8px;
+    }
+    .offers-nav.next {
+        right: 8px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .offers-nav,
+    .offers-dot {
+        transition: none;
+    }
+}

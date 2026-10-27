@@ -35,6 +35,7 @@ MODULE_GROUPS = [
     ]),
     ('Contenido', [
         ('banners', 'Banners', 'fas fa-image', 'admin_banners', False),
+        ('ofertas', 'Ofertas', 'fas fa-percent', 'admin_offers', False),
         ('galeria', 'Galería', 'fas fa-images', 'admin_gallery', False),
         ('ambientes', 'Ambientes', 'fas fa-paint-roller', 'admin_ambientes', False),
         ('blog', 'Blog', 'fas fa-blog', 'admin_blog', False),
@@ -52,7 +53,7 @@ MODULES = {
 
 # Plantillas de permisos para rellenar el formulario con un clic
 _CATALOG = ['productos', 'categorias', 'subcategorias', 'marcas', 'colores', 'presentaciones']
-_CONTENT = ['banners', 'galeria', 'ambientes', 'blog']
+_CONTENT = ['banners', 'ofertas', 'galeria', 'ambientes', 'blog']
 
 PRESETS = [
     {'key': 'catalogo', 'label': 'Gestor de catálogo',

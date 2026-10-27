@@ -17,7 +17,7 @@ from permissions import MODULES, MODULE_GROUPS, PRESETS, LEVEL_LABELS, VIEW, MAN
 from site_pages import (PAGES, PAGES_BY_KEY, PAGE_BY_ENDPOINT, DISABLED_PAGES_KEY, EMPHASIS_RE, disabled_pages,
                         serialize_disabled_pages, banner_text_fields, resolve_banner)
 from models import db, AdminUser, Category, SubCategory, Brand, Product, ProductImage, ProductSpec, Presentation
-from models import QuoteRequest, QuoteItem, Banner, PageBanner, GalleryCategory, GalleryImage, AmbientCategory, AmbientImage, SiteConfig, PaintColor, BlogCategory, BlogPost, ProductPresentationColor
+from models import QuoteRequest, QuoteItem, Banner, PageBanner, Offer, GalleryCategory, GalleryImage, AmbientCategory, AmbientImage, SiteConfig, PaintColor, BlogCategory, BlogPost, ProductPresentationColor
 from models import split_color_code, color_label, ProductVariantCode, find_variant_code
 import time
 import threading
@@ -403,8 +403,10 @@ def index():
     _attach_card_data(featured)
     categories = Category.query.order_by(Category.order).all()
     brands = Brand.query.all()
+    # Carrusel OFERTAS (debajo de Marcas): solo las activas, de menor a mayor orden; sin ninguna, la seccion no se muestra
+    offers = Offer.query.filter_by(is_active=True).order_by(Offer.order, Offer.id).all()
     return render_template('index.html', banners=banners, featured_products=featured,
-                           categories=categories, brands=brands)
+                           categories=categories, brands=brands, offers=offers)
 
 @app.route('/productos')
 def productos():
@@ -1773,6 +1775,64 @@ def admin_banners():
                            for image in page['banner']['images']],
             banner_texts=[{**field, 'value': getattr(current, field['key'])} for field in banner_text_fields(current_page)])
     return render_template('admin/banners.html', **context)
+
+def _clean_offer_link(value):
+    """Enlace de una oferta: una ruta del sitio (/productos) o una direccion web; sin esquema se asume https://.
+    Devuelve '' si esta vacio y None si no es valido (por ejemplo javascript:...)."""
+    value = (value or '').strip()
+    if not value:
+        return ''
+    if len(value) > 300 or re.search(r'\s', value):
+        return None
+    if (value.startswith('/') and not value.startswith('//')) or value.lower().startswith(('http://', 'https://')):
+        return value
+    if re.match(r'^[\w-]+(\.[\w-]+)+(/\S*)?$', value):   # www.ejemplo.com/oferta
+        return 'https://' + value
+    return None
+
+
+@app.route('/admin/ofertas', methods=['GET', 'POST'])
+@module_required('ofertas')
+def admin_offers():
+    if request.method == 'POST':
+        action = request.form.get('action')
+        offer = Offer.query.get(request.form.get('id', type=int)) if action in ('update', 'delete') else None
+        if action in ('update', 'delete') and offer is None:
+            flash('La oferta no existe.', 'error')
+            return redirect(url_for('admin_offers'))
+        if action == 'delete':
+            db.session.delete(offer)
+            db.session.commit()
+            flash('Oferta eliminada', 'success')
+        elif action in ('create', 'update'):
+            link = _clean_offer_link(request.form.get('link_url'))
+            if link is None:
+                flash('El enlace no es válido. Usa una ruta del sitio (por ejemplo /productos) o una dirección que empiece con https://.', 'error')
+                return redirect(url_for('admin_offers'))
+            image_url = None
+            upload = request.files.get('image')
+            if upload and upload.filename:
+                image_url = save_image_upload(upload, 'offers')
+                if not image_url:
+                    flash('No se pudo usar la imagen. Sube un archivo PNG, JPG, WEBP o GIF válido.', 'error')
+                    return redirect(url_for('admin_offers'))
+            elif action == 'create':
+                flash('Sube la imagen de la oferta.', 'error')
+                return redirect(url_for('admin_offers'))
+            if action == 'create':
+                offer = Offer()
+                db.session.add(offer)
+            offer.title = (request.form.get('title') or '').strip()[:200]
+            offer.link_url = link
+            offer.order = max(-9999, min(9999, request.form.get('order', 0, type=int)))
+            offer.is_active = 'is_active' in request.form
+            if image_url:
+                offer.image_url = image_url
+            db.session.commit()
+            flash('Oferta creada' if action == 'create' else 'Oferta actualizada', 'success')
+        return redirect(url_for('admin_offers'))
+    return render_template('admin/offers.html', offers=Offer.query.order_by(Offer.order, Offer.id).all())
+
 
 @app.route('/admin/galeria', methods=['GET', 'POST'])
 @module_required('galeria')

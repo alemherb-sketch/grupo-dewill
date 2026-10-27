@@ -31,9 +31,10 @@
             <span class="sidebar-section-title">Ventas</span>
             <a href="{{ url_for('admin_quotes') }}" class="sidebar-link {% if request.endpoint in ['admin_quotes','admin_quote_detail'] %}active{% endif %}"><i class="fas fa-file-invoice"></i> Solicitudes</a>
             {% endif %}
-            {% if current_user.can_any('banners','galeria','ambientes','blog') %}
+            {% if current_user.can_any('banners','ofertas','galeria','ambientes','blog') %}
             <span class="sidebar-section-title">Contenido</span>
             {% if current_user.can('banners') %}<a href="{{ url_for('admin_banners') }}" class="sidebar-link {% if request.endpoint == 'admin_banners' %}active{% endif %}"><i class="fas fa-image"></i> Banners</a>{% endif %}
+            {% if current_user.can('ofertas') %}<a href="{{ url_for('admin_offers') }}" class="sidebar-link {% if request.endpoint == 'admin_offers' %}active{% endif %}"><i class="fas fa-percent"></i> Ofertas</a>{% endif %}
             {% if current_user.can('galeria') %}<a href="{{ url_for('admin_gallery') }}" class="sidebar-link {% if request.endpoint == 'admin_gallery' %}active{% endif %}"><i class="fas fa-images"></i> Galería</a>{% endif %}
             {% if current_user.can('ambientes') %}<a href="{{ url_for('admin_ambientes') }}" class="sidebar-link {% if request.endpoint in ['admin_ambientes','admin_ambient_new','admin_ambient_edit'] %}active{% endif %}"><i class="fas fa-paint-roller"></i> Ambientes</a>{% endif %}
             {% if current_user.can('blog') %}<a href="/admin/blog" class="sidebar-link {% if request.endpoint in ['admin_blog', 'admin_blog_new', 'admin_blog_edit', 'admin_blog_categories'] %}active{% endif %}"><i class="fas fa-blog"></i> Blog</a>{% endif %}

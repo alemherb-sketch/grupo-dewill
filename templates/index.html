@@ -185,6 +185,42 @@
 </section>
 {% endif %}
 
+<!-- OFERTAS: banners en carrusel debajo de Marcas (se administran en Admin > Ofertas; sin ofertas activas no se muestra) -->
+{% if offers %}
+<section class="section offers-section" id="ofertas">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-tag"><i class="fas fa-percent"></i> Promociones</span>
+            <h2 class="section-title"><span class="gradient-text">Ofertas</span></h2>
+        </div>
+        <div class="offers-carousel" data-autoplay="5000" role="region" aria-roledescription="carrusel" aria-label="Ofertas">
+            <div class="offers-track" tabindex="0">
+                {% for offer in offers %}
+                <div class="offer-slide" role="group" aria-roledescription="diapositiva" aria-label="{{ loop.index }} de {{ offers|length }}">
+                    {% if offer.link_url %}
+                    <a href="{{ offer.link_url }}"{% if offer.link_url.startswith('http') %} target="_blank" rel="noopener"{% endif %}>
+                        <img src="{{ url_for('static', filename=offer.image_url) }}" alt="{{ offer.title or 'Oferta ' ~ loop.index }}"{% if loop.index > 2 %} loading="lazy"{% endif %} draggable="false">
+                    </a>
+                    {% else %}
+                    <img src="{{ url_for('static', filename=offer.image_url) }}" alt="{{ offer.title or 'Oferta ' ~ loop.index }}"{% if loop.index > 2 %} loading="lazy"{% endif %} draggable="false">
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% if offers|length > 1 %}
+            <button type="button" class="offers-nav prev" aria-label="Oferta anterior"><i class="fas fa-chevron-left"></i></button>
+            <button type="button" class="offers-nav next" aria-label="Oferta siguiente"><i class="fas fa-chevron-right"></i></button>
+            <div class="offers-dots">
+                {% for offer in offers %}
+                <button type="button" class="offers-dot{% if loop.first %} active{% endif %}" aria-label="Ir a la oferta {{ loop.index }}"></button>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
 <!-- WHY US -->
 <section class="section why-section-dark" id="por-que">
     <div class="why-dark-bg"></div>

@@ -1,0 +1,119 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Ofertas{% endblock %}
+{% block page_title %}Gestión de Ofertas{% endblock %}
+
+{% block admin_content %}
+<div class="admin-toolbar">
+    <h3>{{ offers|length }} ofertas registradas <small style="font-weight:400;color:var(--admin-text-muted);">· carrusel OFERTAS de la página de Inicio, debajo de Marcas</small></h3>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+        <a href="{{ url_for('index') }}#ofertas" target="_blank" rel="noopener" class="btn btn-outline"><i class="fas fa-external-link-alt"></i> Ver en la portada</a>
+        <button type="button" class="btn btn-primary" onclick="document.getElementById('newOfferModal').classList.add('show')"><i class="fas fa-plus"></i> Nueva Oferta</button>
+    </div>
+</div>
+
+<p class="section-help">Cada oferta es un banner del carrusel. Se muestran en orden (el número menor primero) y solo las <strong>activas</strong>; si no hay ninguna activa, la sección OFERTAS no aparece en la portada. Para que la imagen no se recorte, usa un tamaño de <strong>1200 × 400 px</strong> (horizontal, proporción 3:1).</p>
+
+<div class="admin-panel">
+    <table class="admin-table">
+        <thead><tr><th>Imagen</th><th>Título</th><th>Enlace</th><th>Orden</th><th>Estado</th><th>Acciones</th></tr></thead>
+        <tbody>
+            {% for o in offers %}
+            <tr>
+                <td><img src="{{ url_for('static', filename=o.image_url) }}" style="width:150px;height:50px;object-fit:cover;border-radius:4px;" alt=""></td>
+                <td><strong>{{ o.title or '(sin título)' }}</strong></td>
+                <td>{% if o.link_url %}<a href="{{ o.link_url }}" target="_blank" rel="noopener">{{ o.link_url|truncate(42, True) }}</a>{% else %}<span style="color:var(--admin-text-muted);">Sin enlace</span>{% endif %}</td>
+                <td>{{ o.order }}</td>
+                <td>{% if o.is_active %}<span class="status-badge status-active">Activa</span>{% else %}<span class="status-badge status-inactive">Inactiva</span>{% endif %}</td>
+                <td class="actions-cell">
+                    <button type="button" class="btn-sm btn-edit" title="Editar" onclick="editOffer(this)"
+                            data-id="{{ o.id }}" data-title="{{ o.title or '' }}" data-link="{{ o.link_url or '' }}"
+                            data-order="{{ o.order or 0 }}" data-active="{{ 1 if o.is_active else 0 }}"
+                            data-image="{{ url_for('static', filename=o.image_url) }}"><i class="fas fa-edit"></i></button>
+                    <form method="POST" style="display:inline;" onsubmit="return confirm('¿Eliminar esta oferta?')">
+                        <input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="{{ o.id }}">
+                        <button type="submit" class="btn-sm btn-delete" title="Eliminar"><i class="fas fa-trash"></i></button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--admin-text-muted);">Aún no hay ofertas. Crea la primera con «Nueva Oferta».</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="admin-modal" id="newOfferModal">
+    <div class="modal-card">
+        <h3>Nueva Oferta</h3>
+        <form method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="action" value="create">
+            <div class="form-group">
+                <label>Imagen *</label>
+                <input type="file" name="image" accept="image/*" required class="form-input-file">
+                <small class="field-hint">Recomendado: 1200 × 400 px (horizontal, 3:1). Formatos: JPG, PNG, WEBP o GIF.</small>
+            </div>
+            <div class="form-group">
+                <label>Título</label>
+                <input type="text" name="title" maxlength="200" class="form-input" placeholder="Descuento en pinturas">
+                <small class="field-hint">Solo se usa como texto alternativo de la imagen y como nombre en este panel.</small>
+            </div>
+            <div class="form-group">
+                <label>Enlace (opcional)</label>
+                <input type="text" name="link_url" maxlength="300" class="form-input" placeholder="/productos o https://wa.me/51999999999">
+                <small class="field-hint">A dónde lleva el banner al hacer clic. Usa una ruta del sitio (/productos) o una dirección web completa.</small>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Orden</label><input type="number" name="order" value="0" class="form-input"></div>
+                <div class="form-group form-check" style="margin-top:1.5rem;"><label><input type="checkbox" name="is_active" checked> Oferta activa</label></div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="this.closest('.admin-modal').classList.remove('show')">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Crear</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="admin-modal" id="editOfferModal">
+    <div class="modal-card">
+        <h3>Editar Oferta</h3>
+        <form method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="action" value="update"><input type="hidden" name="id" id="editOfferId">
+            <div class="form-group">
+                <label>Imagen actual</label>
+                <img src="" id="editOfferPreview" alt="" style="width:100%;max-height:140px;object-fit:cover;border-radius:6px;display:block;margin-bottom:.5rem;">
+                <input type="file" name="image" accept="image/*" class="form-input-file">
+                <small class="field-hint">Opcional: sube otra imagen para reemplazarla (1200 × 400 px, JPG, PNG, WEBP o GIF).</small>
+            </div>
+            <div class="form-group"><label>Título</label><input type="text" name="title" id="editOfferTitle" maxlength="200" class="form-input"></div>
+            <div class="form-group">
+                <label>Enlace (opcional)</label>
+                <input type="text" name="link_url" id="editOfferLink" maxlength="300" class="form-input" placeholder="/productos o https://wa.me/51999999999">
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Orden</label><input type="number" name="order" id="editOfferOrder" class="form-input"></div>
+                <div class="form-group form-check" style="margin-top:1.5rem;"><label><input type="checkbox" name="is_active" id="editOfferActive"> Oferta activa</label></div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="this.closest('.admin-modal').classList.remove('show')">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Actualizar</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block admin_js %}
+<script>
+function editOffer(btn) {
+    const d = btn.dataset;
+    document.getElementById('editOfferId').value = d.id;
+    document.getElementById('editOfferTitle').value = d.title;
+    document.getElementById('editOfferLink').value = d.link;
+    document.getElementById('editOfferOrder').value = d.order;
+    document.getElementById('editOfferActive').checked = d.active === '1';
+    document.getElementById('editOfferPreview').src = d.image;
+    document.getElementById('editOfferModal').classList.add('show');
+}
+</script>
+{% endblock %}

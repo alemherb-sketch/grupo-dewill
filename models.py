@@ -267,6 +267,18 @@ class Banner(db.Model):
     is_active = db.Column(db.Boolean, default=True)
 
 
+class Offer(db.Model):
+    """Banner del carrusel OFERTAS de la portada, debajo de Marcas (se administra en Admin > Ofertas)."""
+    __tablename__ = 'offers'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200))                 # texto alternativo de la imagen y nombre en el panel
+    image_url = db.Column(db.String(300), nullable=False)
+    link_url = db.Column(db.String(300))              # opcional: a donde lleva el banner al hacer clic
+    order = db.Column(db.Integer, default=0)          # menor numero primero
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
 class PageBanner(db.Model):
     """Banner de cabecera de una pagina interna (ver site_pages.py).
     Una fila guarda solo lo que se personalizo: un valor NULL usa el de fabrica; sin fila, todo es de fabrica."""
