@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_product_card.html" import product_card %}
 {% block title %}Productos | Grupo Dewill{% endblock %}
 {% block nav_class %}scrolled{% endblock %}
 
@@ -163,67 +164,7 @@
                 <!-- Products Grid -->
                 <div class="products-grid-new" id="productsGrid">
                     {% for product in products.items %}
-                    <div class="premium-product-card animate-fade-up">
-                        <div class="pcr-image-section">
-                            <div class="pcr-badges">
-                                <span class="pcr-category-tag"><i class="fas fa-tools"></i> {{ product.category.name|upper if product.category else 'PRODUCTO' }}</span>
-                            </div>
-                            <button class="pcr-favorite-btn" type="button" aria-label="Agregar a favoritos"><i class="far fa-heart"></i></button>
-                            <a href="{{ url_for('producto_detalle', product_id=product.id) }}" class="pcr-image-link">
-                                <img src="{{ url_for('static', filename=product.main_image or 'assets/product_paint.png') }}" alt="{{ product.name }}">
-                            </a>
-                        </div>
-
-                        <div class="pcr-body-section">
-                            {% if product.subcategory %}
-                            <span class="pcr-subcategory-tag">{{ product.subcategory.name|upper }}</span>
-                            {% endif %}
-
-                            <h3 class="pcr-title">{{ product.name }}</h3>
-
-                            {% if product.brand %}
-                            <span class="pcr-brand">{{ product.brand.name }}</span>
-                            {% endif %}
-
-                            {% if product.card_colors %}
-                            <div class="pcr-colors">
-                                {% for c in product.card_colors[:7] %}
-                                <span class="pcr-color-dot" title="{{ c.name }}" style="background: {{ c.hex }};"></span>
-                                {% endfor %}
-                                {% if product.card_colors|length > 7 %}
-                                <span class="pcr-color-more">+{{ product.card_colors|length - 7 }}</span>
-                                {% endif %}
-                            </div>
-                            {% endif %}
-
-                            {% if product.presentations %}
-                            <div class="pcr-presentations">
-                                <i class="fas fa-box-open"></i>
-                                {% for pres in product.presentations[:4] %}
-                                <span class="pcr-pres-badge">{{ pres.name }}</span>
-                                {% endfor %}
-                                {% if product.presentations|length > 4 %}
-                                <span class="pcr-pres-more">+{{ product.presentations|length - 4 }}</span>
-                                {% endif %}
-                            </div>
-                            {% endif %}
-
-                            {% if product.card_specs %}
-                            <div class="pcr-specs">
-                                {% for spec in product.card_specs[:3] %}
-                                <span class="pcr-spec-chip"><i class="fas fa-check"></i> {{ spec.value }}</span>
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-
-                            <div class="pcr-actions">
-                                <a href="{{ url_for('producto_detalle', product_id=product.id) }}" class="pcr-btn-details"><i class="far fa-eye"></i> VER DETALLES</a>
-                                <button class="pcr-btn-quote" onclick="addToQuote({{ product.id }}, '{{ product.name|e }}', '{{ product.main_image or 'assets/product_paint.png' }}')">
-                                    <i class="fas fa-shopping-cart"></i> COTIZAR
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                    {{ product_card(product) }}
                     {% else %}
                     <div class="no-products-msg" style="grid-column: 1/-1; text-align: center; padding: 4rem;">
                         <i class="fas fa-box-open" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem; display: block;"></i>

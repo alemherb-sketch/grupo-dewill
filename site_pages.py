@@ -33,7 +33,8 @@ PAGES = [
      }},
     {'key': 'productos', 'label': 'Productos', 'icon': 'fas fa-box', 'endpoint': 'productos',
      # El catalogo incluye el detalle de producto, el buscador, los colores y el envio de cotizaciones
-     'endpoints': ('productos', 'producto_detalle', 'api_search', 'api_product_colors', 'api_cotizacion'),
+     'endpoints': ('productos', 'producto_detalle', 'api_search', 'api_product_colors', 'api_product_options',
+                   'api_cotizacion'),
      'banner': {
          'images': [
              {'key': 'image', 'label': 'Imagen de fondo', 'default': 'assets/banner_productos_new.png',

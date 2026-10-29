@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=5.4">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=5.5">
     {% block extra_css %}{% endblock %}
 </head>
 <body{% if not page_enabled('productos') %} class="no-catalog"{% endif %}>
@@ -231,6 +231,48 @@
         </div>
     </div>
 
+    <!-- Selector de cotizacion: presentacion, color y cantidad al tocar COTIZAR en una tarjeta (static/js/app.js) -->
+    <div class="qo-overlay" id="quoteOptionsOverlay" data-qo-close></div>
+    <div class="qo-dialog" id="quoteOptions" role="dialog" aria-modal="true" aria-labelledby="qoTitle">
+        <button type="button" class="qo-close" data-qo-close aria-label="Cerrar"><i class="fas fa-times"></i></button>
+        <div class="qo-head">
+            <img class="qo-img" id="qoImage" src="{{ url_for('static', filename='assets/product_paint.png') }}" alt="">
+            <div class="qo-head-text">
+                <span class="qo-brand" id="qoBrand"></span>
+                <h3 class="qo-title" id="qoTitle"></h3>
+                <span class="qo-code" id="qoCode"></span>
+            </div>
+        </div>
+        <div class="qo-body">
+            <div class="qo-section" id="qoPresSection">
+                <div class="qo-label">PRESENTACIÓN</div>
+                <div class="presentation-buttons" id="qoPresentations"></div>
+            </div>
+            <div class="qo-section" id="qoColorSection">
+                <div class="qo-label">COLOR <span class="qo-color-name" id="qoColorName"></span></div>
+                <div class="qo-color-search" id="qoColorSearchWrap">
+                    <i class="fas fa-search"></i>
+                    <input type="search" id="qoColorSearch" placeholder="Buscar color o código..." autocomplete="off" aria-label="Buscar color">
+                </div>
+                <div class="qo-colors" id="qoColors" role="group" aria-label="Colores"></div>
+                <p class="qo-colors-empty" id="qoColorsEmpty" hidden>Ningún color coincide con la búsqueda.</p>
+                <p class="colors-note">Los colores mostrados son referenciales. Puede haber variaciones según la pantalla.</p>
+            </div>
+        </div>
+        <div class="qo-footer">
+            <p class="qo-error" id="qoError" role="alert"></p>
+            <div class="qo-footer-row">
+                <div class="quantity-control qo-qty">
+                    <button type="button" class="qty-btn" data-qo-step="-1" aria-label="Quitar uno">−</button>
+                    <input type="number" id="qoQty" value="1" min="1" max="9999" inputmode="numeric" aria-label="Cantidad">
+                    <button type="button" class="qty-btn" data-qo-step="1" aria-label="Agregar uno">+</button>
+                </div>
+                <button type="button" class="qo-add" id="qoAdd"><i class="fas fa-cart-plus"></i> AGREGAR A MI COTIZACIÓN</button>
+            </div>
+            <button type="button" class="qo-add-send" id="qoAddSend"><i class="fas fa-paper-plane"></i> AGREGAR Y ENVIAR COTIZACIÓN</button>
+        </div>
+    </div>
+
     <!-- Toast -->
     <div id="toastContainer"></div>
 
@@ -293,7 +335,7 @@
     </div>
 
     <script>const WHATSAPP_NUMBER = "{{ site.get('whatsapp', '51977585654') }}";</script>
-    <script src="{{ url_for('static', filename='js/app.js') }}?v=2.8"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}?v=2.9"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

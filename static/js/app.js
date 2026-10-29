@@ -458,10 +458,10 @@ function filterProducts(category, btn) {
 
 // ========== QUOTE LOGIC ==========
 function addToQuote(productId, productName = null, productImage = null, color = null, quantity = 1, presentation = null, code = null) {
-    // Try to find in static products array if available
-    let product = typeof products !== 'undefined' ? products.find(p => p.id === productId) : null;
-    
-    // Construct dynamic product object if not found in static list (e.g. from Flask DB)
+    // Las paginas de Flask pasan el nombre y la imagen del producto de la base; la lista estatica de arriba
+    // es solo para la pagina de demostracion (sus ids 1-36 coinciden con productos reales de la base)
+    let product = !productName && typeof products !== 'undefined' ? products.find(p => p.id === productId) : null;
+
     if (!product && productName) {
         product = {
             id: productId,
@@ -607,6 +607,260 @@ function toggleQuotePanel() {
     panel.classList.toggle('open');
     overlay.classList.toggle('open');
 }
+
+// Codigo (Excel) de la presentacion y el color elegidos: la combinacion exacta y, si no existe, la mas general.
+// codes: [{p: id de la presentacion o null, c: color en mayusculas o '', code}]
+function findVariantCode(codes, presId, colorName) {
+    const color = (colorName || '').trim().toUpperCase();
+    const find = (p, c) => { const v = codes.find(x => x.p === p && x.c === c); return v ? v.code : null; };
+    return find(presId, color) ?? find(presId, '') ?? find(null, color) ?? find(null, '');
+}
+
+// ========== SELECTOR DE COTIZACION (tarjetas del catalogo) ==========
+// COTIZAR, los colores y las presentaciones de una tarjeta abren este selector con las opciones del producto
+// (/api/producto/<id>/opciones); lo que se toca en la tarjeta llega ya elegido. Un producto sin presentaciones
+// ni colores se agrega directo, como antes.
+const quoteOptionsCache = new Map();
+const quoteOptionsState = { product: null, presId: null, color: null, trigger: null };
+const SAFE_HEX_RE = /^#[0-9a-f]{3,8}$/i;
+
+function escapeHTML(value) {
+    return String(value ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function sameColorName(a, b) {
+    return (a || '').trim().toUpperCase() === (b || '').trim().toUpperCase();
+}
+
+function loadQuoteOptions(productId) {
+    if (!quoteOptionsCache.has(productId)) {
+        const request = fetch(`/api/producto/${productId}/opciones`)
+            .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
+            .catch(err => { quoteOptionsCache.delete(productId); throw err; });
+        quoteOptionsCache.set(productId, request);
+    }
+    return quoteOptionsCache.get(productId);
+}
+
+// Colores de la presentacion elegida (sin presentaciones: los del producto)
+function quoteOptionColors() {
+    const { product, presId } = quoteOptionsState;
+    if (!product.presentations.length) return product.colors;
+    const pres = product.presentations.find(p => p.id === presId);
+    return pres ? pres.colors : [];
+}
+
+document.addEventListener('click', e => {
+    const control = e.target.closest('.premium-product-card [data-quote-open], .premium-product-card [data-quote-color], .premium-product-card [data-quote-pres]');
+    if (control) openQuoteOptions(control.closest('.premium-product-card'), control);
+});
+
+async function openQuoteOptions(card, control) {
+    const productId = parseInt(card.dataset.productId, 10);
+    const btn = card.querySelector('.pcr-btn-quote');
+    if (btn.getAttribute('aria-busy') === 'true') return;
+    const originalHTML = btn.innerHTML;
+    btn.setAttribute('aria-busy', 'true');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> COTIZAR';
+
+    let product;
+    try {
+        product = await loadQuoteOptions(productId);
+    } catch (err) {
+        console.error('Error loading quote options:', err);
+        showToast('No se pudieron cargar las opciones del producto. Inténtalo de nuevo.', 'error');
+        return;
+    } finally {
+        btn.removeAttribute('aria-busy');
+        btn.innerHTML = originalHTML;
+    }
+
+    if (!product.presentations.length && !product.colors.length) {
+        addToQuote(product.id, product.name, product.image, null, 1, null, findVariantCode(product.codes, null, ''));
+        return;
+    }
+
+    // Presentacion inicial: la tocada en la tarjeta; si se toco un color, la primera que lo tenga; si no, la primera
+    const presetPres = parseInt(control.dataset.quotePres, 10);
+    const presetColor = control.dataset.quoteColor || '';
+    let presId = null;
+    if (product.presentations.length) {
+        const pres = product.presentations.find(p => p.id === presetPres)
+            || (presetColor && product.presentations.find(p => p.colors.some(c => sameColorName(c.name, presetColor))))
+            || product.presentations[0];
+        presId = pres.id;
+    }
+    Object.assign(quoteOptionsState, { product, presId, color: null, trigger: control });
+    quoteOptionsState.color = presetColor ? quoteOptionColors().find(c => sameColorName(c.name, presetColor)) || null : null;
+
+    document.getElementById('qoImage').src = '/static/' + product.image;
+    document.getElementById('qoImage').alt = product.name;
+    document.getElementById('qoBrand').textContent = product.brand;
+    document.getElementById('qoTitle').textContent = product.name;
+    document.getElementById('qoQty').value = 1;
+    document.getElementById('qoPresSection').hidden = !product.presentations.length;
+    document.getElementById('qoPresentations').innerHTML = product.presentations.map(p =>
+        `<button type="button" class="pres-btn" data-pres-id="${p.id}">${escapeHTML(p.name)}</button>`).join('');
+    renderQuoteOptions();
+
+    document.body.classList.add('qo-open');
+    document.getElementById('quoteOptionsOverlay').classList.add('open');
+    const dialog = document.getElementById('quoteOptions');
+    dialog.classList.add('open');
+    dialog.querySelector('.qo-body').scrollTop = 0;
+    // el color tocado en la tarjeta puede estar al final de la lista
+    const presetSwatch = dialog.querySelector('.qo-swatch.selected');
+    if (presetSwatch) presetSwatch.scrollIntoView({ block: 'nearest' });
+    const firstControl = dialog.querySelector('.pres-btn.selected') || dialog.querySelector('.qo-swatch') || dialog.querySelector('#qoAdd');
+    firstControl.focus({ preventScroll: true });
+}
+
+// Pinta la presentacion y el color elegidos, los colores de esa presentacion y el codigo de la variante
+function renderQuoteOptions() {
+    const { product, presId, color } = quoteOptionsState;
+    document.querySelectorAll('#qoPresentations .pres-btn').forEach(b => {
+        const selected = parseInt(b.dataset.presId, 10) === presId;
+        b.classList.toggle('selected', selected);
+        b.setAttribute('aria-pressed', String(selected));
+    });
+
+    const colors = quoteOptionColors();
+    document.getElementById('qoColorSection').hidden = !colors.length;
+    document.getElementById('qoColorSearchWrap').hidden = colors.length <= 12;
+    document.getElementById('qoColorSearch').value = '';
+    document.getElementById('qoColorsEmpty').hidden = true;
+    document.getElementById('qoColors').innerHTML = colors.map((c, i) => {
+        const hex = SAFE_HEX_RE.test(c.hex_code || '') ? c.hex_code : '#cccccc';
+        const selected = color && sameColorName(c.name, color.name);
+        return `<button type="button" class="qo-swatch${selected ? ' selected' : ''}" data-index="${i}" aria-pressed="${selected}"
+                    title="${escapeHTML(c.label)}" aria-label="${escapeHTML(c.label)}">
+                    <span class="qo-swatch-dot" style="background:${hex}"></span>
+                    ${c.code ? `<span class="qo-swatch-code">#${escapeHTML(c.code)}</span>` : ''}
+                </button>`;
+    }).join('');
+    renderQuoteOptionsCode();
+}
+
+// Nombre del color elegido y codigo de la variante (sin codigo cargado, el SKU general del producto)
+function renderQuoteOptionsCode() {
+    const { product, presId, color } = quoteOptionsState;
+    showQuoteColorName(color);
+    const code = findVariantCode(product.codes, presId, color ? color.name : '');
+    const codeLine = document.getElementById('qoCode');
+    codeLine.textContent = code ? `Código: ${code}` : (product.sku ? `SKU: ${product.sku}` : '');
+    codeLine.hidden = !codeLine.textContent;
+    document.getElementById('qoError').textContent = '';
+}
+
+// preview: el color bajo el cursor, que aun no esta elegido
+function showQuoteColorName(color, preview = false) {
+    const name = document.getElementById('qoColorName');
+    name.textContent = color ? color.label : 'Elige un color';
+    name.classList.toggle('is-empty', !color);
+    name.classList.toggle('is-preview', preview);
+}
+
+function closeQuoteOptions() {
+    const dialog = document.getElementById('quoteOptions');
+    if (!dialog.classList.contains('open')) return;
+    dialog.classList.remove('open');
+    document.getElementById('quoteOptionsOverlay').classList.remove('open');
+    document.body.classList.remove('qo-open');
+    const trigger = quoteOptionsState.trigger;
+    if (trigger && document.contains(trigger)) trigger.focus({ preventScroll: true });
+}
+
+function addFromQuoteOptions(thenSend) {
+    const { product, presId, color } = quoteOptionsState;
+    if (quoteOptionColors().length && !color) {
+        document.getElementById('qoError').textContent = 'Elige un color para cotizar.';
+        document.getElementById('qoColorSection').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        return;
+    }
+    const pres = product.presentations.find(p => p.id === presId);
+    const qtyInput = document.getElementById('qoQty');
+    const quantity = Math.min(9999, Math.max(1, parseInt(qtyInput.value, 10) || 1));
+    // el color viaja con su codigo ('AMARILLO LIMON #41'), igual que desde la ficha del producto
+    addToQuote(product.id, product.name, product.image, color ? color.label : null, quantity,
+               pres ? pres.name : null, findVariantCode(product.codes, presId, color ? color.name : ''));
+    closeQuoteOptions();
+    // "Agregar y enviar" abre Mi Cotización, donde el cliente completa sus datos y envía la solicitud al panel
+    if (thenSend && !document.getElementById('quotePanel').classList.contains('open')) toggleQuotePanel();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const dialog = document.getElementById('quoteOptions');
+    if (!dialog) return;
+    const colorsGrid = document.getElementById('qoColors');
+    const qtyInput = document.getElementById('qoQty');
+
+    document.querySelectorAll('[data-qo-close]').forEach(el => el.addEventListener('click', closeQuoteOptions));
+    document.getElementById('qoAdd').addEventListener('click', () => addFromQuoteOptions(false));
+    document.getElementById('qoAddSend').addEventListener('click', () => addFromQuoteOptions(true));
+
+    document.getElementById('qoPresentations').addEventListener('click', e => {
+        const btn = e.target.closest('.pres-btn');
+        if (!btn) return;
+        quoteOptionsState.presId = parseInt(btn.dataset.presId, 10);
+        // el color elegido se conserva si la nueva presentacion tambien lo tiene
+        const color = quoteOptionsState.color;
+        quoteOptionsState.color = color ? quoteOptionColors().find(c => sameColorName(c.name, color.name)) || null : null;
+        renderQuoteOptions();
+    });
+
+    colorsGrid.addEventListener('click', e => {
+        const swatch = e.target.closest('.qo-swatch');
+        if (!swatch) return;
+        quoteOptionsState.color = quoteOptionColors()[parseInt(swatch.dataset.index, 10)];
+        colorsGrid.querySelectorAll('.qo-swatch').forEach(s => {
+            s.classList.toggle('selected', s === swatch);
+            s.setAttribute('aria-pressed', String(s === swatch));
+        });
+        renderQuoteOptionsCode();
+    });
+    // Al pasar el cursor por un color se lee su nombre; al salir vuelve el elegido
+    colorsGrid.addEventListener('mouseover', e => {
+        const swatch = e.target.closest('.qo-swatch');
+        if (swatch) showQuoteColorName(quoteOptionColors()[parseInt(swatch.dataset.index, 10)], !swatch.classList.contains('selected'));
+    });
+    colorsGrid.addEventListener('mouseleave', () => showQuoteColorName(quoteOptionsState.color));
+
+    document.getElementById('qoColorSearch').addEventListener('input', e => {
+        const normalize = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+        const term = normalize(e.target.value);
+        const colors = quoteOptionColors();
+        let visible = 0;
+        colorsGrid.querySelectorAll('.qo-swatch').forEach(s => {
+            const show = !term || normalize(colors[parseInt(s.dataset.index, 10)].label).includes(term);
+            s.hidden = !show;
+            if (show) visible++;
+        });
+        document.getElementById('qoColorsEmpty').hidden = visible > 0;
+    });
+    // Enter en el buscador de colores no debe hacer nada mas
+    document.getElementById('qoColorSearch').addEventListener('keydown', e => { if (e.key === 'Enter') e.preventDefault(); });
+
+    dialog.querySelectorAll('[data-qo-step]').forEach(btn => btn.addEventListener('click', () => {
+        const next = (parseInt(qtyInput.value, 10) || 1) + parseInt(btn.dataset.qoStep, 10);
+        qtyInput.value = Math.min(9999, Math.max(1, next));
+    }));
+    qtyInput.addEventListener('change', () => {
+        qtyInput.value = Math.min(9999, Math.max(1, parseInt(qtyInput.value, 10) || 1));
+    });
+
+    // Escape cierra; Tab no sale del selector mientras esta abierto
+    document.addEventListener('keydown', e => {
+        if (!dialog.classList.contains('open')) return;
+        if (e.key === 'Escape') {
+            closeQuoteOptions();
+        } else if (e.key === 'Tab') {
+            const focusable = Array.from(dialog.querySelectorAll('button, input')).filter(el => !el.hidden && el.offsetParent !== null);
+            const first = focusable[0], last = focusable[focusable.length - 1];
+            if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+    });
+});
 
 // ========== QUOTE CLIENT FORM ==========
 // DNI/RUC y celular son obligatorios; correo y mensaje, opcionales. El servidor aplica las mismas reglas.

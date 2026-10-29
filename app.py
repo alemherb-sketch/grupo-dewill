@@ -570,13 +570,8 @@ def api_product_colors(product_id):
 
 
 
-@app.route('/producto/<int:product_id>')
-def producto_detalle(product_id):
-    product = Product.query.get_or_404(product_id)
-    related = Product.query.filter(Product.category_id == product.category_id,
-        Product.id != product.id, Product.is_active == True).limit(4).all()
-    _attach_card_data(related)
-
+def _product_paint_colors(product):
+    """Colores que el cliente puede elegir para un producto (todas sus presentaciones juntas)."""
     product_color_specs = list(set([spec.value for spec in product.specs if spec.key.lower() == 'color']))
     # Codigo de cada color del producto (el mismo en todas sus presentaciones)
     color_codes = {lk.color_name.strip().lower(): lk.color_code for lk in product.presentation_colors if lk.color_code}
@@ -595,13 +590,53 @@ def producto_detalle(product_id):
         # Fallback to all active paint colors
         all_colors = PaintColor.query.filter_by(is_active=True).all()
         paint_colors = [_color_option(c.name, c.hex_code) for c in all_colors]
-        
+    return paint_colors
+
+
+def _product_variant_codes(product):
+    """Codigo (Excel) de cada variante: p = id de la presentacion (None: sin presentacion), c = color en mayusculas."""
+    return [{'p': vc.presentation_id, 'c': (vc.color_name or '').strip().upper(), 'code': vc.code}
+            for vc in product.variant_codes]
+
+
+@app.route('/producto/<int:product_id>')
+def producto_detalle(product_id):
+    product = Product.query.get_or_404(product_id)
+    related = Product.query.filter(Product.category_id == product.category_id,
+        Product.id != product.id, Product.is_active == True).limit(4).all()
+    _attach_card_data(related)
+    paint_colors = _product_paint_colors(product)
     # Codigo (Excel) de cada variante: la ficha muestra el de la presentacion y el color que elige el cliente
-    variant_codes = [{'p': vc.presentation_id, 'c': (vc.color_name or '').strip().upper(), 'code': vc.code}
-                     for vc in product.variant_codes]
+    variant_codes = _product_variant_codes(product)
     categories = Category.query.order_by(Category.order).all()
     return render_template('producto_detalle.html', product=product, related=related, paint_colors=paint_colors,
                            categories=categories, variant_codes=variant_codes)
+
+
+@app.route('/api/producto/<int:product_id>/opciones')
+def api_product_options(product_id):
+    """Lo que el cliente elige al cotizar desde una tarjeta del catalogo: presentacion, color y cantidad.
+    Cada presentacion trae sus colores: los vinculados en el Excel o, si el producto no tiene vinculos,
+    los colores generales del producto (los mismos de la ficha)."""
+    product = Product.query.filter_by(id=product_id, is_active=True).first_or_404()
+    colors = _product_paint_colors(product)
+    links = sorted(product.presentation_colors, key=lambda lk: lk.id)
+    presentations = [{
+        'id': pres.id,
+        'name': pres.name,
+        'colors': [_color_option(lk.color_name, lk.hex_code or '#cccccc', lk.color_code)
+                   for lk in links if lk.presentation_id == pres.id] if links else colors,
+    } for pres in product.presentations]
+    return jsonify({
+        'id': product.id,
+        'name': product.name,
+        'image': product.main_image or 'assets/product_paint.png',
+        'brand': product.brand.name if product.brand else '',
+        'sku': product.sku or '',
+        'presentations': presentations,
+        'colors': colors,
+        'codes': _product_variant_codes(product),
+    })
 
 DOCUMENT_RE = re.compile(r'^(\d{8}|\d{11})$')   # DNI (8 dígitos) o RUC (11 dígitos)
 MOBILE_RE = re.compile(r'^9\d{8}$')            # celular peruano: 9 dígitos que empiezan en 9

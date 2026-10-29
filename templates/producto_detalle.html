@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_product_card.html" import product_card %}
 {% block title %}{{ product.name }} | Grupo Dewill{% endblock %}
 {% block nav_class %}scrolled{% endblock %}
 
@@ -304,67 +305,7 @@
         <h3 class="related-title"><i class="fas fa-layer-group"></i> Productos Relacionados</h3>
         <div class="products-grid-new">
             {% for rp in related %}
-            <div class="premium-product-card animate-fade-up">
-                <div class="pcr-image-section">
-                    <div class="pcr-badges">
-                        <span class="pcr-category-tag"><i class="fas fa-tools"></i> {{ rp.category.name|upper if rp.category else 'PRODUCTO' }}</span>
-                    </div>
-                    <button class="pcr-favorite-btn" type="button" aria-label="Agregar a favoritos"><i class="far fa-heart"></i></button>
-                    <a href="{{ url_for('producto_detalle', product_id=rp.id) }}" class="pcr-image-link">
-                        <img src="{{ url_for('static', filename=rp.main_image or 'assets/product_paint.png') }}" alt="{{ rp.name }}">
-                    </a>
-                </div>
-
-                <div class="pcr-body-section">
-                    {% if rp.subcategory %}
-                    <span class="pcr-subcategory-tag">{{ rp.subcategory.name|upper }}</span>
-                    {% endif %}
-
-                    <h3 class="pcr-title">{{ rp.name }}</h3>
-
-                    {% if rp.brand %}
-                    <span class="pcr-brand">{{ rp.brand.name }}</span>
-                    {% endif %}
-
-                    {% if rp.card_colors %}
-                    <div class="pcr-colors">
-                        {% for c in rp.card_colors[:7] %}
-                        <span class="pcr-color-dot" title="{{ c.name }}" style="background: {{ c.hex }};"></span>
-                        {% endfor %}
-                        {% if rp.card_colors|length > 7 %}
-                        <span class="pcr-color-more">+{{ rp.card_colors|length - 7 }}</span>
-                        {% endif %}
-                    </div>
-                    {% endif %}
-
-                    {% if rp.presentations %}
-                    <div class="pcr-presentations">
-                        <i class="fas fa-box-open"></i>
-                        {% for pres in rp.presentations[:4] %}
-                        <span class="pcr-pres-badge">{{ pres.name }}</span>
-                        {% endfor %}
-                        {% if rp.presentations|length > 4 %}
-                        <span class="pcr-pres-more">+{{ rp.presentations|length - 4 }}</span>
-                        {% endif %}
-                    </div>
-                    {% endif %}
-
-                    {% if rp.card_specs %}
-                    <div class="pcr-specs">
-                        {% for spec in rp.card_specs[:3] %}
-                        <span class="pcr-spec-chip"><i class="fas fa-check"></i> {{ spec.value }}</span>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-
-                    <div class="pcr-actions">
-                        <a href="{{ url_for('producto_detalle', product_id=rp.id) }}" class="pcr-btn-details"><i class="far fa-eye"></i> VER DETALLES</a>
-                        <button class="pcr-btn-quote" onclick="addToQuote({{ rp.id }}, '{{ rp.name|e }}', '{{ rp.main_image or 'assets/product_paint.png' }}')">
-                            <i class="fas fa-shopping-cart"></i> COTIZAR
-                        </button>
-                    </div>
-                </div>
-            </div>
+            {{ product_card(rp) }}
             {% endfor %}
         </div>
     </div>
@@ -384,14 +325,13 @@ function escAttr(value) {
 const VARIANT_CODES = {{ variant_codes|tojson }};
 const PRODUCT_SKU = {{ (product.sku or '')|tojson }};
 
-// Codigo de la presentacion y el color elegidos: la combinacion exacta y, si no existe, la mas general
+// Codigo de la presentacion y el color elegidos (findVariantCode esta en app.js).
+// Los botones se buscan dentro de la ficha: el selector de cotizacion de las tarjetas tambien usa .pres-btn
 function currentVariantCode() {
-    const presBtn = document.querySelector('.pres-btn.selected');
+    const presBtn = document.querySelector('.detail-info-panel .pres-btn.selected');
     const colorBtn = document.querySelector('.color-swatch-new.selected');
     const presId = presBtn ? parseInt(presBtn.dataset.id, 10) : null;
-    const color = colorBtn ? (colorBtn.dataset.name || '').trim().toUpperCase() : '';
-    const find = (p, c) => { const v = VARIANT_CODES.find(x => x.p === p && x.c === c); return v ? v.code : null; };
-    return find(presId, color) ?? find(presId, '') ?? find(null, color) ?? find(null, '');
+    return findVariantCode(VARIANT_CODES, presId, colorBtn ? colorBtn.dataset.name : '');
 }
 
 // La linea bajo el nombre muestra el codigo de lo elegido; sin codigo cargado, el SKU general del producto
@@ -416,7 +356,7 @@ function setMainImg(thumb, src) {
 }
 
 async function selectPresentation(btn, name, presId) {
-    document.querySelectorAll('.pres-btn').forEach(b => b.classList.remove('selected'));
+    document.querySelectorAll('.detail-info-panel .pres-btn').forEach(b => b.classList.remove('selected'));
     btn.classList.add('selected');
     document.getElementById('selectedPresentation').value = name;
     
@@ -456,7 +396,7 @@ async function selectPresentation(btn, name, presId) {
 
 // Initial load colors for first presentation
 document.addEventListener('DOMContentLoaded', () => {
-    const firstPresBtn = document.querySelector('.pres-btn.selected');
+    const firstPresBtn = document.querySelector('.detail-info-panel .pres-btn.selected');
     if (firstPresBtn) {
         firstPresBtn.click();
     } else {
