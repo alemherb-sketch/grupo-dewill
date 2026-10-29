@@ -5561,113 +5561,51 @@ section,
 }
 
 
-/* ================= OFERTAS: carrusel de banners debajo de Marcas ================= */
+/* ================= OFERTAS: banners sueltos debajo de Marcas, uno debajo de otro ================= */
 .offers-section {
     background-color: #ffffff;
     padding: 3rem 0 3.4rem;
 }
 
-.offers-carousel {
-    position: relative;
+.offers-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
     max-width: 1200px;
     margin: 0 auto;
 }
 
-/* El navegador hace el desplazamiento y el arrastre con el dedo (scroll-snap) */
-.offers-track {
-    display: flex;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    -webkit-overflow-scrolling: touch;
+/* Cada banner se ve completo, con su propia proporcion: sin recortes ni alto fijo */
+.offer-banner {
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-md);
-    outline-offset: 4px;
-}
-
-.offers-track::-webkit-scrollbar {
-    display: none;
-}
-
-/* Todas las ofertas con la misma proporcion (3:1, p. ej. 1200 x 400 px) para que el carrusel no cambie de alto */
-.offer-slide {
-    flex: 0 0 100%;
-    scroll-snap-align: start;
-    aspect-ratio: 3 / 1;
+    overflow: hidden;
     background: var(--bg-surface);
+    box-shadow: var(--shadow-md);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.offer-slide a,
-.offer-slide img {
+.offer-banner a,
+.offer-banner img {
     display: block;
     width: 100%;
-    height: 100%;
 }
 
-.offer-slide img {
-    object-fit: cover;
+/* Mientras una imagen diferida no carga reserva el espacio de un banner tipico (1920 x 800);
+   al cargar usa su proporcion real */
+.offer-banner img {
+    height: auto;
+    aspect-ratio: auto 12 / 5;
 }
 
-.offers-nav {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 46px;
-    height: 46px;
-    border: none;
-    border-radius: 50%;
-    background: rgba(8, 28, 59, 0.6);
-    color: #ffffff;
-    font-size: 1.1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    z-index: 2;
-    transition: background 0.3s, transform 0.2s;
+/* Los banners con enlace se levantan un poco al pasar el cursor */
+.offer-banner:has(a):hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
 }
 
-.offers-nav:hover,
-.offers-nav:focus-visible {
-    background: var(--primary);
-    transform: translateY(-50%) scale(1.08);
-}
-
-.offers-nav.prev {
-    left: 14px;
-}
-
-.offers-nav.next {
-    right: 14px;
-}
-
-.offers-dots {
-    display: flex;
-    justify-content: center;
-    gap: 0.55rem;
-    margin-top: 1rem;
-}
-
-.offers-dot {
-    width: 10px;
-    height: 10px;
-    padding: 0;
-    border: none;
-    border-radius: var(--radius-full);
-    background: #c3cad6;
-    cursor: pointer;
-    transition: width 0.3s, background 0.3s;
-}
-
-.offers-dot.active {
-    width: 28px;
-    background: var(--primary);
-}
-
-.offers-dot:focus-visible {
-    outline: 2px solid var(--secondary);
-    outline-offset: 2px;
+.offer-banner a:focus-visible {
+    outline: 3px solid var(--primary);
+    outline-offset: -3px;
 }
 
 @media (max-width: 575px) {
@@ -5677,25 +5615,16 @@ section,
     .offers-section .container {
         padding: 0 0.75rem;
     }
-    .offers-track {
+    .offers-list {
+        gap: 1rem;
+    }
+    .offer-banner {
         border-radius: var(--radius-md);
-    }
-    .offers-nav {
-        width: 34px;
-        height: 34px;
-        font-size: 0.85rem;
-    }
-    .offers-nav.prev {
-        left: 8px;
-    }
-    .offers-nav.next {
-        right: 8px;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .offers-nav,
-    .offers-dot {
+    .offer-banner {
         transition: none;
     }
 }

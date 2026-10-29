@@ -1324,77 +1324,7 @@ function resetCarouselInterval() {
 
 document.addEventListener('DOMContentLoaded', () => {
     initCarousel();
-    initOffersCarousel();
 });
-
-// ========== OFERTAS: carrusel de banners debajo de Marcas ==========
-// El desplazamiento y el arrastre con el dedo los hace el navegador (scroll-snap); aqui solo van las flechas,
-// los puntos y el avance automatico, que se detiene con el cursor o el foco encima y si la pagina no se ve.
-function initOffersCarousel() {
-    document.querySelectorAll('.offers-carousel').forEach(carousel => {
-        const track = carousel.querySelector('.offers-track');
-        const dots = carousel.querySelectorAll('.offers-dot');
-        const total = carousel.querySelectorAll('.offer-slide').length;
-        if (!track || total === 0) return;
-
-        const autoplayMs = parseInt(carousel.dataset.autoplay, 10) || 0;
-        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        let index = 0;          // oferta que se ve ahora
-        let hovering = false;   // cursor, foco o dedo sobre el carrusel
-        let inView = true;
-        let timer = null;
-
-        const goTo = target => track.scrollTo({ left: ((target + total) % total) * track.clientWidth, behavior: 'smooth' });
-        const sync = () => {
-            index = Math.min(total - 1, Math.max(0, Math.round(track.scrollLeft / track.clientWidth)));
-            dots.forEach((dot, i) => dot.classList.toggle('active', i === index));
-        };
-        // Cada gesto del visitante reinicia la cuenta para que el avance automatico no le gane al movimiento
-        const restart = () => {
-            clearInterval(timer);
-            if (total > 1 && autoplayMs && !reduceMotion) {
-                timer = setInterval(() => { if (!hovering && inView && !document.hidden) goTo(index + 1); }, autoplayMs);
-            }
-        };
-
-        let syncing = false;
-        track.addEventListener('scroll', () => {
-            if (syncing) return;
-            syncing = true;
-            requestAnimationFrame(() => { syncing = false; sync(); });
-        }, { passive: true });
-
-        const prev = carousel.querySelector('.offers-nav.prev');
-        const next = carousel.querySelector('.offers-nav.next');
-        if (prev) prev.addEventListener('click', () => { goTo(index - 1); restart(); });
-        if (next) next.addEventListener('click', () => { goTo(index + 1); restart(); });
-        dots.forEach((dot, i) => dot.addEventListener('click', () => { goTo(i); restart(); }));
-        track.addEventListener('keydown', e => {
-            if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(index - 1); restart(); }
-            if (e.key === 'ArrowRight') { e.preventDefault(); goTo(index + 1); restart(); }
-        });
-
-        carousel.addEventListener('mouseenter', () => { hovering = true; });
-        carousel.addEventListener('mouseleave', () => { hovering = false; restart(); });
-        carousel.addEventListener('focusin', () => { hovering = true; });
-        carousel.addEventListener('focusout', () => { hovering = false; restart(); });
-        carousel.addEventListener('touchstart', () => { hovering = true; }, { passive: true });
-        carousel.addEventListener('touchend', () => { hovering = false; restart(); }, { passive: true });
-
-        if ('IntersectionObserver' in window) {
-            new IntersectionObserver(entries => { inView = entries[0].isIntersecting; }, { threshold: 0.2 }).observe(carousel);
-        }
-        // Si cambia el ancho (girar el telefono), la oferta visible vuelve a quedar justo en su lugar, sin animacion
-        window.addEventListener('resize', () => {
-            track.style.scrollBehavior = 'auto';
-            track.scrollLeft = index * track.clientWidth;
-            track.style.scrollBehavior = '';
-        });
-
-        restart();
-    });
-}
-
 
 // Featured Products Slider (Sequential Movement)
 function scrollFeaturedSlider(direction) {

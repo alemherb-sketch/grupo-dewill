@@ -1,4 +1,4 @@
-"""Pruebas del carrusel OFERTAS (debajo de Marcas en la portada) y de su modulo en el panel de administracion.
+"""Pruebas de la seccion OFERTAS (debajo de Marcas en la portada) y de su modulo en el panel de administracion.
 
 Se ejecutan contra una base SQLite temporal y una carpeta de subidas temporal, nunca contra las reales:
 
@@ -237,7 +237,7 @@ class OfertasTest(unittest.TestCase):
         self.assertNotEqual(seccion, '')
         self.assertNotIn('Oculta', seccion)
         self.assertLess(seccion.index('Primera'), seccion.index('Tercera'))
-        self.assertEqual(seccion.count('class="offer-slide"'), 2)
+        self.assertEqual(seccion.count('class="offer-banner"'), 2)
 
     def test_si_todas_estan_inactivas_la_seccion_se_oculta(self):
         self.crear(title='Una', active=False)
@@ -256,19 +256,22 @@ class OfertasTest(unittest.TestCase):
         self.crear(title='Una')
         self.assertIn('<span class="gradient-text">Ofertas</span>', self.seccion(self.portada()))
 
-    def test_una_sola_oferta_no_lleva_flechas_ni_puntos(self):
-        self.crear(title='Unica')
-        seccion = self.seccion(self.portada())
-        self.assertNotIn('offers-nav', seccion)
-        self.assertNotIn('offers-dot', seccion)
-
-    def test_varias_ofertas_llevan_flechas_y_un_punto_por_oferta(self):
+    def test_las_ofertas_van_sueltas_una_debajo_de_otra_sin_carrusel(self):
         for n in range(3):
             self.crear(title=f'Oferta {n}', order=n)
         seccion = self.seccion(self.portada())
-        self.assertEqual(seccion.count('class="offers-nav'), 2)
-        self.assertEqual(len(re.findall(r'class="offers-dot(?: active)?"', seccion)), 3)
-        self.assertEqual(seccion.count('class="offers-dot active"'), 1, 'solo la primera oferta empieza activa')
+        self.assertIn('class="offers-list"', seccion)
+        self.assertEqual(seccion.count('class="offer-banner"'), 3)
+        for carrusel in ('offers-carousel', 'offers-track', 'offers-nav', 'offers-dot', 'aria-roledescription'):
+            self.assertNotIn(carrusel, seccion)
+
+    def test_solo_la_primera_oferta_se_carga_de_inmediato(self):
+        for n in range(3):
+            self.crear(title=f'Oferta {n}', order=n)
+        imagenes = re.findall(r'<img [^>]*>', self.seccion(self.portada()))
+        self.assertEqual(len(imagenes), 3)
+        self.assertNotIn('loading="lazy"', imagenes[0])
+        self.assertTrue(all('loading="lazy"' in img for img in imagenes[1:]))
 
     def test_el_titulo_es_el_texto_alternativo_y_sin_titulo_se_numera(self):
         self.crear(title='Descuento en pinturas', order=1)

@@ -268,7 +268,7 @@ class Banner(db.Model):
 
 
 class Offer(db.Model):
-    """Banner del carrusel OFERTAS de la portada, debajo de Marcas (se administra en Admin > Ofertas)."""
+    """Banner de la seccion OFERTAS de la portada, debajo de Marcas: uno debajo de otro (se administra en Admin > Ofertas)."""
     __tablename__ = 'offers'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200))                 # texto alternativo de la imagen y nombre en el panel

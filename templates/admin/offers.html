@@ -4,14 +4,14 @@
 
 {% block admin_content %}
 <div class="admin-toolbar">
-    <h3>{{ offers|length }} ofertas registradas <small style="font-weight:400;color:var(--admin-text-muted);">· carrusel OFERTAS de la página de Inicio, debajo de Marcas</small></h3>
+    <h3>{{ offers|length }} ofertas registradas <small style="font-weight:400;color:var(--admin-text-muted);">· sección OFERTAS de la página de Inicio, debajo de Marcas</small></h3>
     <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
         <a href="{{ url_for('index') }}#ofertas" target="_blank" rel="noopener" class="btn btn-outline"><i class="fas fa-external-link-alt"></i> Ver en la portada</a>
         <button type="button" class="btn btn-primary" onclick="document.getElementById('newOfferModal').classList.add('show')"><i class="fas fa-plus"></i> Nueva Oferta</button>
     </div>
 </div>
 
-<p class="section-help">Cada oferta es un banner del carrusel. Se muestran en orden (el número menor primero) y solo las <strong>activas</strong>; si no hay ninguna activa, la sección OFERTAS no aparece en la portada. Para que la imagen no se recorte, usa un tamaño de <strong>1200 × 400 px</strong> (horizontal, proporción 3:1).</p>
+<p class="section-help">Cada oferta es un banner suelto: se muestran una debajo de otra, a todo el ancho y completas (sin recortes), en orden (el número menor primero) y solo las <strong>activas</strong>; si no hay ninguna activa, la sección OFERTAS no aparece en la portada. Usa imágenes horizontales de unos <strong>1920 px de ancho</strong> (por ejemplo 1920 × 800 px); mientras más alta la imagen, más espacio ocupa en la portada.</p>
 
 <div class="admin-panel">
     <table class="admin-table">
@@ -50,7 +50,7 @@
             <div class="form-group">
                 <label>Imagen *</label>
                 <input type="file" name="image" accept="image/*" required class="form-input-file">
-                <small class="field-hint">Recomendado: 1200 × 400 px (horizontal, 3:1). Formatos: JPG, PNG, WEBP o GIF.</small>
+                <small class="field-hint">Recomendado: horizontal, unos 1920 px de ancho (p. ej. 1920 × 800 px); se muestra completa. Formatos: JPG, PNG, WEBP o GIF.</small>
             </div>
             <div class="form-group">
                 <label>Título</label>
@@ -81,9 +81,9 @@
             <input type="hidden" name="action" value="update"><input type="hidden" name="id" id="editOfferId">
             <div class="form-group">
                 <label>Imagen actual</label>
-                <img src="" id="editOfferPreview" alt="" style="width:100%;max-height:140px;object-fit:cover;border-radius:6px;display:block;margin-bottom:.5rem;">
+                <img src="" id="editOfferPreview" alt="" style="width:100%;max-height:140px;object-fit:contain;background:#f1f5f9;border-radius:6px;display:block;margin-bottom:.5rem;">
                 <input type="file" name="image" accept="image/*" class="form-input-file">
-                <small class="field-hint">Opcional: sube otra imagen para reemplazarla (1200 × 400 px, JPG, PNG, WEBP o GIF).</small>
+                <small class="field-hint">Opcional: sube otra imagen para reemplazarla (horizontal, unos 1920 px de ancho; JPG, PNG, WEBP o GIF).</small>
             </div>
             <div class="form-group"><label>Título</label><input type="text" name="title" id="editOfferTitle" maxlength="200" class="form-input"></div>
             <div class="form-group">

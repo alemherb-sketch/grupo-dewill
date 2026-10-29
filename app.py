@@ -403,7 +403,7 @@ def index():
     _attach_card_data(featured)
     categories = Category.query.order_by(Category.order).all()
     brands = Brand.query.all()
-    # Carrusel OFERTAS (debajo de Marcas): solo las activas, de menor a mayor orden; sin ninguna, la seccion no se muestra
+    # OFERTAS (debajo de Marcas): solo las activas, de menor a mayor orden; sin ninguna, la seccion no se muestra
     offers = Offer.query.filter_by(is_active=True).order_by(Offer.order, Offer.id).all()
     return render_template('index.html', banners=banners, featured_products=featured,
                            categories=categories, brands=brands, offers=offers)
