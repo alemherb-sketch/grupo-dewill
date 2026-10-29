@@ -157,7 +157,9 @@
                 <!-- Right: Info -->
                 <div class="detail-info-panel">
                     <h1 class="detail-product-name">{{ product.name|upper }}</h1>
-                    <p class="detail-sku-text" id="skuLine"{% if not product.sku %} style="display:none"{% endif %}>{% if product.sku %}SKU: {{ product.sku }}{% endif %}</p>
+                    {# Con codigos por presentacion y color, la linea muestra solo el de lo elegido (la llena el script) #}
+                    {% set general_sku = product.sku if not variant_codes else '' %}
+                    <p class="detail-sku-text" id="skuLine"{% if not general_sku %} style="display:none"{% endif %}>{% if general_sku %}SKU: {{ general_sku }}{% endif %}</p>
                     {% if product.description %}
                     <p class="detail-product-desc">{{ product.description }}</p>
                     {% endif %}
@@ -334,12 +336,13 @@ function currentVariantCode() {
     return findVariantCode(VARIANT_CODES, presId, colorBtn ? colorBtn.dataset.name : '');
 }
 
-// La linea bajo el nombre muestra el codigo de lo elegido; sin codigo cargado, el SKU general del producto
+// La linea bajo el nombre muestra el codigo de lo elegido (mientras falte elegir, nada);
+// el SKU general solo se muestra en productos sin codigos cargados
 function updateVariantCode() {
     const line = document.getElementById('skuLine');
     if (!line) return;
     const code = currentVariantCode();
-    const text = code ? `Código: ${code}` : (PRODUCT_SKU ? `SKU: ${PRODUCT_SKU}` : '');
+    const text = code ? `Código: ${code}` : (!VARIANT_CODES.length && PRODUCT_SKU ? `SKU: ${PRODUCT_SKU}` : '');
     line.textContent = text;
     line.style.display = text ? '' : 'none';
 }

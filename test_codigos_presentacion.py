@@ -299,6 +299,41 @@ class CodigosPorVarianteTest(unittest.TestCase):
         self.assertIn(f'4470{self.sufijo}', html)
         self.assertIn('Código:', html)
 
+    # ---------- SKU general y buscador ----------
+
+    def test_la_ficha_con_codigos_no_muestra_el_sku_general(self):
+        # el SKU general seria el codigo de otra variante: solo se muestra el codigo de lo que se elige
+        self.cargar_pintura()
+        _, html = self.codigos_de_la_ficha(self.pintura)
+        self.assertNotIn(f'SKU: P1{self.sufijo}', html)
+        self.assertIn('id="skuLine" style="display:none"', html)
+
+    def test_el_buscador_encuentra_el_producto_por_cualquier_codigo(self):
+        self.cargar_pintura()
+        codigo = f'P4{self.sufijo}'   # 4GL ROJO: no es el SKU del producto (ese es P1, el de su primera fila)
+        anonimo = app.test_client()
+        self.assertIn(self.pintura, anonimo.get('/productos', query_string={'q': codigo}).get_data(as_text=True))
+        self.assertIn(self.pintura, [p['name'] for p in anonimo.get('/api/productos/search', query_string={'q': codigo}).get_json()])
+        self.assertIn(self.pintura, self.client.get('/admin/productos', query_string={'q': codigo}).get_data(as_text=True))
+
+    # ---------- presentaciones con fraccion ----------
+
+    def test_12_plg_no_se_confunde_con_1_2_plg(self):
+        # slugify quita la barra: '1/2 PLG' y '12 PLG' darian el mismo slug '12-plg'
+        rodillo = f'RODILLO {self.sufijo}'
+        self.importar([self.fila(f'B{self.sufijo}', self.brocha, presentacion='1/2 PLG'),
+                       self.fila(f'R{self.sufijo}', rodillo, presentacion='12 PLG')])
+        with app.app_context():
+            self.assertEqual([p.name for p in self.producto(self.brocha).presentations], ['1/2 PLG'])
+            self.assertEqual([p.name for p in self.producto(rodillo).presentations], ['12 PLG'])
+            doce = Presentation.query.filter_by(name='12 PLG').one()
+            self.assertNotEqual(doce.slug, Presentation.query.filter_by(name='1/2 PLG').one().slug)
+        # un segundo Excel con las mismas filas reutiliza cada presentacion por su nombre
+        self.importar([self.fila(f'R{self.sufijo}', rodillo, presentacion='12 PLG')])
+        with app.app_context():
+            self.assertEqual(Presentation.query.filter_by(name='12 PLG').count(), 1)
+            self.assertEqual(self.codigos(rodillo), {('12 PLG', ''): f'R{self.sufijo}'})
+
 
 if __name__ == '__main__':
     unittest.main()

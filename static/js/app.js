@@ -741,13 +741,14 @@ function renderQuoteOptions() {
     renderQuoteOptionsCode();
 }
 
-// Nombre del color elegido y codigo de la variante (sin codigo cargado, el SKU general del producto)
+// Nombre del color elegido y codigo de la variante. Con codigos cargados solo se muestra el de lo elegido (mientras
+// falte elegir, nada); el SKU general queda para los productos sin codigos
 function renderQuoteOptionsCode() {
     const { product, presId, color } = quoteOptionsState;
     showQuoteColorName(color);
     const code = findVariantCode(product.codes, presId, color ? color.name : '');
     const codeLine = document.getElementById('qoCode');
-    codeLine.textContent = code ? `Código: ${code}` : (product.sku ? `SKU: ${product.sku}` : '');
+    codeLine.textContent = code ? `Código: ${code}` : (!product.codes.length && product.sku ? `SKU: ${product.sku}` : '');
     codeLine.hidden = !codeLine.textContent;
     document.getElementById('qoError').textContent = '';
 }

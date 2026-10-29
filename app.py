@@ -468,10 +468,11 @@ def productos():
             Product.name.ilike(f'%{search_term}%'), 
             Product.description.ilike(f'%{search_term}%'),
             Product.sku.ilike(f'%{search_term}%'),
+            Product.variant_codes.any(ProductVariantCode.code.ilike(f'%{search_term}%')),   # codigo de cualquier presentacion/color
             Product.brand.has(Brand.name.ilike(f'%{search_term}%')),
             Product.category.has(Category.name.ilike(f'%{search_term}%'))
         ))
-        
+
     # Filter by specs
     for spec_name, spec_vals in selected_specs.items():
         if spec_vals:
@@ -522,6 +523,7 @@ def api_search():
             Product.name.ilike(f'%{search_term}%'), 
             Product.description.ilike(f'%{search_term}%'),
             Product.sku.ilike(f'%{search_term}%'),
+            Product.variant_codes.any(ProductVariantCode.code.ilike(f'%{search_term}%')),
             Product.brand.has(Brand.name.ilike(f'%{search_term}%')),
             Product.category.has(Category.name.ilike(f'%{search_term}%'))
         )
@@ -1189,8 +1191,9 @@ def admin_products():
     query = Product.query
     if q: 
         query = query.filter(db.or_(
-            Product.name.ilike(f'%{q}%'), 
+            Product.name.ilike(f'%{q}%'),
             Product.sku.ilike(f'%{q}%'),
+            Product.variant_codes.any(ProductVariantCode.code.ilike(f'%{q}%')),   # codigo de cualquier presentacion/color
             Product.brand.has(Brand.name.ilike(f'%{q}%')),
             Product.category.has(Category.name.ilike(f'%{q}%'))
         ))
@@ -1198,6 +1201,26 @@ def admin_products():
     products = query.order_by(Product.created_at.desc()).paginate(page=page, per_page=20, error_out=False)
     categories = Category.query.order_by(Category.order).all()
     return render_template('admin/products.html', products=products, categories=categories, q=q, cat_id=cat_id)
+
+def _find_or_create_presentation(name):
+    """Presentacion de una fila del Excel: primero por nombre (sin distinguir mayusculas) y luego por slug.
+    El slug quita la barra, asi que '1/2 PLG' y '12 PLG' comparten '12-plg': un slug igual con otra fraccion
+    es otra presentacion y se crea con un slug libre ('12-plg-2')."""
+    pres = Presentation.query.filter(db.func.upper(Presentation.name) == name.upper()).first()
+    if pres:
+        return pres
+    base_slug = slugify(name)
+    pres = Presentation.query.filter(Presentation.slug == base_slug).first()
+    if pres and ('/' in (pres.name or '')) == ('/' in name):
+        return pres
+    slug, n = base_slug, 2
+    while Presentation.query.filter(Presentation.slug == slug).first():
+        slug, n = f'{base_slug}-{n}', n + 1
+    pres = Presentation(name=name, slug=slug)
+    db.session.add(pres)
+    db.session.flush()
+    return pres
+
 
 @app.route('/admin/productos/importar', methods=['GET', 'POST'])
 @module_required('productos')
@@ -1348,12 +1371,7 @@ def admin_product_import():
                     pres = None
                     pres_name = cell('Presentacion')
                     if pres_name:
-                        pres_slug = slugify(pres_name)
-                        pres = Presentation.query.filter(Presentation.slug == pres_slug).first()
-                        if not pres:
-                            pres = Presentation(name=pres_name, slug=pres_slug)
-                            db.session.add(pres)
-                            db.session.flush()
+                        pres = _find_or_create_presentation(pres_name)
                         if pres not in product.presentations:
                             product.presentations.append(pres)
 
