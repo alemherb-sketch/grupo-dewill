@@ -64,8 +64,11 @@ class EnlaceAmbientesTest(unittest.TestCase):
         self.guardar(**{f'image_product_{img1}': str(self.producto), f'image_product_{img2}': ''})
         self.assertEqual(self.enlaces(), [self.producto, None])
         html = self.client.get(f'/admin/ambientes/{self.ambiente}/editar').get_data(as_text=True)
-        self.assertIn(f'<option value="{self.producto}" selected>', html)
+        self.assertRegex(html, rf'<option value="{self.producto}"[^>]* selected>')
         self.assertIn(f'name="image_product_{img2}"', html)
+        # el buscador (sobre la misma lista) muestra el producto enlazado
+        combo = html[html.index(f'data-select="imgProduct{img1}"'):html.index(f'name="image_product_{img1}"')]
+        self.assertRegex(combo, r'class="form-input product-combo-input" value="DURALATEX ')
 
     def test_quitar_el_enlace_y_un_producto_inexistente(self):
         img1, img2 = self.imagenes

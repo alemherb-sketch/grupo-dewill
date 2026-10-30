@@ -344,6 +344,17 @@ class CodigosPorVarianteTest(unittest.TestCase):
                                                 ('1GL', 'ROJO #103', f'P3{s}'), ('4GL', 'ROJO #103', f'P4{s}')]))
         self.assertIn('4 variantes · 4 con código', html)
 
+    def test_la_tabla_de_codigos_va_antes_de_las_especificaciones_y_los_colores_plegados(self):
+        # con decenas de colores, una tabla al final del formulario no se ve: va debajo de Rendimiento
+        self.cargar_pintura()
+        _, html, _ = self.tabla_de_codigos(self.pintura)
+        self.assertLess(html.index('Códigos por presentación y color</h3>'), html.index('Especificaciones Técnicas</h3>'))
+        plegados = html[html.index('<details class="color-specs">'):html.index('</details>')]
+        self.assertIn('Colores del producto (2)', plegados)
+        self.assertEqual(plegados.count('name="spec_key[]" value="Color"'), 2, 'los colores siguen dentro del formulario')
+        especificaciones = html[html.index('id="specsContainer"'):html.index('<details class="color-specs">')]
+        self.assertNotIn('value="Color"', especificaciones)
+
     def test_desde_el_formulario_se_cambia_y_se_quita_un_codigo(self):
         self.cargar_pintura()
         with app.app_context():

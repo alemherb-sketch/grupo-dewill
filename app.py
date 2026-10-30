@@ -1719,7 +1719,7 @@ def admin_product_new():
         _flash_rejected_yields(rejected)
         return redirect(url_for('admin_products'))
     return render_template('admin/product_form.html', product=None, categories=categories, subcategories=subcategories, brands=brands, presentations=presentations,
-                           yields={})
+                           yields={}, other_specs=[], color_specs=[])
 
 @app.route('/admin/productos/<int:pid>/editar', methods=['GET', 'POST'])
 @module_required('productos')
@@ -1770,8 +1770,11 @@ def admin_product_edit(pid):
         return redirect(url_for('admin_products'))
     # rendimiento guardado por presentacion (0 = producto sin presentaciones)
     yields = {(y.presentation_id or 0): y for y in p.yields}
+    # las especificaciones 'Color' (las del Excel) van en un bloque plegable aparte
+    color_specs = [s for s in p.specs if (s.key or '').strip().lower() == 'color']
+    other_specs = [s for s in p.specs if (s.key or '').strip().lower() != 'color']
     return render_template('admin/product_form.html', product=p, categories=categories, subcategories=subcategories, brands=brands, presentations=presentations,
-                           yields=yields, variant_rows=_variant_code_rows(p))
+                           yields=yields, variant_rows=_variant_code_rows(p), other_specs=other_specs, color_specs=color_specs)
 
 @app.route('/admin/productos/<int:pid>/eliminar', methods=['POST'])
 @module_required('productos')
@@ -2375,7 +2378,7 @@ def admin_ambientes():
 def _product_choices():
     """Productos para enlazar una imagen de Ambientes, agrupados por categoria: [(categoria, [productos])]."""
     groups = {}
-    for p in Product.query.order_by(Product.name).all():
+    for p in Product.query.options(db.joinedload(Product.brand), db.joinedload(Product.category)).order_by(Product.name).all():
         groups.setdefault(p.category.name if p.category else 'Sin categoría', []).append(p)
     return sorted(groups.items())
 

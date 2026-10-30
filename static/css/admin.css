@@ -207,8 +207,8 @@ a { text-decoration: none; color: var(--admin-primary); }
     .toolbar-search { flex-direction: column; }
 }
 
-/* Editar Producto: codigos por presentacion y color */
-.variant-codes { margin-top: 1.5rem; }
+/* Editar Producto: codigos por presentacion y color (debajo de Rendimiento) */
+.variant-codes { margin-bottom: 1.5rem; }
 .variant-codes-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.75rem; font-size: 0.85rem; font-weight: 600; color: var(--admin-text-muted); }
 .variant-codes-bar .form-input { max-width: 320px; }
 .variant-codes-scroll { max-height: 440px; overflow-y: auto; border: 1px solid var(--admin-border); border-radius: var(--radius); }
@@ -216,6 +216,12 @@ a { text-decoration: none; color: var(--admin-primary); }
 .variant-codes-table td { padding-top: 0.4rem; padding-bottom: 0.4rem; }
 .variant-codes-table .form-input { max-width: 170px; padding: 0.35rem 0.6rem; }
 .variant-codes-table tr[hidden] { display: none; }
+/* Colores del producto (especificaciones 'Color' del Excel), plegados para no tapar el resto del formulario */
+.color-specs { margin-top: 1rem; border: 1px solid var(--admin-border); border-radius: var(--radius); background: #f8fafc; }
+.color-specs summary { padding: 0.75rem 1rem; cursor: pointer; font-weight: 600; color: var(--admin-text); }
+.color-specs summary i { color: var(--admin-primary); margin-right: 0.35rem; }
+.color-specs summary small { display: block; margin-top: 0.2rem; font-weight: 400; color: var(--admin-text-muted); }
+.color-specs-rows { padding: 0 1rem 1rem; }
 
 /* Importar productos: caja para descargar el modelo de Excel */
 .template-download { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin: 1rem 0 1.25rem; padding: 1rem 1.25rem; border: 1px solid #bbf7d0; border-radius: var(--radius); background: #f0fdf4; }
@@ -230,6 +236,17 @@ a { text-decoration: none; color: var(--admin-primary); }
 .ambient-image-link { flex: 1; min-width: 180px; }
 .ambient-image-link label { display: block; margin-bottom: 0.35rem; font-size: 0.85rem; font-weight: 600; }
 .ambient-image-link label i { color: var(--admin-primary); }
+/* Buscador de producto (Ambientes): escribir y elegir */
+.product-combo { position: relative; }
+.product-combo .product-combo-input { padding-right: 2.2rem; }
+.product-combo-clear { position: absolute; top: 50%; right: 0.5rem; transform: translateY(-50%); width: 24px; height: 24px; border: none; border-radius: 50%; background: #f1f5f9; color: var(--admin-text-muted); font-size: 1rem; line-height: 1; cursor: pointer; }
+.product-combo-clear:hover { background: var(--admin-danger); color: #fff; }
+.product-combo-results { position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 30; max-height: 280px; overflow-y: auto; background: #fff; border: 1px solid var(--admin-border); border-radius: var(--radius); box-shadow: 0 10px 28px rgba(15, 23, 42, 0.18); }
+.product-combo-item { display: flex; flex-direction: column; gap: 0.1rem; padding: 0.5rem 0.8rem; cursor: pointer; font-size: 0.88rem; }
+.product-combo-item small { font-size: 0.75rem; color: var(--admin-text-muted); }
+.product-combo-item:hover, .product-combo-item.active { background: var(--admin-primary); color: #fff; }
+.product-combo-item:hover small, .product-combo-item.active small { color: rgba(255, 255, 255, 0.85); }
+.product-combo-empty { padding: 0.6rem 0.8rem; font-size: 0.85rem; font-style: italic; color: var(--admin-text-muted); }
 
 /* Admin Product Form Extras */
 .image-thumbs {

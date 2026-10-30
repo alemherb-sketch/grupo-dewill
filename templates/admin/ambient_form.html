@@ -78,11 +78,19 @@
                         </div>
                         <div class="ambient-image-link">
                             <label for="imgProduct{{ img.id }}"><i class="fas fa-link"></i> Producto al hacer clic</label>
+                            {# Buscador: escribe parte del nombre, la marca o la categoria y elige; guarda en la lista de abajo #}
+                            <div class="product-combo" data-select="imgProduct{{ img.id }}" hidden>
+                                <input type="text" class="form-input product-combo-input" value="{{ img.product.name if img.product else '' }}"
+                                       placeholder="Buscar producto por nombre, marca o categoría..." autocomplete="off"
+                                       role="combobox" aria-expanded="false" aria-autocomplete="list" aria-label="Buscar producto">
+                                <button type="button" class="product-combo-clear" aria-label="Quitar el enlace"{% if not img.product %} hidden{% endif %}>&times;</button>
+                                <div class="product-combo-results" role="listbox" hidden></div>
+                            </div>
                             <select name="image_product_{{ img.id }}" id="imgProduct{{ img.id }}" class="form-input">
                                 <option value="">Sin enlace</option>
                                 {% for category, items in product_groups %}
                                 <optgroup label="{{ category }}">
-                                    {% for p in items %}<option value="{{ p.id }}"{% if img.product_id == p.id %} selected{% endif %}>{{ p.name }}{% if not p.is_active %} (inactivo){% endif %}</option>{% endfor %}
+                                    {% for p in items %}<option value="{{ p.id }}" data-name="{{ p.name }}" data-brand="{{ p.brand.name if p.brand else '' }}"{% if img.product_id == p.id %} selected{% endif %}>{{ p.name }}{% if not p.is_active %} (inactivo){% endif %}</option>{% endfor %}
                                 </optgroup>
                                 {% endfor %}
                             </select>
@@ -153,6 +161,88 @@ function updateColorsInput() {
 }
 
 document.addEventListener('DOMContentLoaded', renderPalette);
+
+// === Producto de cada imagen: buscador sobre la lista (sin JavaScript queda la lista normal) ===
+(function(){
+    const normalize = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+
+    document.querySelectorAll('.product-combo').forEach(combo => {
+        const select = document.getElementById(combo.dataset.select);
+        const input = combo.querySelector('.product-combo-input');
+        const clear = combo.querySelector('.product-combo-clear');
+        const results = combo.querySelector('.product-combo-results');
+        const options = Array.from(select.querySelectorAll('option[value]:not([value=""])')).map(o => ({
+            id: o.value, name: o.dataset.name || o.textContent.trim(), label: o.textContent.trim(),
+            brand: o.dataset.brand || '', category: o.parentElement.label || '',
+        }));
+        options.forEach(o => { o.key = normalize(`${o.name} ${o.brand} ${o.category}`); });
+        combo.hidden = false;
+        select.hidden = true;
+        input.id = select.id + 'Search';
+        const label = combo.parentElement.querySelector('label');
+        if (label) label.htmlFor = input.id;
+
+        const current = () => options.find(o => o.id === select.value);
+        function close() { results.hidden = true; input.setAttribute('aria-expanded', 'false'); }
+        function pick(o) {
+            select.value = o ? o.id : '';
+            input.value = o ? o.name : '';
+            clear.hidden = !o;
+            close();
+        }
+        // term '' muestra todos (al entrar al buscador); si no, los que tienen todas las palabras escritas
+        function render(term = input.value) {
+            const words = normalize(term).split(/\s+/).filter(Boolean);
+            const matches = options.filter(o => words.every(w => o.key.includes(w)));
+            results.innerHTML = '';
+            if (!matches.length) {
+                results.innerHTML = '<div class="product-combo-empty">Ningún producto coincide</div>';
+            }
+            matches.forEach((o, i) => {
+                const item = document.createElement('div');
+                item.className = 'product-combo-item' + (i === 0 ? ' active' : '');
+                item.setAttribute('role', 'option');
+                item.innerHTML = '<span></span><small></small>';
+                item.firstChild.textContent = o.label;
+                item.lastChild.textContent = [o.brand, o.category].filter(Boolean).join(' · ');
+                item.addEventListener('mousedown', e => { e.preventDefault(); pick(o); });
+                item._option = o;
+                results.appendChild(item);
+            });
+            results.hidden = false;
+            input.setAttribute('aria-expanded', 'true');
+        }
+        function move(dir) {
+            const items = Array.from(results.querySelectorAll('.product-combo-item'));
+            if (!items.length) return;
+            let i = items.findIndex(it => it.classList.contains('active'));
+            items.forEach(it => it.classList.remove('active'));
+            i = (i + dir + items.length) % items.length;
+            items[i].classList.add('active');
+            items[i].scrollIntoView({ block: 'nearest' });
+        }
+
+        input.addEventListener('focus', () => { input.select(); render(''); });
+        input.addEventListener('input', () => render());
+        input.addEventListener('keydown', e => {
+            if (e.key === 'ArrowDown') { e.preventDefault(); if (results.hidden) render(); else move(1); }
+            else if (e.key === 'ArrowUp') { e.preventDefault(); move(-1); }
+            else if (e.key === 'Enter') {   // elige la opcion marcada; nunca envia el formulario
+                e.preventDefault();
+                const active = results.querySelector('.product-combo-item.active');
+                if (!results.hidden && active) pick(active._option);
+            }
+            else if (e.key === 'Escape') { close(); input.value = current() ? current().name : ''; }
+        });
+        // al salir sin elegir, el texto vuelve al producto enlazado (o queda vacio si se borro todo)
+        input.addEventListener('blur', () => {
+            if (!input.value.trim()) pick(null);
+            else input.value = current() ? current().name : '';
+            close();
+        });
+        clear.addEventListener('click', () => { pick(null); input.focus(); });
+    });
+})();
 
 function deleteAmbientImage(imgId) {
     if (confirm('¿Estás seguro de eliminar esta imagen de la galería?')) {
