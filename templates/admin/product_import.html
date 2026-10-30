@@ -6,6 +6,13 @@
 <div class="admin-panel" style="max-width: 800px; margin: 0 auto;">
     <div class="panel-header">
         <h3>Instrucciones</h3>
+        <div class="template-download">
+            <div>
+                <strong><i class="fas fa-file-excel"></i> Modelo de Excel</strong>
+                <p>Descárgalo, llena la hoja «Productos» y súbelo aquí. Trae las columnas exactas, listas desplegables con los nombres que ya usa la web y las instrucciones con un ejemplo.</p>
+            </div>
+            <a href="{{ url_for('admin_product_import_template') }}" class="btn btn-primary"><i class="fas fa-download"></i> Descargar modelo</a>
+        </div>
         <p>Sube un archivo de Excel (.xlsx) para importar productos masivamente.</p>
         <p>El archivo <strong>debe contener</strong> las siguientes columnas exactamente (pueden estar en cualquier orden):</p>
         <ul>
@@ -17,6 +24,15 @@
             <li><strong>Color</strong>: (Opcional) Color del producto, se guardará como especificación. Si tiene código, va al final con # (ej. <code>AMARILLO LIMON #41</code>) y viaja con el color en la cotización.</li>
             <li><strong>Presentacion</strong>: (Opcional) Presentación del producto. Si no existe, se creará.</li>
         </ul>
+        <div class="alert alert-info mt-3" style="background-color: #fff7ed; border-left: 4px solid #f59e0b; padding: 15px;">
+            <strong><i class="fas fa-exclamation-triangle"></i> Para que la importación salga bien:</strong>
+            <ul style="margin: 0.5rem 0 0;">
+                <li>Escribe el producto y la marca <strong>igual que en la web</strong>: si cambian (otra marca, nombre cortado), se crea un producto nuevo.</li>
+                <li>Cada fila es una presentación y un color. Si el producto tiene colores, <strong>todas sus filas llevan color</strong>.</li>
+                <li>Al importar un producto se reemplazan sus colores y códigos por los del archivo: <strong>incluye todas sus variantes</strong>, no solo las nuevas.</li>
+                <li>Revisa que no queden celdas con <code>#N/A</code> ni presentaciones vacías.</li>
+            </ul>
+        </div>
         <div class="alert alert-info mt-3" style="background-color: #e9f5ff; border-left: 4px solid #007bff; padding: 15px;">
             <i class="fas fa-info-circle"></i> Los productos creados se marcarán como "Activos" por defecto y sin imagen destacada. Puedes editar los detalles posteriormente.
         </div>

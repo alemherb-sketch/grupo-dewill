@@ -1,3 +1,4 @@
+import io
 import os
 import re
 import unicodedata
@@ -5,7 +6,7 @@ from urllib.parse import urlencode
 from datetime import datetime, timedelta
 from functools import wraps
 from flask import (Flask, render_template, request, redirect, url_for, flash,
-                   jsonify, g)
+                   jsonify, g, send_file)
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_mail import Mail, Message
 from markupsafe import Markup, escape
@@ -20,6 +21,7 @@ from models import db, AdminUser, Category, SubCategory, Brand, Product, Product
 from models import QuoteRequest, QuoteItem, Banner, PageBanner, Offer, GalleryCategory, GalleryImage, AmbientCategory, AmbientImage, SiteConfig, PaintColor, BlogCategory, BlogPost, ProductPresentationColor
 from models import split_color_code, color_label, ProductVariantCode, find_variant_code
 from models import ProductYield, find_yield, format_m2, yield_label
+from import_template import IMPORT_REQUIRED, build_import_template, import_header
 import time
 import threading
 import resend
@@ -1319,6 +1321,69 @@ def _find_or_create_presentation(name):
     return pres
 
 
+def _import_sheet(wb):
+    """Hoja del Excel con los productos y sus encabezados (sin tildes: 'CATEGORÍA' -> 'Categoria').
+    Es la hoja activa o, si esa no tiene las columnas obligatorias (p. ej. el modelo se guardo mirando las
+    instrucciones), la primera que si las tenga."""
+    first = None
+    for ws in [wb.active] + [s for s in wb.worksheets if s is not wb.active]:
+        row = next(ws.iter_rows(min_row=1, max_row=1), ())
+        headers = [import_header(cell.value) for cell in row]
+        if first is None:
+            first = (ws, headers)
+        if all(col in headers for col in IMPORT_REQUIRED):
+            return ws, headers
+    return first
+
+
+def _import_template_lists():
+    """Nombres que ya usa la web, para las listas del modelo de Excel."""
+    return {
+        'categorias': [c.name for c in Category.query.all()],
+        'subcategorias': [s.name for s in SubCategory.query.all()],
+        'marcas': [b.name for b in Brand.query.all()],
+        'presentaciones': [p.name for p in Presentation.query.all()],
+        'productos': [(p.name, p.brand.name if p.brand else '', p.category.name if p.category else '')
+                      for p in Product.query.all()],
+    }
+
+
+def _import_template_examples():
+    """Filas de ejemplo con nombres y codigos reales: una con presentacion y color (con codigo de fabrica si hay),
+    una con presentacion sola y una sin presentacion ni color. Vacio si el catalogo aun no tiene codigos."""
+    pres_names = {p.id: p.name for p in Presentation.query.all()}
+    best = {}   # (con presentacion, con color) -> fila
+    for vc in ProductVariantCode.query.order_by(ProductVariantCode.id).limit(5000):
+        kind = (vc.presentation_id is not None, bool(vc.color_name))
+        p = vc.product_rel
+        if p is None or not p.category:
+            continue
+        color = vc.color_name
+        if color:
+            link = next((lk for lk in p.presentation_colors if lk.presentation_id == vc.presentation_id
+                         and lk.color_name.strip().upper() == color.strip().upper()), None)
+            color = link.label if link else color
+        row = [vc.code, p.category.name, p.subcategory.name if p.subcategory else '',
+               p.brand.name if p.brand else '', p.name, color, pres_names.get(vc.presentation_id, '')]
+        # entre las de presentacion y color se prefiere una con codigo de fabrica ('ROJO #103') para mostrar el formato
+        if kind not in best or (kind == (True, True) and '#' in color and '#' not in best[kind][5]):
+            best[kind] = row
+        if len(best) == 3 and '#' in best.get((True, True), [''] * 7)[5]:
+            break
+    return sorted(best.values(), key=lambda row: (not row[6], not row[5]))
+
+
+@app.route('/admin/productos/importar/modelo')
+@module_required('productos')
+def admin_product_import_template():
+    """Modelo de Excel para importar: hoja Productos, instrucciones con ejemplo y listas con los nombres de la web."""
+    buf = io.BytesIO()
+    build_import_template(_import_template_lists(), _import_template_examples() or None).save(buf)
+    buf.seek(0)
+    return send_file(buf, as_attachment=True, download_name='modelo_importacion_productos.xlsx',
+                     mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+
 @app.route('/admin/productos/importar', methods=['GET', 'POST'])
 @module_required('productos')
 def admin_product_import():
@@ -1335,15 +1400,10 @@ def admin_product_import():
             try:
                 from openpyxl import load_workbook
                 wb = load_workbook(filename=file, read_only=True, data_only=True)
-                ws = wb.active
-                
-                # Read headers from first row
-                headers_raw = []
-                for cell in next(ws.iter_rows(min_row=1, max_row=1)):
-                    headers_raw.append(str(cell.value or '').strip().title())
-                
+                ws, headers_raw = _import_sheet(wb)
+
                 # 'Codigo' (SKU) solo hace falta para crear productos nuevos; sin esa columna se actualizan los que ya existen
-                required_cols = ['Categoria', 'Sub Categoria', 'Marca', 'Producto']
+                required_cols = IMPORT_REQUIRED
                 for col in required_cols:
                     if col not in headers_raw:
                         wb.close()
@@ -1359,6 +1419,8 @@ def admin_product_import():
                 cleared_products = set()
                 
                 for row in ws.iter_rows(min_row=2, values_only=True):
+                    if all(v is None or not str(v).strip() for v in row):   # fila en blanco (p. ej. las preparadas del modelo)
+                        continue
                     # Safely get cell value by column name
                     def cell(name):
                         idx = col_map.get(name)
@@ -1367,6 +1429,8 @@ def admin_product_import():
                         v = row[idx]
                         if v is None:
                             return None
+                        if isinstance(v, float) and v.is_integer():   # un codigo escrito como numero: 25.0 -> '25'
+                            v = int(v)
                         return str(v).strip() or None
                     
                     codigo = cell('Codigo')
@@ -1567,6 +1631,49 @@ def _form_text(name):
     return request.form.get(name, '').strip() or None
 
 
+def _variant_code_rows(product):
+    """Filas de 'Codigos por presentacion y color' en Editar Producto: cada variante que el cliente puede elegir
+    (presentacion + color, presentacion sola o el producto sin presentaciones) con su codigo, y cualquier otro codigo
+    guardado de sus presentaciones actuales."""
+    codes = {(vc.presentation_id, (vc.color_name or '').strip().upper()): vc.code for vc in product.variant_codes}
+    names = {pres.id: pres.name for pres in product.presentations}
+    labels, keys = {}, []
+    for lk in sorted(product.presentation_colors, key=lambda lk: (names.get(lk.presentation_id, ''), lk.id)):
+        if lk.presentation_id in names:
+            keys.append((lk.presentation_id, lk.color_name))
+            labels[(lk.presentation_id, lk.color_name.strip().upper())] = lk.label
+    with_colors = {pid for pid, _ in keys}
+    keys += [(pid, '') for pid in names if pid not in with_colors]
+    if not names:
+        keys.append((None, ''))
+    seen = {(pid, color.strip().upper()) for pid, color in keys}
+    keys += [(vc.presentation_id, vc.color_name or '') for vc in product.variant_codes
+             if (vc.presentation_id, (vc.color_name or '').strip().upper()) not in seen
+             and (vc.presentation_id in names or vc.presentation_id is None)]
+    return [{'pres_id': pid, 'pres': names.get(pid, ''), 'color': color,
+             'label': labels.get((pid, color.strip().upper()), color),
+             'code': codes.get((pid, color.strip().upper()), '')} for pid, color in keys]
+
+
+def _save_variant_codes(product):
+    """Codigos de la tabla del formulario (vc_pres[], vc_color[], vc_code[]): reemplazan los del producto.
+    Solo si el formulario trae la tabla (vc_present); una fila vacia queda sin codigo."""
+    if 'vc_present' not in request.form:
+        return
+    allowed = {pres.id for pres in product.presentations} | {None}
+    ProductVariantCode.query.filter_by(product_id=product.id).delete()
+    seen = set()
+    for pres_raw, color, code in zip(request.form.getlist('vc_pres[]'), request.form.getlist('vc_color[]'),
+                                     request.form.getlist('vc_code[]')):
+        code, color = code.strip()[:50], color.strip()
+        pres_id = int(pres_raw) if pres_raw.strip().isdigit() else None
+        key = (pres_id, color.upper())
+        if not code or pres_id not in allowed or key in seen:
+            continue
+        seen.add(key)
+        db.session.add(ProductVariantCode(product_id=product.id, presentation_id=pres_id, color_name=color, code=code))
+
+
 @app.route('/admin/productos/nuevo', methods=['GET', 'POST'])
 @module_required('productos')
 def admin_product_new():
@@ -1655,6 +1762,7 @@ def admin_product_edit(pid):
             if pres: p.presentations.append(pres)
         db.session.flush()
         rejected = _save_product_yields(p)
+        _save_variant_codes(p)
 
         db.session.commit()
         flash('Producto actualizado', 'success')
@@ -1663,7 +1771,7 @@ def admin_product_edit(pid):
     # rendimiento guardado por presentacion (0 = producto sin presentaciones)
     yields = {(y.presentation_id or 0): y for y in p.yields}
     return render_template('admin/product_form.html', product=p, categories=categories, subcategories=subcategories, brands=brands, presentations=presentations,
-                           yields=yields)
+                           yields=yields, variant_rows=_variant_code_rows(p))
 
 @app.route('/admin/productos/<int:pid>/eliminar', methods=['POST'])
 @module_required('productos')

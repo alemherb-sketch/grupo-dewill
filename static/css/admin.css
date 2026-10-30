@@ -207,6 +207,22 @@ a { text-decoration: none; color: var(--admin-primary); }
     .toolbar-search { flex-direction: column; }
 }
 
+/* Editar Producto: codigos por presentacion y color */
+.variant-codes { margin-top: 1.5rem; }
+.variant-codes-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.75rem; font-size: 0.85rem; font-weight: 600; color: var(--admin-text-muted); }
+.variant-codes-bar .form-input { max-width: 320px; }
+.variant-codes-scroll { max-height: 440px; overflow-y: auto; border: 1px solid var(--admin-border); border-radius: var(--radius); }
+.variant-codes-table thead th { position: sticky; top: 0; z-index: 1; background: #f8fafc; }
+.variant-codes-table td { padding-top: 0.4rem; padding-bottom: 0.4rem; }
+.variant-codes-table .form-input { max-width: 170px; padding: 0.35rem 0.6rem; }
+.variant-codes-table tr[hidden] { display: none; }
+
+/* Importar productos: caja para descargar el modelo de Excel */
+.template-download { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin: 1rem 0 1.25rem; padding: 1rem 1.25rem; border: 1px solid #bbf7d0; border-radius: var(--radius); background: #f0fdf4; }
+.template-download strong { color: #166534; }
+.template-download strong i { color: #16a34a; }
+.template-download p { margin: 0.3rem 0 0; max-width: 480px; font-size: 0.85rem; color: var(--admin-text-muted); }
+
 /* Ambientes: cada imagen del slider con el producto al que lleva */
 .ambient-image-rows { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem; }
 .ambient-image-row { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; padding: 0.75rem; border: 1px solid var(--admin-border); border-radius: var(--radius); }

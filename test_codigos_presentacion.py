@@ -316,6 +316,61 @@ class CodigosPorVarianteTest(unittest.TestCase):
         self.assertIn(self.pintura, [p['name'] for p in anonimo.get('/api/productos/search', query_string={'q': codigo}).get_json()])
         self.assertIn(self.pintura, self.client.get('/admin/productos', query_string={'q': codigo}).get_data(as_text=True))
 
+    # ---------- tabla de codigos en Editar Producto ----------
+
+    def tabla_de_codigos(self, nombre):
+        """[(presentacion, color, codigo)] de la tabla del formulario, en orden."""
+        with app.app_context():
+            pid = self.producto(nombre).id
+        html = self.client.get(f'/admin/productos/{pid}/editar').get_data(as_text=True)
+        filas = re.findall(r'<td>([^<]*)<input type="hidden" name="vc_pres\[\]"[^>]*></td>\s*<td>([^<]*)<input type="hidden" '
+                           r'name="vc_color\[\]"[^>]*></td>\s*<td><input type="text" name="vc_code\[\]" value="([^"]*)"', html)
+        return pid, html, filas
+
+    def guardar_codigos(self, pid, filas, presentaciones):
+        """Envia el formulario de edicion con la tabla de codigos: filas = [(presentation_id, color, codigo)]."""
+        data = {'name': 'x', 'presentation_ids': presentaciones, 'vc_present': '1',
+                'vc_pres[]': [str(p) if p else '' for p, _, _ in filas], 'vc_color[]': [c for _, c, _ in filas],
+                'vc_code[]': [code for _, _, code in filas]}
+        with app.app_context():
+            data['name'] = db.session.get(Product, pid).name
+        return self.client.post(f'/admin/productos/{pid}/editar', data=data, follow_redirects=True)
+
+    def test_el_formulario_muestra_el_codigo_de_cada_presentacion_y_color(self):
+        self.cargar_pintura()
+        _, html, filas = self.tabla_de_codigos(self.pintura)
+        s = self.sufijo
+        self.assertEqual(sorted(filas), sorted([('1GL', 'AZUL', f'P1{s}'), ('4GL', 'AZUL', f'P2{s}'),
+                                                ('1GL', 'ROJO #103', f'P3{s}'), ('4GL', 'ROJO #103', f'P4{s}')]))
+        self.assertIn('4 variantes · 4 con código', html)
+
+    def test_desde_el_formulario_se_cambia_y_se_quita_un_codigo(self):
+        self.cargar_pintura()
+        with app.app_context():
+            ids = {p.name: p.id for p in Presentation.query.filter(Presentation.name.in_(['1GL', '4GL'])).all()}
+        pid = self.tabla_de_codigos(self.pintura)[0]
+        s = self.sufijo
+        self.guardar_codigos(pid, [(ids['1GL'], 'AZUL', f'NUEVO{s}'), (ids['4GL'], 'AZUL', ''),
+                                   (ids['1GL'], 'ROJO', f'P3{s}'), (ids['4GL'], 'ROJO', f'P4{s}')], [ids['1GL'], ids['4GL']])
+        self.assertEqual(self.codigos(self.pintura), {('1GL', 'AZUL'): f'NUEVO{s}', ('1GL', 'ROJO'): f'P3{s}',
+                                                     ('4GL', 'ROJO'): f'P4{s}'})
+
+    def test_un_formulario_sin_la_tabla_no_toca_los_codigos(self):
+        self.cargar_pintura()
+        pid = self.tabla_de_codigos(self.pintura)[0]
+        with app.app_context():
+            ids = [p.id for p in self.producto(self.pintura).presentations]
+        self.client.post(f'/admin/productos/{pid}/editar', data={'name': self.pintura, 'presentation_ids': ids},
+                         follow_redirects=True)
+        self.assertEqual(len(self.codigos(self.pintura)), 4)
+
+    def test_producto_sin_presentaciones_tiene_una_fila_para_su_codigo(self):
+        self.importar([self.fila(f'U{self.sufijo}', self.brocha)])
+        pid, html, filas = self.tabla_de_codigos(self.brocha)
+        self.assertEqual(filas, [('—', '—', f'U{self.sufijo}')])
+        self.guardar_codigos(pid, [(None, '', f'V{self.sufijo}')], [])
+        self.assertEqual(self.codigos(self.brocha), {(None, ''): f'V{self.sufijo}'})
+
     # ---------- presentaciones con fraccion ----------
 
     def test_12_plg_no_se_confunde_con_1_2_plg(self):

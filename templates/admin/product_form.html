@@ -9,7 +9,7 @@
             <h3><i class="fas fa-info-circle"></i> Información General</h3>
             <div class="form-group"><label>Nombre *</label><input type="text" name="name" value="{{ product.name if product else '' }}" required class="form-input"></div>
             <div class="form-row">
-                <div class="form-group"><label>SKU</label><input type="text" name="sku" value="{{ (product and product.sku) or '' }}" class="form-input"></div>
+                <div class="form-group"><label>SKU (código general)</label><input type="text" name="sku" value="{{ (product and product.sku) or '' }}" class="form-input">{% if variant_rows and variant_rows|length > 1 %}<small class="field-hint">Cada presentación y color tiene su propio código: están abajo, en «Códigos por presentación y color».</small>{% endif %}</div>
                 <div class="form-group"><label>Marca</label>
                     <select name="brand_id" class="form-input">
                         <option value="">Sin marca</option>
@@ -176,6 +176,33 @@
             <button type="button" class="btn btn-outline btn-sm" onclick="addSpecRow()"><i class="fas fa-plus"></i> Agregar Especificación</button>
         </div>
     </div>
+    {% if product and variant_rows %}
+    {# Un codigo por cada variante que el cliente puede elegir: es el que ve en la web y el que llega en la cotizacion #}
+    <div class="form-section variant-codes">
+        <h3><i class="fas fa-barcode"></i> Códigos por presentación y color</h3>
+        <p class="section-help">Cada combinación que el cliente puede elegir tiene su propio código: es el que ve al elegir la presentación y el color, y el que llega en la cotización. El SKU de arriba es solo el código general del producto. Si importas un Excel con la columna CODIGO, estos códigos se reemplazan por los del archivo.</p>
+        <div class="variant-codes-bar">
+            <span>{{ variant_rows|length }} {{ 'variante' if variant_rows|length == 1 else 'variantes' }} · {{ variant_rows|selectattr('code')|list|length }} con código</span>
+            {% if variant_rows|length > 12 %}<input type="search" id="variantCodeSearch" class="form-input" placeholder="Buscar presentación, color o código..." autocomplete="off" aria-label="Buscar en los códigos">{% endif %}
+        </div>
+        <input type="hidden" name="vc_present" value="1">
+        <div class="variant-codes-scroll">
+            <table class="admin-table variant-codes-table">
+                <thead><tr><th>Presentación</th><th>Color</th><th>Código</th></tr></thead>
+                <tbody>
+                    {% for row in variant_rows %}
+                    <tr>
+                        <td>{{ row.pres or '—' }}<input type="hidden" name="vc_pres[]" value="{{ row.pres_id if row.pres_id is not none else '' }}"></td>
+                        <td>{{ row.label or '—' }}<input type="hidden" name="vc_color[]" value="{{ row.color }}"></td>
+                        <td><input type="text" name="vc_code[]" value="{{ row.code }}" maxlength="50" class="form-input" placeholder="Sin código" aria-label="Código de {{ row.pres or 'el producto' }} {{ row.label }}"></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
     <div class="form-actions">
         <a href="{{ url_for('admin_products') }}" class="btn btn-outline">Cancelar</a>
         <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> {{ 'Actualizar' if product else 'Crear' }} Producto</button>
@@ -378,6 +405,21 @@ function addSpecRow(){
 
     if (chips) new MutationObserver(sync).observe(chips, { childList: true });
     sync();
+})();
+
+// === Codigos por presentacion y color: buscador (Enter no envia el formulario) ===
+(function(){
+    const search = document.getElementById('variantCodeSearch');
+    if (!search) return;
+    search.addEventListener('input', () => {
+        const term = search.value.trim().toLowerCase();
+        document.querySelectorAll('.variant-codes-table tbody tr').forEach(tr => {
+            const text = (tr.cells[0].textContent + ' ' + tr.cells[1].textContent + ' '
+                          + tr.querySelector('input[name="vc_code[]"]').value).toLowerCase();
+            tr.hidden = Boolean(term) && !text.includes(term);
+        });
+    });
+    search.addEventListener('keydown', e => { if (e.key === 'Enter') e.preventDefault(); });
 })();
 
 function deleteProductImage(imgId) {

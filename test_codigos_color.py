@@ -176,8 +176,9 @@ class ColoresConCodigoTest(unittest.TestCase):
             self.assertEqual(valores, ['ROJO'])
 
     def test_una_fila_vacia_no_toca_nada(self):
+        # una fila en blanco se ignora sin contarla como omitida (el modelo de Excel trae filas preparadas vacias)
         mensaje = self.importar(HEADERS, [self.fila('NEGRO'), [None] * len(HEADERS)])
-        self.assertIn('1 omitidos', mensaje)
+        self.assertIn('1 productos importados, 0 omitidos', mensaje)
 
     # ---------- selector de color de la ficha ----------
 
