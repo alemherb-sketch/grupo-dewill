@@ -1631,56 +1631,153 @@ def _form_text(name):
     return request.form.get(name, '').strip() or None
 
 
-def _variant_code_rows(product):
-    """Filas de 'Codigos por presentacion y color' en Editar Producto: cada variante que el cliente puede elegir
-    (presentacion + color, presentacion sola o el producto sin presentaciones) con su codigo, y cualquier otro codigo
-    guardado de sus presentaciones actuales."""
+def _variant_rows(product):
+    """Filas de la tabla 'Variantes' de Editar Producto: presentacion + color (con su codigo de fabrica,
+    'ROJO TEJA #103') + codigo. Incluye las presentaciones sin colores, los colores sin presentacion y cualquier
+    codigo guardado aparte, para que guardar el formulario no pierda nada."""
     codes = {(vc.presentation_id, (vc.color_name or '').strip().upper()): vc.code for vc in product.variant_codes}
     names = {pres.id: pres.name for pres in product.presentations}
-    labels, keys = {}, []
+    rows, seen = [], set()
+
+    def add(pres_id, color, label=None, hex_code=None):
+        key = (pres_id, (color or '').strip().upper())
+        if key not in seen:
+            seen.add(key)
+            rows.append({'pres_id': pres_id, 'pres': names.get(pres_id, ''), 'label': label or color or '',
+                         'hex': hex_code, 'code': codes.get(key, '')})
+
     for lk in sorted(product.presentation_colors, key=lambda lk: (names.get(lk.presentation_id, ''), lk.id)):
         if lk.presentation_id in names:
-            keys.append((lk.presentation_id, lk.color_name))
-            labels[(lk.presentation_id, lk.color_name.strip().upper())] = lk.label
-    with_colors = {pid for pid, _ in keys}
-    keys += [(pid, '') for pid in names if pid not in with_colors]
+            add(lk.presentation_id, lk.color_name, lk.label, lk.hex_code)
+    with_colors = {pid for pid, _ in seen}
+    for pid in names:
+        if pid not in with_colors:
+            add(pid, '')
     if not names:
-        keys.append((None, ''))
-    seen = {(pid, color.strip().upper()) for pid, color in keys}
-    keys += [(vc.presentation_id, vc.color_name or '') for vc in product.variant_codes
-             if (vc.presentation_id, (vc.color_name or '').strip().upper()) not in seen
-             and (vc.presentation_id in names or vc.presentation_id is None)]
-    return [{'pres_id': pid, 'pres': names.get(pid, ''), 'color': color,
-             'label': labels.get((pid, color.strip().upper()), color),
-             'code': codes.get((pid, color.strip().upper()), '')} for pid, color in keys]
+        add(None, '')   # el producto sin presentaciones tiene una fila para su codigo
+    linked = {color for _, color in seen if color}
+    for s in product.specs:   # colores que solo estan como especificacion (sin presentacion)
+        if (s.key or '').strip().lower() == 'color' and (s.value or '').strip().upper() not in linked:
+            add(None, s.value)
+    for vc in product.variant_codes:   # codigos guardados aparte
+        if vc.presentation_id in names or vc.presentation_id is None:
+            add(vc.presentation_id, vc.color_name or '')
+    return rows
 
 
-def _save_variant_codes(product):
-    """Codigos de la tabla del formulario (vc_pres[], vc_color[], vc_code[]): reemplazan los del producto.
-    Solo si el formulario trae la tabla (vc_present); una fila vacia queda sin codigo."""
-    if 'vc_present' not in request.form:
-        return
-    allowed = {pres.id for pres in product.presentations} | {None}
-    ProductVariantCode.query.filter_by(product_id=product.id).delete()
-    seen = set()
-    for pres_raw, color, code in zip(request.form.getlist('vc_pres[]'), request.form.getlist('vc_color[]'),
+def _color_choices():
+    """Colores que se sugieren al escribir una variante y su tono: los que ya usan los productos ('ROJO TEJA #103')
+    y los de la paleta (Admin > Colores). Devuelve (etiquetas ordenadas, {NOMBRE: hex})."""
+    labels, hexes = set(), {}
+    links = db.session.query(ProductPresentationColor.color_name, ProductPresentationColor.color_code,
+                             ProductPresentationColor.hex_code).distinct()
+    for name, code, hex_code in links:
+        name = (name or '').strip().upper()
+        if name:
+            labels.add(color_label(name, code))
+            hexes.setdefault(name, hex_code or '#cccccc')
+    for c in PaintColor.query.all():
+        name = (c.name or '').strip().upper()
+        if name and name not in hexes:
+            labels.add(name)
+            hexes[name] = c.hex_code or '#cccccc'
+    return sorted(labels), hexes
+
+
+def _known_color_hex(name):
+    """Tono de un color que el producto no tenia: el que usa en otros productos, el de la paleta o gris."""
+    link = ProductPresentationColor.query.filter(db.func.upper(ProductPresentationColor.color_name) == name).first()
+    if link and link.hex_code:
+        return link.hex_code
+    pc = PaintColor.query.filter(PaintColor.name.ilike(name)).first()
+    return pc.hex_code if pc and pc.hex_code else '#cccccc'
+
+
+def _variant_color(text):
+    """'rojo  teja #103' -> ('ROJO TEJA', '103'): el nombre en mayusculas (como los del Excel) y su codigo de fabrica."""
+    name, code = split_color_code(text)
+    return ' '.join(name.split()).upper()[:200], (code or '')[:50] or None
+
+
+def _save_variants(product):
+    """Variantes de la tabla del formulario (vc_pres[], vc_color[], vc_code[]): reconstruyen los colores de cada
+    presentacion, los codigos y las especificaciones 'Color' (las que usan la ficha, las tarjetas y los filtros).
+    Solo si el formulario trae la tabla (variants_present). Devuelve las variantes repetidas (se guardan una vez)."""
+    if 'variants_present' not in request.form:
+        return []
+    names = {pres.id: pres.name for pres in product.presentations}
+    # tonos que ya tenia el producto: se conservan (se leen antes de borrar sus colores)
+    old_hex = {(lk.presentation_id, lk.color_name.strip().upper()): lk.hex_code for lk in product.presentation_colors}
+    old_hex_by_name = {name: hx for (_, name), hx in old_hex.items()}
+    rows, seen, repeated = [], set(), []
+    for pres_raw, label, code in zip(request.form.getlist('vc_pres[]'), request.form.getlist('vc_color[]'),
                                      request.form.getlist('vc_code[]')):
-        code, color = code.strip()[:50], color.strip()
         pres_id = int(pres_raw) if pres_raw.strip().isdigit() else None
-        key = (pres_id, color.upper())
-        if not code or pres_id not in allowed or key in seen:
+        (color, color_code), code = _variant_color(label), code.strip()[:50]
+        if not color and not code:
+            continue   # fila vacia
+        if pres_id is not None and pres_id not in names:
+            continue   # su presentacion se quito del producto
+        if (pres_id, color) in seen:
+            repeated.append(f"{color or 'sin color'} en {names.get(pres_id, 'sin presentación')}")
             continue
-        seen.add(key)
-        db.session.add(ProductVariantCode(product_id=product.id, presentation_id=pres_id, color_name=color, code=code))
+        seen.add((pres_id, color))
+        rows.append((pres_id, color, color_code, code))
+    # un 'Color' escrito en Especificaciones tambien es un color del producto (sin presentacion)
+    for key, value in zip(request.form.getlist('spec_key[]'), request.form.getlist('spec_value[]')):
+        color, color_code = _variant_color(value)
+        if key.strip().lower() == 'color' and color and all(row[1] != color for row in rows):
+            rows.append((None, color, color_code, ''))
+
+    # se borra y se vuelve a crear todo (fetch: saca de la sesion las filas borradas)
+    ProductPresentationColor.query.filter_by(product_id=product.id).delete(synchronize_session='fetch')
+    ProductVariantCode.query.filter_by(product_id=product.id).delete(synchronize_session='fetch')
+    ProductSpec.query.filter(ProductSpec.product_id == product.id,
+                             db.func.lower(ProductSpec.key) == 'color').delete(synchronize_session='fetch')
+    db.session.expire(product, ['presentation_colors', 'variant_codes', 'specs'])
+    colors = []
+    for pres_id, color, color_code, code in rows:
+        if color and color not in colors:
+            colors.append(color)
+        if color and pres_id is not None:
+            hex_code = old_hex.get((pres_id, color)) or old_hex_by_name.get(color) or _known_color_hex(color)
+            db.session.add(ProductPresentationColor(product_id=product.id, presentation_id=pres_id, color_name=color,
+                                                    hex_code=hex_code, color_code=color_code))
+        if code:
+            db.session.add(ProductVariantCode(product_id=product.id, presentation_id=pres_id, color_name=color, code=code))
+    for color in colors:
+        db.session.add(ProductSpec(product_id=product.id, key='Color', value=color))
+    return repeated
+
+
+def _save_other_specs(product):
+    """Especificaciones del formulario salvo 'Color': los colores se guardan con las variantes (_save_variants)."""
+    ProductSpec.query.filter(ProductSpec.product_id == product.id,
+                             db.func.lower(ProductSpec.key) != 'color').delete(synchronize_session='fetch')
+    for k, v in zip(request.form.getlist('spec_key[]'), request.form.getlist('spec_value[]')):
+        if k.strip() and v.strip() and k.strip().lower() != 'color':
+            db.session.add(ProductSpec(product_id=product.id, key=k.strip(), value=v.strip()))
+
+
+def _flash_repeated_variants(repeated):
+    if repeated:
+        flash('Variantes repetidas (se guardaron una sola vez): ' + ', '.join(repeated) + '.', 'error')
+
+
+def _product_form(product, **context):
+    """Formulario de Nuevo / Editar Producto con sus listas: categorias, marcas, presentaciones y colores sugeridos."""
+    color_labels, color_hex = _color_choices()
+    return render_template('admin/product_form.html', product=product,
+                           categories=Category.query.order_by(Category.order).all(),
+                           subcategories=SubCategory.query.order_by(SubCategory.name).all(),
+                           brands=Brand.query.order_by(Brand.name).all(),
+                           presentations=Presentation.query.order_by(Presentation.name).all(),
+                           color_labels=color_labels, color_hex=color_hex, **context)
 
 
 @app.route('/admin/productos/nuevo', methods=['GET', 'POST'])
 @module_required('productos')
 def admin_product_new():
-    categories = Category.query.order_by(Category.order).all()
-    subcategories = SubCategory.query.order_by(SubCategory.name).all()
-    brands = Brand.query.order_by(Brand.name).all()
-    presentations = Presentation.query.order_by(Presentation.name).all()
     if request.method == 'POST':
         p = Product(name=request.form['name'], sku=_form_text('sku'),
             description=_form_text('description'), technical_description=_form_text('technical_description'),
@@ -1710,25 +1807,20 @@ def admin_product_new():
             if f.filename:
                 url = save_upload(f, 'products')
                 if url: db.session.add(ProductImage(product_id=p.id, image_url=url))
-        for k, v in zip(request.form.getlist('spec_key[]'), request.form.getlist('spec_value[]')):
-            if k.strip() and v.strip():
-                db.session.add(ProductSpec(product_id=p.id, key=k.strip(), value=v.strip()))
+        _save_other_specs(p)
         rejected = _save_product_yields(p)
+        repeated = _save_variants(p)
         db.session.commit()
         flash('Producto creado exitosamente', 'success')
         _flash_rejected_yields(rejected)
+        _flash_repeated_variants(repeated)
         return redirect(url_for('admin_products'))
-    return render_template('admin/product_form.html', product=None, categories=categories, subcategories=subcategories, brands=brands, presentations=presentations,
-                           yields={}, other_specs=[], color_specs=[])
+    return _product_form(None, yields={}, variant_rows=[], other_specs=[])
 
 @app.route('/admin/productos/<int:pid>/editar', methods=['GET', 'POST'])
 @module_required('productos')
 def admin_product_edit(pid):
     p = Product.query.get_or_404(pid)
-    categories = Category.query.order_by(Category.order).all()
-    subcategories = SubCategory.query.order_by(SubCategory.name).all()
-    brands = Brand.query.order_by(Brand.name).all()
-    presentations = Presentation.query.order_by(Presentation.name).all()
     if request.method == 'POST':
         p.name = request.form['name']; p.sku = _form_text('sku')
         p.description = _form_text('description'); p.technical_description = _form_text('technical_description')
@@ -1749,11 +1841,8 @@ def admin_product_edit(pid):
             if f.filename:
                 url = save_upload(f, 'products')
                 if url: db.session.add(ProductImage(product_id=p.id, image_url=url))
-        ProductSpec.query.filter_by(product_id=p.id).delete()
-        for k, v in zip(request.form.getlist('spec_key[]'), request.form.getlist('spec_value[]')):
-            if k.strip() and v.strip():
-                db.session.add(ProductSpec(product_id=p.id, key=k.strip(), value=v.strip()))
-        
+        _save_other_specs(p)
+
         # Update presentations
         p.presentations = []
         pres_ids = request.form.getlist('presentation_ids', type=int)
@@ -1762,19 +1851,18 @@ def admin_product_edit(pid):
             if pres: p.presentations.append(pres)
         db.session.flush()
         rejected = _save_product_yields(p)
-        _save_variant_codes(p)
+        repeated = _save_variants(p)
 
         db.session.commit()
         flash('Producto actualizado', 'success')
         _flash_rejected_yields(rejected)
+        _flash_repeated_variants(repeated)
         return redirect(url_for('admin_products'))
     # rendimiento guardado por presentacion (0 = producto sin presentaciones)
     yields = {(y.presentation_id or 0): y for y in p.yields}
-    # las especificaciones 'Color' (las del Excel) van en un bloque plegable aparte
-    color_specs = [s for s in p.specs if (s.key or '').strip().lower() == 'color']
+    # los colores (especificaciones 'Color') se editan en la tabla de variantes, no en Especificaciones
     other_specs = [s for s in p.specs if (s.key or '').strip().lower() != 'color']
-    return render_template('admin/product_form.html', product=p, categories=categories, subcategories=subcategories, brands=brands, presentations=presentations,
-                           yields=yields, variant_rows=_variant_code_rows(p), other_specs=other_specs, color_specs=color_specs)
+    return _product_form(p, yields=yields, variant_rows=_variant_rows(p), other_specs=other_specs)
 
 @app.route('/admin/productos/<int:pid>/eliminar', methods=['POST'])
 @module_required('productos')

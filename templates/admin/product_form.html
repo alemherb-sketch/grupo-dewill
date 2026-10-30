@@ -9,7 +9,7 @@
             <h3><i class="fas fa-info-circle"></i> Información General</h3>
             <div class="form-group"><label>Nombre *</label><input type="text" name="name" value="{{ product.name if product else '' }}" required class="form-input"></div>
             <div class="form-row">
-                <div class="form-group"><label>SKU (código general)</label><input type="text" name="sku" value="{{ (product and product.sku) or '' }}" class="form-input">{% if variant_rows and variant_rows|length > 1 %}<small class="field-hint">Cada presentación y color tiene su propio código: están abajo, en «Códigos por presentación y color».</small>{% endif %}</div>
+                <div class="form-group"><label>SKU (código general)</label><input type="text" name="sku" value="{{ (product and product.sku) or '' }}" class="form-input">{% if variant_rows and variant_rows|length > 1 %}<small class="field-hint">Cada presentación y color tiene su propio código: están abajo, en «Variantes».</small>{% endif %}</div>
                 <div class="form-group"><label>Marca</label>
                     <select name="brand_id" class="form-input">
                         <option value="">Sin marca</option>
@@ -163,33 +163,6 @@
                 {{ yield_row(0, 'Por unidad', yields.get(0), hidden=product_presentations|length > 0) }}
             </div>
 
-            {% if product and variant_rows %}
-            {# Un codigo por cada variante que el cliente puede elegir: es el que ve en la web y el que llega en la cotizacion #}
-            <div class="variant-codes">
-                <h3><i class="fas fa-barcode"></i> Códigos por presentación y color</h3>
-                <p class="section-help">Cada combinación que el cliente puede elegir tiene su propio código: es el que ve al elegir la presentación y el color, y el que llega en la cotización. El SKU de arriba es solo el código general del producto. Si importas un Excel con la columna CODIGO, estos códigos se reemplazan por los del archivo.</p>
-                <div class="variant-codes-bar">
-                    <span>{{ variant_rows|length }} {{ 'variante' if variant_rows|length == 1 else 'variantes' }} · {{ variant_rows|selectattr('code')|list|length }} con código</span>
-                    {% if variant_rows|length > 12 %}<input type="search" id="variantCodeSearch" class="form-input" placeholder="Buscar presentación, color o código..." autocomplete="off" aria-label="Buscar en los códigos">{% endif %}
-                </div>
-                <input type="hidden" name="vc_present" value="1">
-                <div class="variant-codes-scroll">
-                    <table class="admin-table variant-codes-table">
-                        <thead><tr><th>Presentación</th><th>Color</th><th>Código</th></tr></thead>
-                        <tbody>
-                            {% for row in variant_rows %}
-                            <tr>
-                                <td>{{ row.pres or '—' }}<input type="hidden" name="vc_pres[]" value="{{ row.pres_id if row.pres_id is not none else '' }}"></td>
-                                <td>{{ row.label or '—' }}<input type="hidden" name="vc_color[]" value="{{ row.color }}"></td>
-                                <td><input type="text" name="vc_code[]" value="{{ row.code }}" maxlength="50" class="form-input" placeholder="Sin código" aria-label="Código de {{ row.pres or 'el producto' }} {{ row.label }}"></td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            {% endif %}
-
             <h3><i class="fas fa-list-check"></i> Especificaciones Técnicas</h3>
             {% macro spec_row(spec=None) %}<div class="spec-row"><input type="text" name="spec_key[]" value="{{ spec.key if spec else '' }}" placeholder="Ej: Tipo" class="form-input"><input type="text" name="spec_value[]" value="{{ spec.value if spec else '' }}" placeholder="Ej: Acrílico" class="form-input"><button type="button" class="btn-sm btn-delete" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button></div>{% endmacro %}
             <div id="specsContainer">
@@ -200,19 +173,45 @@
                 {% endfor %}
             </div>
             <button type="button" class="btn btn-outline btn-sm" onclick="addSpecRow()"><i class="fas fa-plus"></i> Agregar Especificación</button>
-            {% if color_specs %}
-            {# Los colores del producto (los carga el Excel) van plegados; sus codigos estan en la tabla de arriba #}
-            <details class="color-specs">
-                <summary><i class="fas fa-palette"></i> Colores del producto ({{ color_specs|length }})
-                    <small>Sus códigos están arriba, en «Códigos por presentación y color».</small></summary>
-                <div class="color-specs-rows">
-                    {% for spec in color_specs %}
-                    {{ spec_row(spec) }}
-                    {% endfor %}
-                </div>
-            </details>
-            {% endif %}
         </div>
+    </div>
+
+    {# Variantes: lo que el cliente puede elegir (presentacion + color) con su codigo, que es el que ve en la web
+       y el que llega en la cotizacion. Las filas se agregan, cambian y quitan aqui; se guardan con el producto. #}
+    {% macro variant_row(row=None) %}
+    <tr class="variant-row" data-pres="{{ row.pres_id if row and row.pres_id is not none else '' }}" data-hex="{{ row.hex or '' if row else '' }}" data-color="{{ row.label|upper if row else '' }}">
+        <td><select name="vc_pres[]" class="form-input" aria-label="Presentación">
+            {% for pres in product_presentations %}<option value="{{ pres.id }}"{% if row and row.pres_id == pres.id %} selected{% endif %}>{{ pres.name }}</option>{% endfor %}
+            <option value=""{% if row and row.pres_id is none %} selected{% endif %}>Sin presentación</option>
+        </select></td>
+        <td><div class="variant-color"><span class="variant-swatch" aria-hidden="true"></span><input type="text" name="vc_color[]" value="{{ row.label if row else '' }}" list="variantColorNames" maxlength="200" class="form-input" placeholder="Sin color" aria-label="Color"></div></td>
+        <td><input type="text" name="vc_code[]" value="{{ row.code if row else '' }}" maxlength="50" class="form-input" placeholder="Sin código" aria-label="Código"></td>
+        <td class="variant-actions"><button type="button" class="btn-edit variant-copy" title="Agregar este color a las demás presentaciones" aria-label="Agregar este color a las demás presentaciones"><i class="fas fa-clone"></i></button><button type="button" class="btn-delete variant-remove" title="Quitar variante" aria-label="Quitar variante"><i class="fas fa-times"></i></button></td>
+    </tr>
+    {% endmacro %}
+    <div class="form-section variant-codes" id="variantEditor">
+        <h3><i class="fas fa-swatchbook"></i> Variantes: presentación, color y código</h3>
+        <p class="section-help">Cada fila es una variante que el cliente puede elegir: la presentación, el color (con su código de fábrica, por ejemplo «ROJO TEJA #103») y su código, que es el que ve al elegirla y el que llega en la cotización. Agrega, cambia o quita filas y guarda el producto; con <i class="fas fa-clone"></i> copias un color a las demás presentaciones. Usa «Sin presentación» solo si el producto no tiene presentaciones. El SKU de arriba es solo el código general. Al importar un Excel, los colores y códigos de los productos del archivo se reemplazan por los del archivo.</p>
+        <div class="variant-codes-bar">
+            <span><span id="variantSummary">{{ variant_rows|length }} {{ 'variante' if variant_rows|length == 1 else 'variantes' }} · {{ variant_rows|selectattr('code')|list|length }} con código</span>
+                <span id="variantNote" class="variant-note" role="status" hidden></span></span>
+            <div class="variant-codes-tools">
+                <input type="search" id="variantCodeSearch" class="form-input" placeholder="Buscar presentación, color o código..." autocomplete="off" aria-label="Buscar en las variantes"{% if variant_rows|length <= 12 %} hidden{% endif %}>
+                <button type="button" id="variantAdd" class="btn btn-outline btn-sm"><i class="fas fa-plus"></i> Agregar variante</button>
+            </div>
+        </div>
+        <input type="hidden" name="variants_present" value="1">
+        <div class="variant-codes-scroll">
+            <table class="admin-table variant-codes-table">
+                <thead><tr><th>Presentación</th><th>Color</th><th>Código</th><th><span class="visually-hidden">Acciones</span></th></tr></thead>
+                <tbody id="variantRows">
+                    {% for row in variant_rows %}{{ variant_row(row) }}{% endfor %}
+                </tbody>
+            </table>
+            <p id="variantEmpty" class="variant-empty"{% if variant_rows %} hidden{% endif %}>Aún no hay variantes: usa «Agregar variante».</p>
+        </div>
+        <template id="variantRowTemplate">{{ variant_row() }}</template>
+        <datalist id="variantColorNames">{% for label in color_labels %}<option value="{{ label }}">{% endfor %}</datalist>
     </div>
 
     <div class="form-actions">
@@ -419,19 +418,192 @@ function addSpecRow(){
     sync();
 })();
 
-// === Codigos por presentacion y color: buscador (Enter no envia el formulario) ===
+// === Variantes: presentación + color + código. Agregar, cambiar, copiar un color a las demás presentaciones y quitar ===
 (function(){
+    const tbody = document.getElementById('variantRows');
+    if (!tbody) return;
+    const template = document.getElementById('variantRowTemplate');
+    const summary = document.getElementById('variantSummary');
+    const noteBox = document.getElementById('variantNote');
     const search = document.getElementById('variantCodeSearch');
-    if (!search) return;
-    search.addEventListener('input', () => {
-        const term = search.value.trim().toLowerCase();
-        document.querySelectorAll('.variant-codes-table tbody tr').forEach(tr => {
-            const text = (tr.cells[0].textContent + ' ' + tr.cells[1].textContent + ' '
-                          + tr.querySelector('input[name="vc_code[]"]').value).toLowerCase();
-            tr.hidden = Boolean(term) && !text.includes(term);
+    const empty = document.getElementById('variantEmpty');
+    const chips = document.getElementById('presChips');
+    const allPres = document.getElementById('presSelect');   // todas las presentaciones: nombra una que se quitó
+    const COLOR_HEX = {{ color_hex|tojson }};                 // tono de cada color conocido (productos y paleta)
+
+    // 'rojo  teja #103' -> 'ROJO TEJA': el código de fábrica no cuenta al comparar colores (igual que el servidor)
+    function colorName(text){
+        const t = (text || '').trim();
+        const m = t.match(/^(\S.*?)\s*#\s*[\w.\/-]+$/);
+        return (m ? m[1] : t).replace(/\s+/g, ' ').toUpperCase();
+    }
+    const field = (row, name) => row.querySelector('[name="' + name + '"]');
+    const rows = () => Array.from(tbody.querySelectorAll('.variant-row'));
+
+    function chipList(){
+        return chips ? Array.from(chips.querySelectorAll('.pres-chip'))
+            .map(c => ({ id: c.getAttribute('data-id'), name: c.firstChild.textContent.trim() })) : [];
+    }
+
+    function presName(id){
+        const opt = allPres && allPres.querySelector('option[value="' + id + '"]');
+        return opt ? opt.textContent.trim() : 'Presentación ' + id;
+    }
+
+    // Opciones = las presentaciones agregadas arriba; si la de la fila se quitó, la fila queda marcada y no se guarda
+    function fillSelect(row){
+        const select = field(row, 'vc_pres[]');
+        const wanted = row.dataset.pres || '';
+        const list = chipList();
+        const orphan = wanted !== '' && !list.some(p => p.id === wanted);
+        select.innerHTML = '';
+        list.forEach(p => select.add(new Option(p.name, p.id)));
+        if (orphan) select.add(new Option(presName(wanted) + ' (quitada)', wanted));
+        select.add(new Option('Sin presentación', ''));
+        select.value = wanted;
+        row.classList.toggle('is-orphan', orphan);
+    }
+
+    function paint(row){
+        const name = colorName(field(row, 'vc_color[]').value);
+        const own = row.dataset.hex && colorName(row.dataset.color) === name ? row.dataset.hex : '';
+        const swatch = row.querySelector('.variant-swatch');
+        swatch.classList.toggle('is-empty', !name);
+        swatch.style.background = own || COLOR_HEX[name] || '#cccccc';
+        swatch.title = own || COLOR_HEX[name] ? '' : 'Color nuevo: se verá gris hasta que esté en Admin > Colores';
+    }
+
+    function refresh(){
+        const all = rows(), seen = new Set(), multi = chipList().length > 1;
+        let withCode = 0, repeated = 0, orphans = 0;
+        all.forEach(row => {
+            const color = colorName(field(row, 'vc_color[]').value);
+            const code = field(row, 'vc_code[]').value.trim();
+            const pres = field(row, 'vc_pres[]').value;
+            const orphan = row.classList.contains('is-orphan');
+            const key = pres + '|' + color;
+            const counted = !orphan && Boolean(color || code);
+            const dup = counted && seen.has(key);   // se guarda solo la primera
+            if (counted) seen.add(key);
+            row.classList.toggle('is-duplicate', dup);
+            row.title = orphan ? 'Esta presentación se quitó del producto: la fila no se guardará'
+                      : dup ? 'Repetida: ya hay una fila con esta presentación y este color; se guarda solo la primera' : '';
+            if (dup) repeated++;
+            if (orphan) orphans++;
+            if (code && counted && !dup) withCode++;
+            const copy = row.querySelector('.variant-copy');
+            copy.hidden = !multi;
+            copy.disabled = !(color && pres && !orphan);
         });
+        let text = all.length + (all.length === 1 ? ' variante' : ' variantes') + ' · ' + withCode + ' con código';
+        if (repeated) text += ' · ' + repeated + (repeated === 1 ? ' repetida' : ' repetidas');
+        if (orphans) text += ' · ' + orphans + ' de presentaciones quitadas';
+        summary.textContent = text;
+        empty.hidden = all.length > 0;
+        if (search) search.hidden = all.length <= 12 && !search.value;
+    }
+
+    function filter(){
+        if (!search) return;
+        const term = search.value.trim().toLowerCase();
+        rows().forEach(row => {
+            const select = field(row, 'vc_pres[]');
+            const text = [(select.selectedOptions[0] || {}).text, field(row, 'vc_color[]').value,
+                          field(row, 'vc_code[]').value].join(' ').toLowerCase();
+            row.hidden = Boolean(term) && !text.includes(term);
+        });
+    }
+
+    function newRow(presId, label){
+        const row = template.content.firstElementChild.cloneNode(true);
+        row.dataset.pres = presId || '';
+        field(row, 'vc_color[]').value = label || '';
+        fillSelect(row);
+        paint(row);
+        row.classList.add('just-added');
+        row.addEventListener('animationend', () => row.classList.remove('just-added'), { once: true });
+        return row;
+    }
+
+    // El color de la fila, en las presentaciones que todavía no lo tienen (cada una con su código por llenar)
+    function copyToOthers(row){
+        const label = field(row, 'vc_color[]').value.trim();
+        const color = colorName(label);
+        if (!color) return;
+        const have = new Set(rows().filter(r => colorName(field(r, 'vc_color[]').value) === color)
+                                   .map(r => field(r, 'vc_pres[]').value));
+        let after = row, added = 0;
+        chipList().forEach(p => {
+            if (have.has(p.id)) return;
+            const copy = newRow(p.id, label);
+            after.after(copy);
+            after = copy;
+            added++;
+        });
+        refresh();
+        filter();
+        note(added ? '✓ ' + color + ' se agregó en ' + added + (added === 1 ? ' presentación' : ' presentaciones') + ': completa sus códigos'
+                   : color + ' ya está en todas las presentaciones');
+        if (added) field(row.nextElementSibling, 'vc_code[]').focus();
+    }
+
+    let noteTimer = null;
+    function note(text){
+        noteBox.textContent = text;
+        noteBox.hidden = false;
+        clearTimeout(noteTimer);
+        noteTimer = setTimeout(() => { noteBox.hidden = true; }, 4000);
+    }
+
+    document.getElementById('variantAdd').addEventListener('click', () => {
+        if (search && search.value) { search.value = ''; filter(); }
+        // la presentación de la última fila (si sigue en el producto) o la primera
+        const list = chipList(), last = rows().pop();
+        const lastPres = last ? field(last, 'vc_pres[]').value : '';
+        const pres = list.some(p => p.id === lastPres) ? lastPres : (list[0] ? list[0].id : '');
+        const row = newRow(pres, '');
+        tbody.appendChild(row);
+        refresh();
+        row.scrollIntoView({ block: 'nearest' });
+        field(row, 'vc_color[]').focus();
     });
-    search.addEventListener('keydown', e => { if (e.key === 'Enter') e.preventDefault(); });
+
+    tbody.addEventListener('click', e => {
+        const remove = e.target.closest('.variant-remove');
+        if (remove) { remove.closest('.variant-row').remove(); refresh(); return; }
+        const copy = e.target.closest('.variant-copy');
+        if (copy) copyToOthers(copy.closest('.variant-row'));
+    });
+    tbody.addEventListener('input', e => {
+        const row = e.target.closest('.variant-row');
+        if (!row) return;
+        if (e.target.name === 'vc_color[]') paint(row);
+        refresh();
+    });
+    // Enter no envía el formulario: pasa al siguiente campo (color -> código -> color de la fila siguiente)
+    tbody.addEventListener('keydown', e => {
+        if (e.key !== 'Enter' || e.target.tagName !== 'INPUT') return;
+        e.preventDefault();
+        const inputs = Array.from(tbody.querySelectorAll('.variant-row:not([hidden]) input'));
+        const next = inputs[inputs.indexOf(e.target) + 1];
+        if (next) next.focus();
+    });
+    tbody.addEventListener('change', e => {
+        if (e.target.name !== 'vc_pres[]') return;
+        const row = e.target.closest('.variant-row');
+        row.dataset.pres = e.target.value;
+        fillSelect(row);
+        refresh();
+    });
+    if (search) {
+        search.addEventListener('input', filter);
+        search.addEventListener('keydown', e => { if (e.key === 'Enter') e.preventDefault(); });
+    }
+    // al agregar o quitar una presentación arriba, cambian las opciones de cada fila
+    if (chips) new MutationObserver(() => { rows().forEach(fillSelect); refresh(); }).observe(chips, { childList: true });
+
+    rows().forEach(row => { fillSelect(row); paint(row); });
+    refresh();
 })();
 
 function deleteProductImage(imgId) {

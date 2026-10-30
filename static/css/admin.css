@@ -207,21 +207,33 @@ a { text-decoration: none; color: var(--admin-primary); }
     .toolbar-search { flex-direction: column; }
 }
 
-/* Editar Producto: codigos por presentacion y color (debajo de Rendimiento) */
-.variant-codes { margin-bottom: 1.5rem; }
+/* Editar Producto: variantes (presentacion + color + codigo), una tabla editable de ancho completo */
 .variant-codes-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.75rem; font-size: 0.85rem; font-weight: 600; color: var(--admin-text-muted); }
-.variant-codes-bar .form-input { max-width: 320px; }
-.variant-codes-scroll { max-height: 440px; overflow-y: auto; border: 1px solid var(--admin-border); border-radius: var(--radius); }
+.variant-codes-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+.variant-codes-tools .form-input { width: 320px; max-width: 100%; }
+.variant-note { margin-left: 0.5rem; color: #16a34a; }
+.variant-codes-scroll { max-height: 460px; overflow: auto; border: 1px solid var(--admin-border); border-radius: var(--radius); }
 .variant-codes-table thead th { position: sticky; top: 0; z-index: 1; background: #f8fafc; }
-.variant-codes-table td { padding-top: 0.4rem; padding-bottom: 0.4rem; }
-.variant-codes-table .form-input { max-width: 170px; padding: 0.35rem 0.6rem; }
+.variant-codes-table th, .variant-codes-table td { padding: 0.4rem 0.6rem; }
+.variant-codes-table .form-input { padding: 0.35rem 0.6rem; }
+.variant-codes-table select.form-input { width: 140px; }
+.variant-codes-table input[name="vc_code[]"] { width: 120px; }
 .variant-codes-table tr[hidden] { display: none; }
-/* Colores del producto (especificaciones 'Color' del Excel), plegados para no tapar el resto del formulario */
-.color-specs { margin-top: 1rem; border: 1px solid var(--admin-border); border-radius: var(--radius); background: #f8fafc; }
-.color-specs summary { padding: 0.75rem 1rem; cursor: pointer; font-weight: 600; color: var(--admin-text); }
-.color-specs summary i { color: var(--admin-primary); margin-right: 0.35rem; }
-.color-specs summary small { display: block; margin-top: 0.2rem; font-weight: 400; color: var(--admin-text-muted); }
-.color-specs-rows { padding: 0 1rem 1rem; }
+.variant-color { display: flex; align-items: center; gap: 0.5rem; }
+.variant-color .form-input { width: 100%; min-width: 150px; max-width: 360px; }
+.variant-swatch { flex: 0 0 auto; width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(0, 0, 0, 0.2); background: #cccccc; }
+.variant-swatch.is-empty { visibility: hidden; }
+.variant-actions { width: 1%; white-space: nowrap; text-align: right; }
+.variant-actions button + button { margin-left: 0.35rem; }
+.variant-actions button:disabled { opacity: 0.35; cursor: not-allowed; }
+.variant-row.is-orphan td { background: #fef2f2; }
+.variant-row.is-orphan select.form-input { border-color: var(--admin-danger); color: #b91c1c; }
+.variant-row.is-duplicate td { background: #fef3c7; }
+.variant-row.is-duplicate .variant-color .form-input { border-color: var(--admin-warning); }
+.variant-row.just-added td { animation: variantAdded 1.6s ease; }
+@keyframes variantAdded { from { background: #dcfce7; } to { background: transparent; } }
+.variant-empty { margin: 0; padding: 1.25rem; text-align: center; font-size: 0.9rem; font-style: italic; color: var(--admin-text-muted); }
+.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 
 /* Importar productos: caja para descargar el modelo de Excel */
 .template-download { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin: 1rem 0 1.25rem; padding: 1rem 1.25rem; border: 1px solid #bbf7d0; border-radius: var(--radius); background: #f0fdf4; }
