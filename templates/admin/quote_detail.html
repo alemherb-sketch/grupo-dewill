@@ -50,6 +50,7 @@
                             {% if item.color %} | Color: <strong style="color:var(--primary);">{{ item.color }}</strong> {% endif %}
                             {% if item.presentation %} | Presentación: <strong style="color:var(--primary);">{{ item.presentation }}</strong> {% endif %}
                             | Cantidad: <strong>{{ item.quantity }}</strong>
+                            {% if item.yield_text %} | Rendimiento: <strong>{{ item.yield_text }}</strong>{% endif %}
                         </p>
                     </div>
                 </li>

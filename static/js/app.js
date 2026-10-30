@@ -457,7 +457,22 @@ function filterProducts(category, btn) {
 }
 
 // ========== QUOTE LOGIC ==========
-function addToQuote(productId, productName = null, productImage = null, color = null, quantity = 1, presentation = null, code = null) {
+// Rendimiento: m2 sin ceros de mas (21 -> '21', 10.5 -> '10.5') y el texto que se muestra y se envia en el pedido
+function formatM2(value) {
+    return String(Math.round(value * 100) / 100);
+}
+
+function yieldText(m2, coats) {
+    return `${formatM2(m2)} m² a ${coats} ${coats === 1 ? 'mano' : 'manos'}`;
+}
+
+// Rendimiento total de un item de la lista (m2 de una unidad x cantidad); '' si el producto no tiene rendimiento
+function itemYieldText(item) {
+    return item.yield_m2 && item.yield_coats ? yieldText(item.yield_m2 * (item.quantity || 1), item.yield_coats) : '';
+}
+
+// yieldInfo: {m2, coats} de UNA unidad de la presentacion elegida (null si no tiene rendimiento)
+function addToQuote(productId, productName = null, productImage = null, color = null, quantity = 1, presentation = null, code = null, yieldInfo = null) {
     // Las paginas de Flask pasan el nombre y la imagen del producto de la base; la lista estatica de arriba
     // es solo para la pagina de demostracion (sus ids 1-36 coinciden con productos reales de la base)
     let product = !productName && typeof products !== 'undefined' ? products.find(p => p.id === productId) : null;
@@ -478,6 +493,8 @@ function addToQuote(productId, productName = null, productImage = null, color = 
     const exists = quoteList.find(item => item.id === productId && item.color === color && item.presentation === presentation);
     if (exists) {
         exists.quantity = (exists.quantity || 1) + (quantity || 1);
+        exists.yield_m2 = yieldInfo ? yieldInfo.m2 : null;
+        exists.yield_coats = yieldInfo ? yieldInfo.coats : null;
         saveQuote();
         updateQuoteUI();
         showToast(`Cantidad aumentada: ${exists.quantity}`, 'success');
@@ -489,7 +506,10 @@ function addToQuote(productId, productName = null, productImage = null, color = 
         quantity: quantity || 1,
         color: color,
         presentation: presentation,
-        code: code   // Codigo (Excel) de la presentacion y el color elegidos; el servidor lo vuelve a calcular al recibir la solicitud
+        code: code,   // Codigo (Excel) de la presentacion y el color elegidos; el servidor lo vuelve a calcular al recibir la solicitud
+        // rendimiento de una unidad: la lista muestra el total segun la cantidad (el servidor tambien lo recalcula)
+        yield_m2: yieldInfo ? yieldInfo.m2 : null,
+        yield_coats: yieldInfo ? yieldInfo.coats : null
     };
 
     // Keep image paths relative to static folder neat under Flask
@@ -577,6 +597,9 @@ function updateQuoteUI() {
             }
             if (item.code) {
                 extraInfo += `<span style="display:block; font-size:0.8rem; color:#666; margin-top:2px;">Código: <strong>${item.code}</strong></span>`;
+            }
+            if (itemYieldText(item)) {
+                extraInfo += `<span style="display:block; font-size:0.8rem; color:#666; margin-top:2px;"><i class="fas fa-paint-roller" style="color:var(--primary);"></i> Rinde: <strong>${itemYieldText(item)}</strong></span>`;
             }
 
             div.innerHTML = `
@@ -676,7 +699,7 @@ async function openQuoteOptions(card, control) {
     }
 
     if (!product.presentations.length && !product.colors.length) {
-        addToQuote(product.id, product.name, product.image, null, 1, null, findVariantCode(product.codes, null, ''));
+        addToQuote(product.id, product.name, product.image, null, 1, null, findVariantCode(product.codes, null, ''), product.yield || null);
         return;
     }
 
@@ -751,6 +774,27 @@ function renderQuoteOptionsCode() {
     codeLine.textContent = code ? `Código: ${code}` : (!product.codes.length && product.sku ? `SKU: ${product.sku}` : '');
     codeLine.hidden = !codeLine.textContent;
     document.getElementById('qoError').textContent = '';
+    renderQuoteYield();
+}
+
+// Rendimiento de una unidad de la presentacion elegida (sin presentaciones: el del producto); null si no tiene
+function quoteOptionYield() {
+    const { product, presId } = quoteOptionsState;
+    if (!product.presentations.length) return product.yield || null;
+    const pres = product.presentations.find(p => p.id === presId);
+    return (pres && pres.yield) || null;
+}
+
+// Rendimiento total segun la cantidad: 'Rinde 63 m² a 2 manos (21 m² c/u)'
+function renderQuoteYield() {
+    const line = document.getElementById('qoYield');
+    const y = quoteOptionYield();
+    const qty = Math.min(9999, Math.max(1, parseInt(document.getElementById('qoQty').value, 10) || 1));
+    line.hidden = !y;
+    if (y) {
+        line.innerHTML = `<i class="fas fa-paint-roller"></i> Rinde <strong>${yieldText(y.m2 * qty, y.coats)}</strong>`
+            + (qty > 1 ? ` <span>(${formatM2(y.m2)} m² c/u)</span>` : '');
+    }
 }
 
 // preview: el color bajo el cursor, que aun no esta elegido
@@ -783,7 +827,7 @@ function addFromQuoteOptions(thenSend) {
     const quantity = Math.min(9999, Math.max(1, parseInt(qtyInput.value, 10) || 1));
     // el color viaja con su codigo ('AMARILLO LIMON #41'), igual que desde la ficha del producto
     addToQuote(product.id, product.name, product.image, color ? color.label : null, quantity,
-               pres ? pres.name : null, findVariantCode(product.codes, presId, color ? color.name : ''));
+               pres ? pres.name : null, findVariantCode(product.codes, presId, color ? color.name : ''), quoteOptionYield());
     closeQuoteOptions();
     // "Agregar y enviar" abre Mi Cotización, donde el cliente completa sus datos y envía la solicitud al panel
     if (thenSend && !document.getElementById('quotePanel').classList.contains('open')) toggleQuotePanel();
@@ -841,12 +885,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // Enter en el buscador de colores no debe hacer nada mas
     document.getElementById('qoColorSearch').addEventListener('keydown', e => { if (e.key === 'Enter') e.preventDefault(); });
 
+    // la cantidad recalcula el rendimiento total al instante
     dialog.querySelectorAll('[data-qo-step]').forEach(btn => btn.addEventListener('click', () => {
         const next = (parseInt(qtyInput.value, 10) || 1) + parseInt(btn.dataset.qoStep, 10);
         qtyInput.value = Math.min(9999, Math.max(1, next));
+        renderQuoteYield();
     }));
+    qtyInput.addEventListener('input', renderQuoteYield);
     qtyInput.addEventListener('change', () => {
         qtyInput.value = Math.min(9999, Math.max(1, parseInt(qtyInput.value, 10) || 1));
+        renderQuoteYield();
     });
 
     // Escape cierra; Tab no sale del selector mientras esta abierto
@@ -943,6 +991,7 @@ function generateQuoteXML(list) {
         if (item.presentation) xml += `      <presentacion>${xmlEscape(item.presentation)}</presentacion>\n`;
         if (item.color) xml += `      <color>${xmlEscape(item.color)}</color>\n`;
         if (item.code) xml += `      <codigo>${xmlEscape(item.code)}</codigo>\n`;
+        if (itemYieldText(item)) xml += `      <rendimiento>${xmlEscape(itemYieldText(item))}</rendimiento>\n`;
         xml += '    </producto>\n';
     });
     xml += '  </productos>\n';
@@ -993,7 +1042,8 @@ function sendQuoteToWhatsApp() {
         const details = [
             item.presentation ? `Presentación: ${item.presentation}` : '',
             item.color ? `Color: ${item.color}` : '',
-            item.code ? `Código: ${item.code}` : ''
+            item.code ? `Código: ${item.code}` : '',
+            itemYieldText(item) ? `Rendimiento: ${itemYieldText(item)}` : ''
         ].filter(Boolean).join(' - ');
         message += `${index + 1}. [Cant: ${item.quantity || 1}] ${item.name}${details ? ' - ' + details : ''}\n`;
     });

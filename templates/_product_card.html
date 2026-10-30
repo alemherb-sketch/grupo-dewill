@@ -47,6 +47,11 @@
         </div>
         {% endif %}
 
+        {% if product.card_yield %}
+        {% set y = product.card_yield %}
+        <div class="pcr-yield"><i class="fas fa-paint-roller"></i> <span>Rinde <strong>{{ y.m2|m2 }} m²</strong>{% if y.presentation %} por {{ y.presentation }}{% endif %} a {{ y.coats }} {{ 'mano' if y.coats == 1 else 'manos' }}</span></div>
+        {% endif %}
+
         {% if product.card_specs %}
         <div class="pcr-specs">
             {% for spec in product.card_specs[:3] %}

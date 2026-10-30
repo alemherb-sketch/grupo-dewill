@@ -9,7 +9,7 @@
             <h3><i class="fas fa-info-circle"></i> Información General</h3>
             <div class="form-group"><label>Nombre *</label><input type="text" name="name" value="{{ product.name if product else '' }}" required class="form-input"></div>
             <div class="form-row">
-                <div class="form-group"><label>SKU</label><input type="text" name="sku" value="{{ product.sku if product else '' }}" class="form-input"></div>
+                <div class="form-group"><label>SKU</label><input type="text" name="sku" value="{{ (product and product.sku) or '' }}" class="form-input"></div>
                 <div class="form-group"><label>Marca</label>
                     <select name="brand_id" class="form-input">
                         <option value="">Sin marca</option>
@@ -31,9 +31,9 @@
                     </select>
                 </div>
             </div>
-            <div class="form-group"><label>Descripción</label><textarea name="description" rows="3" class="form-input">{{ product.description if product else '' }}</textarea></div>
-            <div class="form-group"><label>Descripción Técnica</label><textarea name="technical_description" rows="4" class="form-input">{{ product.technical_description if product else '' }}</textarea></div>
-            <div class="form-group"><label>URL de Video (YouTube embed)</label><input type="text" name="video_url" value="{{ product.video_url if product else '' }}" class="form-input" placeholder="https://www.youtube.com/embed/..."></div>
+            <div class="form-group"><label>Descripción</label><textarea name="description" rows="3" class="form-input">{{ (product and product.description) or '' }}</textarea></div>
+            <div class="form-group"><label>Descripción Técnica</label><textarea name="technical_description" rows="4" class="form-input">{{ (product and product.technical_description) or '' }}</textarea></div>
+            <div class="form-group"><label>URL de Video (YouTube embed)</label><input type="text" name="video_url" value="{{ (product and product.video_url) or '' }}" class="form-input" placeholder="https://www.youtube.com/embed/..."></div>
             <div class="form-row">
                 <div class="form-group form-check"><label><input type="checkbox" name="is_featured" {% if product and product.is_featured %}checked{% endif %}> Producto Destacado</label></div>
                 <div class="form-group form-check"><label><input type="checkbox" name="is_active" {% if not product or product.is_active %}checked{% endif %}> Activo</label></div>
@@ -136,6 +136,31 @@
                 {% else %}
                 <p style="color: var(--text-muted); font-style: italic; font-size: 0.9rem;">No hay presentaciones registradas.</p>
                 {% endif %}
+            </div>
+
+            <h3><i class="fas fa-paint-roller"></i> Rendimiento</h3>
+            <p class="section-help">Metros cuadrados que cubre <strong>una unidad</strong> de cada presentación y a cuántas manos (por ejemplo, un galón rinde 21 m² a 2 manos). Déjalo vacío si no aplica: en la web solo se muestra el que tenga datos, y al cotizar se multiplica por la cantidad.</p>
+            <style>
+                .yield-rows { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1.5rem; }
+                .yield-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.9rem; padding: 0.6rem 0.8rem;
+                    border: 1px solid var(--admin-border); border-radius: 8px; }
+                .yield-row[hidden] { display: none; }
+                .yield-row-name { min-width: 64px; font-weight: 700; color: var(--admin-text); }
+                .yield-row label { display: inline-flex; align-items: center; gap: 0.4rem; margin: 0; font-size: 0.9rem; color: var(--admin-text-muted); }
+                .yield-row .form-input { width: 76px; }
+            </style>
+            {# Una fila por presentacion (la mantiene el script al agregar o quitar presentaciones); 'Por unidad' si no tiene #}
+            {% macro yield_row(key, name, y, hidden=False) %}
+            <div class="yield-row" data-id="{{ key }}"{% if hidden %} hidden{% endif %}>
+                <span class="yield-row-name">{{ name }}</span>
+                <label>Rinde <input type="number" name="yield_m2_{{ key }}" value="{{ y.area_m2|m2 if y else '' }}" step="0.01" min="0.01" max="10000" inputmode="decimal" class="form-input"{% if hidden %} disabled{% endif %}> m²</label>
+                <label>a <input type="number" name="yield_coats_{{ key }}" value="{{ y.coats if y else '' }}" step="1" min="1" max="10" inputmode="numeric" class="form-input"{% if hidden %} disabled{% endif %}> manos</label>
+            </div>
+            {% endmacro %}
+            {% set product_presentations = product.presentations if product else [] %}
+            <div id="yieldRows" class="yield-rows">
+                {% for pres in product_presentations %}{{ yield_row(pres.id, pres.name, yields.get(pres.id)) }}{% endfor %}
+                {{ yield_row(0, 'Por unidad', yields.get(0), hidden=product_presentations|length > 0) }}
             </div>
 
             <h3><i class="fas fa-list-check"></i> Especificaciones Técnicas</h3>
@@ -308,6 +333,51 @@ function addSpecRow(){
     // Sincronizar el dropdown con las presentaciones ya asignadas (modo edición)
     chips.querySelectorAll('.pres-chip').forEach(c => setOptionUsed(c.getAttribute('data-id'), true));
     updateEmpty();
+})();
+
+// === Rendimiento: una fila por presentación agregada; 'Por unidad' solo si el producto no tiene presentaciones ===
+(function(){
+    const chips = document.getElementById('presChips');
+    const rows = document.getElementById('yieldRows');
+    if (!rows) return;
+    const unitRow = rows.querySelector('.yield-row[data-id="0"]');
+    const saved = {};   // valores de una fila quitada, por si se vuelve a agregar la presentación
+
+    function makeRow(id, name){
+        const row = unitRow.cloneNode(true);
+        row.dataset.id = id;
+        row.hidden = false;
+        row.querySelector('.yield-row-name').textContent = name;
+        row.querySelectorAll('input').forEach(input => {
+            const field = input.name.startsWith('yield_m2_') ? 'yield_m2_' : 'yield_coats_';
+            input.name = field + id;
+            input.disabled = false;
+            input.value = (saved[id] && saved[id][field]) || '';
+        });
+        return row;
+    }
+
+    function sync(){
+        const ids = chips ? Array.from(chips.querySelectorAll('.pres-chip')).map(c => c.getAttribute('data-id')) : [];
+        rows.querySelectorAll('.yield-row:not([data-id="0"])').forEach(row => {
+            if (!ids.includes(row.dataset.id)) {
+                saved[row.dataset.id] = Object.fromEntries(Array.from(row.querySelectorAll('input')).map(i => [i.name.replace(/\d+$/, ''), i.value]));
+                row.remove();
+            }
+        });
+        ids.forEach(id => {
+            if (!rows.querySelector('.yield-row[data-id="' + id + '"]')) {
+                const chip = chips.querySelector('.pres-chip[data-id="' + id + '"]');
+                rows.insertBefore(makeRow(id, chip.firstChild.textContent.trim()), unitRow);
+            }
+        });
+        // la fila 'Por unidad' oculta no se envia (y sus limites no frenan el formulario)
+        unitRow.hidden = ids.length > 0;
+        unitRow.querySelectorAll('input').forEach(i => { i.disabled = ids.length > 0; });
+    }
+
+    if (chips) new MutationObserver(sync).observe(chips, { childList: true });
+    sync();
 })();
 
 function deleteProductImage(imgId) {

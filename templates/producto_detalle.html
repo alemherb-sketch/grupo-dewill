@@ -239,6 +239,8 @@
                                 <i class="fas fa-shopping-cart"></i> AGREGAR AL COTIZADOR
                             </button>
                         </div>
+                        {# Rendimiento de la presentacion elegida por la cantidad (lo llena el script) #}
+                        <p class="detail-yield" id="detailYield" aria-live="polite" hidden></p>
                     </div>
                 </div>
             </div>
@@ -326,6 +328,24 @@ function escAttr(value) {
 // Codigo (Excel) de cada variante del producto: p = id de la presentacion (null: sin presentacion), c = color en mayusculas ('' : sin color)
 const VARIANT_CODES = {{ variant_codes|tojson }};
 const PRODUCT_SKU = {{ (product.sku or '')|tojson }};
+// Rendimiento de UNA unidad por presentacion: {'<id>' o '0' (sin presentaciones): {m2, coats}}
+const YIELDS = {{ yields|tojson }};
+
+function currentYield() {
+    const presBtn = document.querySelector('.detail-info-panel .pres-btn.selected');
+    return YIELDS[presBtn ? presBtn.dataset.id : '0'] || null;
+}
+
+// Rendimiento total de lo elegido segun la cantidad (formatM2 y yieldText estan en app.js)
+function updateYield() {
+    const line = document.getElementById('detailYield');
+    const y = currentYield();
+    line.hidden = !y;
+    if (y) {
+        line.innerHTML = `<i class="fas fa-paint-roller"></i> Rinde <strong>${yieldText(y.m2 * currentQty, y.coats)}</strong>`
+            + (currentQty > 1 ? ` <span>(${formatM2(y.m2)} m² c/u)</span>` : '');
+    }
+}
 
 // Codigo de la presentacion y el color elegidos (findVariantCode esta en app.js).
 // Los botones se buscan dentro de la ficha: el selector de cotizacion de las tarjetas tambien usa .pres-btn
@@ -350,6 +370,7 @@ function updateVariantCode() {
 function changeQty(delta) {
     currentQty = Math.max(1, currentQty + delta);
     document.getElementById('qtyDisplay').textContent = currentQty;
+    updateYield();
 }
 
 function setMainImg(thumb, src) {
@@ -395,6 +416,7 @@ async function selectPresentation(btn, name, presId) {
         }
     }
     updateVariantCode();
+    updateYield();
 }
 
 // Initial load colors for first presentation
@@ -404,6 +426,7 @@ document.addEventListener('DOMContentLoaded', () => {
         firstPresBtn.click();
     } else {
         updateVariantCode();
+        updateYield();
     }
     
     // Lupa / Zoom effect for main image
@@ -455,7 +478,7 @@ function handleAddToCart() {
             return;
         }
     }
-    addToQuote({{ product.id }}, {{ product.name|tojson }}, '{{ product.main_image or 'assets/product_paint.png' }}', colorName, currentQty, presentationName, currentVariantCode());
+    addToQuote({{ product.id }}, {{ product.name|tojson }}, '{{ product.main_image or 'assets/product_paint.png' }}', colorName, currentQty, presentationName, currentVariantCode(), currentYield());
 }
 </script>
 {% endblock %}

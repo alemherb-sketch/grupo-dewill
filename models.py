@@ -141,6 +141,33 @@ class ProductVariantCode(db.Model):
     __table_args__ = (db.UniqueConstraint('product_id', 'presentation_id', 'color_name'),)
 
 
+class ProductYield(db.Model):
+    """Rendimiento de un producto: metros cuadrados que cubre UNA unidad de la presentacion y a cuantas manos
+    ('un galon rinde 21 m2 a 2 manos'). presentation_id NULL = producto sin presentaciones (vale para su unidad)."""
+    __tablename__ = 'product_yields'
+    id = db.Column(db.Integer, primary_key=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('products.id', ondelete='CASCADE'), nullable=False)
+    presentation_id = db.Column(db.Integer, db.ForeignKey('presentations.id', ondelete='CASCADE'))
+    area_m2 = db.Column(db.Float, nullable=False)
+    coats = db.Column(db.Integer, nullable=False)
+    __table_args__ = (db.UniqueConstraint('product_id', 'presentation_id'),)
+
+
+def find_yield(yields, presentation_id):
+    """Rendimiento (ProductYield) de la presentacion elegida; presentation_id None = el de un producto sin presentaciones."""
+    return next((y for y in yields if y.presentation_id == presentation_id), None)
+
+
+def format_m2(value):
+    """Metros cuadrados sin ceros de mas: 21.0 -> '21', 10.5 -> '10.5', 31.25 -> '31.25'."""
+    return f'{value:.2f}'.rstrip('0').rstrip('.')
+
+
+def yield_label(area_m2, coats):
+    """El rendimiento como se muestra y se envia en el pedido: '63 m² a 2 manos'."""
+    return f"{format_m2(area_m2)} m² a {coats} {'mano' if coats == 1 else 'manos'}"
+
+
 def find_variant_code(codes, presentation_id, color_name=''):
     """Codigo de la variante elegida entre los ProductVariantCode de un producto.
     Prueba la combinacion exacta y, si no existe, la mas general: (presentacion, color), (presentacion), (color), (producto)."""
@@ -187,6 +214,7 @@ class Product(db.Model):
     quote_items = db.relationship('QuoteItem', backref='product', lazy=True, cascade='all, delete-orphan')
     presentation_colors = db.relationship('ProductPresentationColor', backref='product_rel', lazy=True, cascade='all, delete-orphan')
     variant_codes = db.relationship('ProductVariantCode', backref='product_rel', lazy=True, cascade='all, delete-orphan')
+    yields = db.relationship('ProductYield', backref='product_rel', lazy=True, cascade='all, delete-orphan')
 
     def to_dict(self):
         return {
@@ -245,6 +273,13 @@ class QuoteItem(db.Model):
     color = db.Column(db.String(100))
     presentation = db.Column(db.String(100))
     code = db.Column(db.String(50))   # Codigo (Excel) de la presentacion y el color elegidos; NULL si el producto no los tiene cargados
+    # Rendimiento total de lo pedido (m2 de la presentacion x cantidad) y a cuantas manos; NULL si no tiene rendimiento
+    yield_m2 = db.Column(db.Float)
+    yield_coats = db.Column(db.Integer)
+
+    @property
+    def yield_text(self):
+        return yield_label(self.yield_m2, self.yield_coats) if self.yield_m2 and self.yield_coats else ''
 
 
 class PaintColor(db.Model):

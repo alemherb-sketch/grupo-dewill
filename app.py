@@ -19,6 +19,7 @@ from site_pages import (PAGES, PAGES_BY_KEY, PAGE_BY_ENDPOINT, DISABLED_PAGES_KE
 from models import db, AdminUser, Category, SubCategory, Brand, Product, ProductImage, ProductSpec, Presentation
 from models import QuoteRequest, QuoteItem, Banner, PageBanner, Offer, GalleryCategory, GalleryImage, AmbientCategory, AmbientImage, SiteConfig, PaintColor, BlogCategory, BlogPost, ProductPresentationColor
 from models import split_color_code, color_label, ProductVariantCode, find_variant_code
+from models import ProductYield, find_yield, format_m2, yield_label
 import time
 import threading
 import resend
@@ -122,6 +123,13 @@ with app.app_context():
             db.session.commit()
         except Exception:
             db.session.rollback()
+        # Rendimiento total (m2 x cantidad) y manos de cada item del pedido
+        for column, ddl in (('yield_m2', 'FLOAT'), ('yield_coats', 'INTEGER')):
+            try:
+                db.session.execute(text(f"ALTER TABLE quote_items ADD COLUMN {column} {ddl}"))
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
         # Los usuarios anteriores a este modulo eran todos administradores con acceso total
         try:
             db.session.execute(text("UPDATE admin_users SET is_admin = :v WHERE is_admin IS NULL"), {'v': True})
@@ -255,6 +263,30 @@ def _attach_card_data(products):
                     colors.append({'name': s.value, 'hex': palette.get(k, '#cccccc')})
         p.card_colors = colors
         p.card_specs = [s for s in p.specs if s.key and s.key.strip().lower() != 'color']
+        p.card_yield = _card_yield(p)
+
+
+def _product_yields(product):
+    """Rendimiento vigente de un producto: {id de la presentacion (None sin presentaciones): ProductYield}.
+    Solo cuenta el de sus presentaciones actuales; el 'por unidad' vale si no tiene presentaciones."""
+    pres_ids = {pres.id for pres in product.presentations}
+    return {y.presentation_id: y for y in product.yields
+            if y.presentation_id in pres_ids or (y.presentation_id is None and not pres_ids)}
+
+
+def _card_yield(product):
+    """Rendimiento que muestra la tarjeta: el de la presentacion que menos cubre (la mas chica, p. ej. 1GL antes que 4GL)."""
+    yields = _product_yields(product)
+    if not yields:
+        return None
+    names = {pres.id: pres.name for pres in product.presentations}
+    pres_id, y = min(yields.items(), key=lambda kv: kv[1].area_m2)
+    return {'m2': y.area_m2, 'coats': y.coats, 'presentation': names.get(pres_id)}
+
+
+def _yields_json(product):
+    """Rendimiento por presentacion para el navegador: {'<id>' o '0': {'m2', 'coats'}}."""
+    return {str(pres_id or 0): {'m2': y.area_m2, 'coats': y.coats} for pres_id, y in _product_yields(product).items()}
 
 def save_upload(file, subfolder=''):
     if file and allowed_file(file.filename):
@@ -367,6 +399,11 @@ def banner_text(value, css_class='text-red'):
     """Texto de un banner: escapa el HTML, resalta lo que va entre *asteriscos* y convierte los saltos de línea."""
     html = EMPHASIS_RE.sub(lambda m: f'<span class="{css_class}">{m.group(1)}</span>', str(escape(value or '')))
     return Markup(html.replace('\n', '<br>'))
+
+@app.template_filter('m2')
+def m2_filter(value):
+    """Metros cuadrados sin ceros de mas (21.0 -> '21')."""
+    return format_m2(value) if value is not None else ''
 
 @app.template_filter('wa_number')
 def wa_number(phone):
@@ -612,7 +649,7 @@ def producto_detalle(product_id):
     variant_codes = _product_variant_codes(product)
     categories = Category.query.order_by(Category.order).all()
     return render_template('producto_detalle.html', product=product, related=related, paint_colors=paint_colors,
-                           categories=categories, variant_codes=variant_codes)
+                           categories=categories, variant_codes=variant_codes, yields=_yields_json(product))
 
 
 @app.route('/api/producto/<int:product_id>/opciones')
@@ -623,11 +660,13 @@ def api_product_options(product_id):
     product = Product.query.filter_by(id=product_id, is_active=True).first_or_404()
     colors = _product_paint_colors(product)
     links = sorted(product.presentation_colors, key=lambda lk: lk.id)
+    yields = _yields_json(product)
     presentations = [{
         'id': pres.id,
         'name': pres.name,
         'colors': [_color_option(lk.color_name, lk.hex_code or '#cccccc', lk.color_code)
                    for lk in links if lk.presentation_id == pres.id] if links else colors,
+        'yield': yields.get(str(pres.id)),   # m2 que cubre una unidad y a cuantas manos (None: sin rendimiento)
     } for pres in product.presentations]
     return jsonify({
         'id': product.id,
@@ -638,6 +677,7 @@ def api_product_options(product_id):
         'presentations': presentations,
         'colors': colors,
         'codes': _product_variant_codes(product),
+        'yield': yields.get('0'),   # producto sin presentaciones: rendimiento de su unidad
     })
 
 DOCUMENT_RE = re.compile(r'^(\d{8}|\d{11})$')   # DNI (8 dígitos) o RUC (11 dígitos)
@@ -685,14 +725,40 @@ def _quote_color(product, color):
     return color
 
 
+def _quote_presentation(product, presentation):
+    """Presentacion del producto que nombra un item de la cotizacion (por nombre); None si no la tiene."""
+    wanted = str(presentation or '').strip().upper()
+    if product is None or not wanted:
+        return None
+    return next((p for p in product.presentations if (p.name or '').strip().upper() == wanted), None)
+
+
 def _quote_code(product, presentation, color):
     """Codigo (Excel) de la presentacion y el color elegidos en un item de la cotizacion.
     Lo calcula el servidor con los datos del producto; None si el producto no tiene codigos cargados."""
     if product is None or not product.variant_codes:
         return None
-    wanted = str(presentation or '').strip().upper()
-    pres = next((p for p in product.presentations if (p.name or '').strip().upper() == wanted), None) if wanted else None
+    pres = _quote_presentation(product, presentation)
     return find_variant_code(product.variant_codes, pres.id if pres else None, split_color_code(str(color or ''))[0])
+
+
+def _quote_yield(product, presentation, quantity):
+    """Rendimiento total de un item del pedido: (m2 de una unidad x cantidad, manos). Lo calcula el servidor;
+    (None, None) si esa presentacion no tiene rendimiento."""
+    if product is None:
+        return None, None
+    pres = _quote_presentation(product, presentation)
+    if pres is None and product.presentations:   # sin presentacion conocida no se sabe cuanto rinde
+        return None, None
+    y = _product_yields(product).get(pres.id if pres else None)
+    return (round(y.area_m2 * quantity, 2), y.coats) if y else (None, None)
+
+
+def _quote_quantity(value):
+    try:
+        return min(9999, max(1, int(value)))
+    except (TypeError, ValueError):
+        return 1
 
 
 @app.route('/api/cotizacion', methods=['POST'])
@@ -709,9 +775,13 @@ def api_cotizacion():
     db.session.flush()
     for item in data['items']:
         prod = Product.query.get(item['product_id'])
+        item['quantity'] = _quote_quantity(item.get('quantity', 1))
         item['color'] = _quote_color(prod, item.get('color'))
         item['code'] = _quote_code(prod, item.get('presentation'), item['color'])
-        db.session.add(QuoteItem(quote_id=quote.id, product_id=item['product_id'], quantity=item.get('quantity',1), color=item['color'], presentation=item.get('presentation'), code=item['code']))
+        item['yield_m2'], item['yield_coats'] = _quote_yield(prod, item.get('presentation'), item['quantity'])
+        db.session.add(QuoteItem(quote_id=quote.id, product_id=item['product_id'], quantity=item['quantity'], color=item['color'],
+                                 presentation=item.get('presentation'), code=item['code'],
+                                 yield_m2=item['yield_m2'], yield_coats=item['yield_coats']))
     db.session.commit()
     try:
         # Obtener configuración de correo
@@ -726,7 +796,9 @@ def api_cotizacion():
                     pres_info = f" - Presentación: {item.get('presentation')}" if item.get('presentation') else ""
                     # el codigo de la presentacion y el color elegidos reemplaza al SKU general del producto
                     ref = f"Código: {item['code']}" if item.get('code') else f"SKU: {prod.sku or 'N/A'}"
-                    items_text += f"- {prod.name} ({ref}){color_info}{pres_info} x {item.get('quantity', 1)}\n"
+                    yield_info = (f" - Rendimiento: {yield_label(item['yield_m2'], item['yield_coats'])}"
+                                  if item.get('yield_m2') else "")
+                    items_text += f"- {prod.name} ({ref}){color_info}{pres_info} x {item.get('quantity', 1)}{yield_info}\n"
             
             body = (
                 f"Nueva Solicitud de Cotización #{quote.id}\n"
@@ -1441,6 +1513,44 @@ def admin_product_import():
             
     return render_template('admin/product_import.html')
 
+YIELD_MAX_M2, YIELD_MAX_COATS = 10000, 10
+
+
+def _save_product_yields(product):
+    """Rendimiento del formulario: 'yield_m2_<id>' y 'yield_coats_<id>' por cada presentacion del producto
+    (id 0 = producto sin presentaciones). Reemplaza los que tenia. Devuelve los nombres de las filas incompletas o
+    fuera de rango, que no se guardan; una fila vacia es un producto sin rendimiento en esa presentacion."""
+    ProductYield.query.filter_by(product_id=product.id).delete()
+    rows = [(pres.id, pres.name) for pres in product.presentations] or [(0, 'el producto')]
+    rejected = []
+    for key, name in rows:
+        m2_raw = request.form.get(f'yield_m2_{key}', '').strip().replace(',', '.')
+        coats_raw = request.form.get(f'yield_coats_{key}', '').strip()
+        if not m2_raw and not coats_raw:
+            continue
+        try:
+            m2, coats = float(m2_raw), int(coats_raw)
+        except ValueError:
+            rejected.append(name)
+            continue
+        if not (0 < m2 <= YIELD_MAX_M2 and 1 <= coats <= YIELD_MAX_COATS):
+            rejected.append(name)
+            continue
+        db.session.add(ProductYield(product_id=product.id, presentation_id=key or None, area_m2=round(m2, 2), coats=coats))
+    return rejected
+
+
+def _flash_rejected_yields(rejected):
+    if rejected:
+        flash(f"El rendimiento de {', '.join(rejected)} necesita los metros cuadrados (hasta {YIELD_MAX_M2}) y las manos "
+              f"(de 1 a {YIELD_MAX_COATS}): no se guardó.", 'error')
+
+
+def _form_text(name):
+    """Texto opcional del formulario: vacio se guarda como NULL (nunca 'None' ni '')."""
+    return request.form.get(name, '').strip() or None
+
+
 @app.route('/admin/productos/nuevo', methods=['GET', 'POST'])
 @module_required('productos')
 def admin_product_new():
@@ -1449,12 +1559,12 @@ def admin_product_new():
     brands = Brand.query.order_by(Brand.name).all()
     presentations = Presentation.query.order_by(Presentation.name).all()
     if request.method == 'POST':
-        p = Product(name=request.form['name'], sku=request.form.get('sku',''),
-            description=request.form.get('description',''), technical_description=request.form.get('technical_description',''),
+        p = Product(name=request.form['name'], sku=_form_text('sku'),
+            description=_form_text('description'), technical_description=_form_text('technical_description'),
             category_id=request.form.get('category_id',type=int) or None,
             subcategory_id=request.form.get('subcategory_id',type=int) or None,
             brand_id=request.form.get('brand_id',type=int) or None,
-            video_url=request.form.get('video_url',''), is_featured='is_featured' in request.form,
+            video_url=_form_text('video_url'), is_featured='is_featured' in request.form,
             is_active='is_active' in request.form)
         if 'main_image' in request.files and request.files['main_image'].filename:
             p.main_image = save_upload(request.files['main_image'], 'products')
@@ -1480,10 +1590,13 @@ def admin_product_new():
         for k, v in zip(request.form.getlist('spec_key[]'), request.form.getlist('spec_value[]')):
             if k.strip() and v.strip():
                 db.session.add(ProductSpec(product_id=p.id, key=k.strip(), value=v.strip()))
+        rejected = _save_product_yields(p)
         db.session.commit()
         flash('Producto creado exitosamente', 'success')
+        _flash_rejected_yields(rejected)
         return redirect(url_for('admin_products'))
-    return render_template('admin/product_form.html', product=None, categories=categories, subcategories=subcategories, brands=brands, presentations=presentations)
+    return render_template('admin/product_form.html', product=None, categories=categories, subcategories=subcategories, brands=brands, presentations=presentations,
+                           yields={})
 
 @app.route('/admin/productos/<int:pid>/editar', methods=['GET', 'POST'])
 @module_required('productos')
@@ -1494,12 +1607,12 @@ def admin_product_edit(pid):
     brands = Brand.query.order_by(Brand.name).all()
     presentations = Presentation.query.order_by(Presentation.name).all()
     if request.method == 'POST':
-        p.name = request.form['name']; p.sku = request.form.get('sku','')
-        p.description = request.form.get('description',''); p.technical_description = request.form.get('technical_description','')
+        p.name = request.form['name']; p.sku = _form_text('sku')
+        p.description = _form_text('description'); p.technical_description = _form_text('technical_description')
         p.category_id = request.form.get('category_id',type=int) or None
         p.subcategory_id = request.form.get('subcategory_id',type=int) or None
         p.brand_id = request.form.get('brand_id',type=int) or None
-        p.video_url = request.form.get('video_url',''); p.is_featured = 'is_featured' in request.form
+        p.video_url = _form_text('video_url'); p.is_featured = 'is_featured' in request.form
         p.is_active = 'is_active' in request.form
         if 'main_image' in request.files and request.files['main_image'].filename:
             p.main_image = save_upload(request.files['main_image'], 'products')
@@ -1524,11 +1637,17 @@ def admin_product_edit(pid):
         for pres_id in pres_ids:
             pres = Presentation.query.get(pres_id)
             if pres: p.presentations.append(pres)
-            
+        db.session.flush()
+        rejected = _save_product_yields(p)
+
         db.session.commit()
         flash('Producto actualizado', 'success')
+        _flash_rejected_yields(rejected)
         return redirect(url_for('admin_products'))
-    return render_template('admin/product_form.html', product=p, categories=categories, subcategories=subcategories, brands=brands, presentations=presentations)
+    # rendimiento guardado por presentacion (0 = producto sin presentaciones)
+    yields = {(y.presentation_id or 0): y for y in p.yields}
+    return render_template('admin/product_form.html', product=p, categories=categories, subcategories=subcategories, brands=brands, presentations=presentations,
+                           yields=yields)
 
 @app.route('/admin/productos/<int:pid>/eliminar', methods=['POST'])
 @module_required('productos')
