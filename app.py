@@ -130,6 +130,13 @@ with app.app_context():
                 db.session.commit()
             except Exception:
                 db.session.rollback()
+        # Producto al que lleva cada imagen de Ambientes
+        try:
+            db.session.execute(text("ALTER TABLE ambient_images ADD COLUMN product_id INTEGER "
+                                    "REFERENCES products(id) ON DELETE SET NULL"))
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
         # Los usuarios anteriores a este modulo eran todos administradores con acceso total
         try:
             db.session.execute(text("UPDATE admin_users SET is_admin = :v WHERE is_admin IS NULL"), {'v': True})
@@ -915,10 +922,19 @@ def galeria_ambientes():
 @app.route('/api/ambientes/<int:id>')
 def api_ambiente(id):
     a = AmbientCategory.query.get_or_404(id)
+    # cada imagen puede llevar a un producto: solo si esta activo y la pagina Productos esta habilitada
+    catalog_on = 'productos' not in disabled_pages(get_site_config())
+
+    def product_link(img):
+        p = img.product
+        if not catalog_on or p is None or not p.is_active:
+            return None
+        return {'id': p.id, 'name': p.name, 'url': url_for('producto_detalle', product_id=p.id)}
+
     return jsonify({
         'id': a.id,
         'name': a.name,
-        'images': [{'image_url': img.image_url} for img in a.images]
+        'images': [{'image_url': img.image_url, 'product': product_link(img)} for img in a.images]
     })
 
 
@@ -2248,6 +2264,24 @@ def admin_ambientes():
     return render_template('admin/ambientes.html', ambientes=ambientes)
 
 
+def _product_choices():
+    """Productos para enlazar una imagen de Ambientes, agrupados por categoria: [(categoria, [productos])]."""
+    groups = {}
+    for p in Product.query.order_by(Product.name).all():
+        groups.setdefault(p.category.name if p.category else 'Sin categoría', []).append(p)
+    return sorted(groups.items())
+
+
+def _save_ambient_image_links(images):
+    """Producto al que lleva cada imagen ('image_product_<id>' del formulario; vacio = sin enlace)."""
+    for img in images:
+        field = f'image_product_{img.id}'
+        if field not in request.form:
+            continue
+        pid = request.form.get(field, type=int)
+        img.product_id = pid if pid and db.session.get(Product, pid) else None
+
+
 @app.route('/admin/ambientes/nuevo', methods=['GET', 'POST'])
 @module_required('ambientes')
 def admin_ambient_new():
@@ -2276,7 +2310,7 @@ def admin_ambient_new():
         db.session.commit()
         flash('Ambiente creado exitosamente')
         return redirect(url_for('admin_ambientes'))
-    return render_template('admin/ambient_form.html', ambient=None)
+    return render_template('admin/ambient_form.html', ambient=None, product_groups=_product_choices())
 
 
 @app.route('/admin/ambientes/<int:id>/editar', methods=['GET', 'POST'])
@@ -2284,6 +2318,7 @@ def admin_ambient_new():
 def admin_ambient_edit(id):
     a = AmbientCategory.query.get_or_404(id)
     if request.method == 'POST':
+        _save_ambient_image_links(list(a.images))   # las imagenes que ya tenia (las nuevas se enlazan despues de subirlas)
         a.name = request.form['name']
         a.slug = slugify(a.name)
         a.type = request.form['type']
@@ -2303,7 +2338,7 @@ def admin_ambient_edit(id):
         db.session.commit()
         flash('Ambiente actualizado exitosamente')
         return redirect(url_for('admin_ambientes'))
-    return render_template('admin/ambient_form.html', ambient=a)
+    return render_template('admin/ambient_form.html', ambient=a, product_groups=_product_choices())
 
 @app.route('/admin/ambientes/<int:id>/eliminar_portada', methods=['POST'])
 @module_required('ambientes')

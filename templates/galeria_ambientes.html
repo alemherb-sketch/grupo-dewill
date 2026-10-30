@@ -398,11 +398,18 @@ async function openAmbientModal(catId) {
         const data = await res.json();
         title.textContent = data.name;
         count.textContent = `${data.images.length} imágenes`;
-        slider.innerHTML = data.images.map(img => `
-            <div class="ambient-slide">
-                <img src="/static/${img.image_url}" alt="">
-            </div>
-        `).join('');
+        // Una imagen con producto (Admin > Ambientes) lleva a su ficha; el boton de abajo lo hace visible
+        slider.innerHTML = data.images.map(img => {
+            const p = img.product;
+            const image = `<img src="/static/${img.image_url}" alt="${p ? escapeHTML(p.name) : ''}">`;
+            if (!p) return `<div class="ambient-slide">${image}</div>`;
+            return `<div class="ambient-slide">
+                <a class="ambient-slide-link" href="${escapeHTML(p.url)}" title="Ver ${escapeHTML(p.name)}">
+                    ${image}
+                    <span class="ambient-product-tag"><i class="fas fa-shopping-cart"></i> <span>Ver ${escapeHTML(p.name)}</span> <i class="fas fa-arrow-right"></i></span>
+                </a>
+            </div>`;
+        }).join('');
         currentAmbientIdx = 0;
         slider.style.transform = 'translateX(0)';
         modal.classList.add('active');

@@ -66,18 +66,32 @@
             <div class="form-group">
                 <label>Galería de Ambientes (Slider)</label>
                 {% if ambient and ambient.images %}
-                <div class="image-thumbs">
+                <p class="field-hint" style="margin: 0 0 0.75rem;">En la página Ambientes, al hacer clic en una imagen se abre el producto que elijas (opcional).</p>
+                <div class="ambient-image-rows">
                     {% for img in ambient.images %}
-                    <div class="image-thumb-item">
-                        <img src="{{ url_for('static', filename=img.image_url) }}" alt="">
-                        <button type="button" class="thumb-delete" title="Eliminar" onclick="deleteAmbientImage({{ img.id }})">
-                            <i class="fas fa-times"></i>
-                        </button>
+                    <div class="ambient-image-row">
+                        <div class="image-thumb-item">
+                            <img src="{{ url_for('static', filename=img.image_url) }}" alt="">
+                            <button type="button" class="thumb-delete" title="Eliminar" onclick="deleteAmbientImage({{ img.id }})">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="ambient-image-link">
+                            <label for="imgProduct{{ img.id }}"><i class="fas fa-link"></i> Producto al hacer clic</label>
+                            <select name="image_product_{{ img.id }}" id="imgProduct{{ img.id }}" class="form-input">
+                                <option value="">Sin enlace</option>
+                                {% for category, items in product_groups %}
+                                <optgroup label="{{ category }}">
+                                    {% for p in items %}<option value="{{ p.id }}"{% if img.product_id == p.id %} selected{% endif %}>{{ p.name }}{% if not p.is_active %} (inactivo){% endif %}</option>{% endfor %}
+                                </optgroup>
+                                {% endfor %}
+                            </select>
+                        </div>
                     </div>
                     {% endfor %}
                 </div>
                 {% endif %}
-                <p style="font-size: 0.8rem; color: var(--admin-text-muted); margin-bottom: 0.5rem;">Puedes seleccionar varias imágenes a la vez.</p>
+                <p style="font-size: 0.8rem; color: var(--admin-text-muted); margin-bottom: 0.5rem;">Puedes seleccionar varias imágenes a la vez.{% if not (ambient and ambient.images) %} Después de guardarlas podrás elegir a qué producto lleva cada una.{% endif %}</p>
                 <input type="file" name="extra_images" accept="image/*" multiple class="form-input-file">
             </div>
         </div>

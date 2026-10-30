@@ -371,6 +371,9 @@ class AmbientImage(db.Model):
     category_id = db.Column(db.Integer, db.ForeignKey('ambient_categories.id'), nullable=False)
     image_url = db.Column(db.String(300), nullable=False)
     order = db.Column(db.Integer, default=0)
+    # Producto al que lleva la imagen al hacer clic en el modal de Ambientes (opcional)
+    product_id = db.Column(db.Integer, db.ForeignKey('products.id', ondelete='SET NULL'))
+    product = db.relationship('Product')
 
 
 class BlogCategory(db.Model):

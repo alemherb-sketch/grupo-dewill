@@ -207,6 +207,14 @@ a { text-decoration: none; color: var(--admin-primary); }
     .toolbar-search { flex-direction: column; }
 }
 
+/* Ambientes: cada imagen del slider con el producto al que lleva */
+.ambient-image-rows { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem; }
+.ambient-image-row { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; padding: 0.75rem; border: 1px solid var(--admin-border); border-radius: var(--radius); }
+.ambient-image-row .image-thumb-item { width: 120px; height: 76px; flex-shrink: 0; }
+.ambient-image-link { flex: 1; min-width: 180px; }
+.ambient-image-link label { display: block; margin-bottom: 0.35rem; font-size: 0.85rem; font-weight: 600; }
+.ambient-image-link label i { color: var(--admin-primary); }
+
 /* Admin Product Form Extras */
 .image-thumbs {
     display: flex;
