@@ -1200,7 +1200,16 @@ def admin_products():
     if cat_id: query = query.filter_by(category_id=int(cat_id))
     products = query.order_by(Product.created_at.desc()).paginate(page=page, per_page=20, error_out=False)
     categories = Category.query.order_by(Category.order).all()
-    return render_template('admin/products.html', products=products, categories=categories, q=q, cat_id=cat_id)
+    # Contador sobre la tabla: total del catalogo y, de lo que se esta viendo (busqueda y categoria), activos,
+    # inactivos y destacados
+    counts = {
+        'catalog': Product.query.count(),
+        'active': query.filter(Product.is_active.is_(True)).count(),
+        'featured': query.filter(Product.is_featured.is_(True)).count(),
+    }
+    counts['inactive'] = products.total - counts['active']
+    return render_template('admin/products.html', products=products, categories=categories, q=q, cat_id=cat_id,
+                           counts=counts)
 
 def _find_or_create_presentation(name):
     """Presentacion de una fila del Excel: primero por nombre (sin distinguir mayusculas) y luego por slug.

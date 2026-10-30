@@ -116,6 +116,10 @@ a { text-decoration: none; color: var(--admin-primary); }
 .admin-pagination a { border: 1px solid var(--admin-border); color: var(--admin-text); text-decoration: none; }
 .admin-pagination a:hover { background: #f1f5f9; }
 .admin-pagination a.active { background: var(--admin-primary); color: white; border-color: var(--admin-primary); }
+/* Pie de una lista (Productos): que tramo se ve y la paginacion */
+.list-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem 1rem; padding: 1rem 1.5rem; border-top: 1px solid var(--admin-border); }
+.list-footer .admin-pagination { padding: 0; border-top: none; flex-wrap: wrap; }
+.list-range { font-size: 0.85rem; color: var(--admin-text-muted); }
 
 /* Dashboard Stats */
 .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
@@ -145,8 +149,7 @@ a { text-decoration: none; color: var(--admin-primary); }
 .form-section h3 { margin-bottom: 1.5rem; font-size: 1.1rem; color: var(--admin-primary); display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--admin-border); padding-bottom: 0.5rem; }
 
 /* Toolbar */
-.admin-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; background: var(--admin-surface); padding: 1rem 1.5rem; border-radius: var(--radius); border: 1px solid var(--admin-border); }
-.toolbar-search { display: flex; gap: 0.5rem; }
+.admin-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; background: var(--admin-surface); padding: 1rem 1.5rem; border-radius: var(--radius); border: 1px solid var(--admin-border); }.toolbar-search { display: flex; gap: 0.5rem; }
 .filter-tabs { display: flex; gap: 1rem; }
 .filter-tab { padding: 0.5rem 1rem; border-radius: 9999px; font-size: 0.9rem; font-weight: 500; color: var(--admin-text-muted); text-decoration: none; border: 1px solid transparent; }
 .filter-tab.active { background: #f1f5f9; color: var(--admin-text); border-color: var(--admin-border); }
@@ -487,6 +490,12 @@ a { text-decoration: none; color: var(--admin-primary); }
 .summary-chip > i { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.1rem; flex-shrink: 0; }
 .summary-chip .chip-num { font-size: 1.5rem; font-weight: 800; line-height: 1; color: var(--admin-text); }
 .summary-chip .chip-lbl { font-size: 0.8rem; color: var(--admin-text-muted); font-weight: 500; margin-top: 0.2rem; }
+@media (max-width: 768px) {
+    /* Resumenes (Galeria, Productos): dos tarjetas por fila */
+    .gallery-summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+    .summary-chip { min-width: 0; padding: 0.75rem 0.9rem; gap: 0.7rem; }
+    .summary-chip > i { width: 36px; height: 36px; font-size: 1rem; }
+}
 
 .gal-cat-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.6rem; }
 .gal-cat-item { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.75rem 0.9rem; border: 1px solid var(--admin-border); border-radius: var(--radius); background: #fff; transition: all 0.2s; }

@@ -3,6 +3,40 @@
 {% block page_title %}Gestión de Productos{% endblock %}
 
 {% block admin_content %}
+{% set filtered = q or cat_id %}
+{% macro plural(n, one, many) %}{{ one if n == 1 else many }}{% endmacro %}
+<!-- Contador (el mismo resumen de Galería): con busqueda o categoria cuenta los resultados, y los estados son de lo que se ve -->
+<div class="gallery-summary">
+    <div class="summary-chip">
+        <i class="fas fa-boxes" style="background:var(--admin-sidebar-bg);"></i>
+        <div>
+            <div class="chip-num">{{ products.total }}</div>
+            <div class="chip-lbl">{% if filtered %}{{ plural(products.total, 'Resultado', 'Resultados') }} de {{ counts.catalog }}{% else %}{{ plural(products.total, 'Producto', 'Productos') }}{% endif %}</div>
+        </div>
+    </div>
+    <div class="summary-chip">
+        <i class="fas fa-check-circle" style="background:var(--admin-success);"></i>
+        <div>
+            <div class="chip-num">{{ counts.active }}</div>
+            <div class="chip-lbl">{{ plural(counts.active, 'Activo', 'Activos') }}</div>
+        </div>
+    </div>
+    <div class="summary-chip">
+        <i class="fas fa-eye-slash" style="background:var(--admin-text-muted);"></i>
+        <div>
+            <div class="chip-num">{{ counts.inactive }}</div>
+            <div class="chip-lbl">{{ plural(counts.inactive, 'Inactivo', 'Inactivos') }}</div>
+        </div>
+    </div>
+    <div class="summary-chip">
+        <i class="fas fa-star" style="background:var(--admin-warning);"></i>
+        <div>
+            <div class="chip-num">{{ counts.featured }}</div>
+            <div class="chip-lbl">{{ plural(counts.featured, 'Destacado', 'Destacados') }}</div>
+        </div>
+    </div>
+</div>
+
 <div class="admin-toolbar">
     <form class="toolbar-search" method="GET">
         <input type="text" name="q" value="{{ q }}" placeholder="Buscar productos..." class="form-input">
@@ -12,7 +46,7 @@
         </select>
         <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i></button>
     </form>
-    <div style="display: flex; gap: 10px; align-items: center;">
+    <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
         <a href="{{ url_for('admin_product_import') }}" class="btn btn-secondary"><i class="fas fa-file-excel"></i> Importar Excel</a>
         <a href="{{ url_for('admin_product_new') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Nuevo Producto</a>
         <form method="POST" action="{{ url_for('admin_products_bulk_delete') }}" style="margin: 0;" id="bulkDeleteForm" onsubmit="return confirmBulkDelete()">
@@ -43,12 +77,19 @@
                     </form>
                 </td>
             </tr>
+            {% else %}
+            <tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--admin-text-muted);">{% if filtered %}Ningún producto coincide con la búsqueda.{% else %}Aún no hay productos. Crea el primero con «Nuevo Producto» o importa un Excel.{% endif %}</td></tr>
             {% endfor %}
         </tbody>
     </table>
-    {% if products.pages > 1 %}
-    <div class="admin-pagination">
-        {% for p in products.iter_pages() %}{% if p %}<a href="?page={{ p }}&q={{ q }}&cat={{ cat_id }}" class="{% if p == products.page %}active{% endif %}">{{ p }}</a>{% else %}<span>...</span>{% endif %}{% endfor %}
+    {% if products.total %}
+    <div class="list-footer">
+        <span class="list-range">Mostrando {{ (products.page - 1) * products.per_page + 1 }}–{{ [products.page * products.per_page, products.total]|min }} de {{ products.total }}</span>
+        {% if products.pages > 1 %}
+        <div class="admin-pagination">
+            {% for p in products.iter_pages() %}{% if p %}<a href="?page={{ p }}&q={{ q }}&cat={{ cat_id }}" class="{% if p == products.page %}active{% endif %}">{{ p }}</a>{% else %}<span>...</span>{% endif %}{% endfor %}
+        </div>
+        {% endif %}
     </div>
     {% endif %}
 </div>
