@@ -239,6 +239,14 @@ a { text-decoration: none; color: var(--admin-primary); }
 .template-download { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin: 1rem 0 1.25rem; padding: 1rem 1.25rem; border: 1px solid #bbf7d0; border-radius: var(--radius); background: #f0fdf4; }
 .template-download strong { color: #166534; }
 .template-download strong i { color: #16a34a; }
+/* Importar productos: las instrucciones fluyen en vertical (antes iban dentro del encabezado, que es una fila) */
+.import-instructions > p { margin: 0 0 0.75rem; line-height: 1.55; }
+.import-instructions ul { margin: 0 0 1.25rem; padding-left: 1.25rem; line-height: 1.55; }
+.import-instructions li { margin-bottom: 0.4rem; }
+.import-instructions .alert { margin-bottom: 1rem; border-radius: 8px; line-height: 1.55; }
+.import-instructions .alert ul { margin: 0.5rem 0 0; }
+.import-instructions code { padding: 0.1rem 0.35rem; border-radius: 4px; background: #f1f5f9; font-size: 0.85em; }
+.import-form { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--admin-border); }
 .template-download p { margin: 0.3rem 0 0; max-width: 480px; font-size: 0.85rem; color: var(--admin-text-muted); }
 
 /* Ambientes: cada imagen del slider con el producto al que lleva */
