@@ -537,6 +537,38 @@ a { text-decoration: none; color: var(--admin-primary); }
 
 .status-badge { box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
+/* Solicitudes: registro de quien atendio cada una (columna, filtro e historial) */
+.col-attended { width: 14%; }
+.quotes-list--attended .col-client { width: 20%; }
+.quotes-list--attended .col-contact { width: 18%; }
+.quotes-list--attended .col-products { width: 11%; }
+.quotes-list--attended .col-status { width: 12%; }
+.quotes-list--attended .col-date { width: 9%; }
+.quotes-list--attended .col-action { width: 11%; }
+.attended-info { display: flex; flex-direction: column; min-width: 0; padding-right: 0.5rem; }
+.quotes-toolbar { flex-wrap: wrap; gap: 0.75rem 1.5rem; }
+.quotes-toolbar .filter-tab { white-space: nowrap; }
+.attended-info strong { display: flex; align-items: baseline; gap: 0.4rem; font-size: 0.85rem; color: var(--admin-text); }
+.attended-name { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.attended-info strong i, .quote-log-user i, .attended-by i { color: #16a34a; }
+.attended-info span { font-size: 0.75rem; color: var(--admin-text-muted); }
+.attended-none { font-size: 0.8rem; font-style: italic; color: var(--admin-text-muted); }
+.attended-by { font-weight: 600; }
+.attended-when { color: var(--admin-text-muted); }
+.attendant-filter { display: flex; align-items: center; gap: 0.5rem; margin: 0; }
+.attendant-filter label { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; font-weight: 600; color: var(--admin-text-muted); white-space: nowrap; }
+.attendant-filter .form-input { width: auto; min-width: 180px; }
+.quote-history { grid-column: 1 / -1; }
+.quote-log { list-style: none; margin: 0; padding: 0; }
+.quote-log li { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1.25rem; padding: 0.7rem 0; border-bottom: 1px solid var(--admin-border); }
+.quote-log li:first-child { padding-top: 0; }
+.quote-log li:last-child { padding-bottom: 0; border-bottom: none; }
+.quote-log-user { flex: 1 1 200px; font-weight: 600; color: var(--admin-text); }
+.quote-log-user i { margin-right: 0.4rem; }
+.quote-log-change { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--admin-text-muted); }
+.quote-log-date { font-size: 0.85rem; color: var(--admin-text-muted); white-space: nowrap; }
+.quote-log-empty { margin: 0; font-style: italic; color: var(--admin-text-muted); }
+
 /* ===== Gallery Admin ===== */
 .gallery-summary { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
 .summary-chip { display: flex; align-items: center; gap: 0.9rem; background: var(--admin-surface); border: 1px solid var(--admin-border); border-radius: var(--radius); padding: 0.9rem 1.4rem; box-shadow: var(--shadow-sm); }

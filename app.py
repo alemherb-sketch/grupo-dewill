@@ -18,7 +18,7 @@ from permissions import MODULES, MODULE_GROUPS, PRESETS, LEVEL_LABELS, VIEW, MAN
 from site_pages import (PAGES, PAGES_BY_KEY, PAGE_BY_ENDPOINT, DISABLED_PAGES_KEY, EMPHASIS_RE, disabled_pages,
                         serialize_disabled_pages, banner_text_fields, resolve_banner)
 from models import db, AdminUser, Category, SubCategory, Brand, Product, ProductImage, ProductSpec, Presentation
-from models import QuoteRequest, QuoteItem, Banner, PageBanner, Offer, GalleryCategory, GalleryImage, AmbientCategory, AmbientImage, SiteConfig, PaintColor, BlogCategory, BlogPost, ProductPresentationColor
+from models import QuoteRequest, QuoteItem, QuoteStatusLog, QUOTE_STATUSES, Banner, PageBanner, Offer, GalleryCategory, GalleryImage, AmbientCategory, AmbientImage, SiteConfig, PaintColor, BlogCategory, BlogPost, ProductPresentationColor
 from models import split_color_code, color_label, ProductVariantCode, find_variant_code
 from models import ProductYield, find_yield, format_m2, yield_label
 from import_template import IMPORT_REQUIRED, build_import_template, import_header
@@ -434,6 +434,11 @@ PERU_UTC_OFFSET = timedelta(hours=-5)  # Peru no usa horario de verano
 def to_lima(value, fmt='%d/%m/%Y %H:%M'):
     """Muestra en hora de Peru una fecha guardada en UTC."""
     return (value + PERU_UTC_OFFSET).strftime(fmt) if value else ''
+
+@app.template_filter('quote_status')
+def quote_status_label(value):
+    """Estado de una solicitud como lo ve el usuario del panel ('en_proceso' -> 'En proceso')."""
+    return QUOTE_STATUSES.get(value, value or '')
 
 def slugify(value):
     value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
@@ -2052,10 +2057,17 @@ def admin_presentations():
 def admin_quotes():
     status = request.args.get('status', '')
     page = request.args.get('page', 1, type=int)
-    query = QuoteRequest.query
+    # usuarios que han atendido alguna solicitud: las opciones del filtro 'Atendido por'
+    attended = db.session.query(QuoteStatusLog.user_id).filter(QuoteStatusLog.user_id.isnot(None))
+    attendants = sorted(AdminUser.query.filter(AdminUser.id.in_(attended)).all(), key=lambda u: u.display_name.lower())
+    attendant = request.args.get('atendido', type=int)
+    if attendant not in {u.id for u in attendants}:
+        attendant = None
+    query = QuoteRequest.query.options(db.selectinload(QuoteRequest.logs).joinedload(QuoteStatusLog.user))
     if status: query = query.filter_by(status=status)
+    if attendant: query = query.filter(QuoteRequest.logs.any(QuoteStatusLog.user_id == attendant))
     quotes = query.order_by(QuoteRequest.created_at.desc()).paginate(page=page, per_page=20, error_out=False)
-    return render_template('admin/quotes.html', quotes=quotes, current_status=status)
+    return render_template('admin/quotes.html', quotes=quotes, current_status=status, attendants=attendants, attendant=attendant)
 
 @app.route('/admin/solicitudes/<int:qid>')
 @module_required('solicitudes')
@@ -2066,8 +2078,18 @@ def admin_quote_detail(qid):
 @module_required('solicitudes')
 def admin_quote_status(qid):
     q = QuoteRequest.query.get_or_404(qid)
-    q.status = request.form.get('status', 'pendiente')
-    db.session.commit(); flash('Estado actualizado', 'success')
+    status = request.form.get('status', '')
+    if status not in QUOTE_STATUSES:
+        flash('El estado elegido no es válido', 'error')
+    elif status == q.status:
+        flash('La solicitud ya tenía ese estado', 'info')
+    else:
+        # cada cambio de estado queda registrado con el usuario que lo hizo
+        db.session.add(QuoteStatusLog(quote_id=q.id, user_id=current_user.id, user_name=current_user.display_name[:120],
+                                      from_status=q.status, to_status=status))
+        q.status = status
+        db.session.commit()
+        flash('Estado actualizado', 'success')
     return redirect(url_for('admin_quote_detail', qid=qid))
 
 BANNER_COLUMNS = ('image_url', 'image2_url', 'badge', 'title', 'subtitle', 'description')

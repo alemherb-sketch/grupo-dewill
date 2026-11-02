@@ -84,8 +84,8 @@
                 </div>
                 <div class="col-date">
                     <div class="date-info">
-                        <strong>{{ q.created_at.strftime('%d/%m/%Y') }}</strong>
-                        <span>{{ q.created_at.strftime('%H:%M') }}</span>
+                        <strong>{{ q.created_at|lima('%d/%m/%Y') }}</strong>
+                        <span>{{ q.created_at|lima('%H:%M') }}</span>
                     </div>
                 </div>
                 <div class="col-action">

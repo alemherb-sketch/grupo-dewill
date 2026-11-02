@@ -249,6 +249,10 @@ class ProductSpec(db.Model):
     value = db.Column(db.String(300), nullable=False)
 
 
+# Estados de una solicitud de cotizacion: lo que se guarda -> lo que ve el usuario del panel
+QUOTE_STATUSES = {'pendiente': 'Pendiente', 'en_proceso': 'En proceso', 'respondida': 'Respondida'}
+
+
 class QuoteRequest(db.Model):
     __tablename__ = 'quote_requests'
     id = db.Column(db.Integer, primary_key=True)
@@ -262,6 +266,43 @@ class QuoteRequest(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     items = db.relationship('QuoteItem', backref='quote', lazy=True,
                             cascade='all, delete-orphan')
+    logs = db.relationship('QuoteStatusLog', backref='quote', lazy=True,
+                           cascade='all, delete-orphan', order_by='QuoteStatusLog.id')
+
+    @property
+    def last_log(self):
+        """Ultimo cambio de estado (None si nadie ha atendido la solicitud)."""
+        return self.logs[-1] if self.logs else None
+
+    @property
+    def attendants(self):
+        """Quienes atendieron la solicitud: los usuarios que cambiaron su estado, en el orden en que intervinieron."""
+        seen, names = set(), []
+        for log in self.logs:
+            key = log.user_id if log.user_id is not None else log.user_name
+            if key not in seen:
+                seen.add(key)
+                names.append(log.author)
+        return names
+
+
+class QuoteStatusLog(db.Model):
+    """Registro de atencion: cada cambio de estado de una solicitud, con el usuario del panel que lo hizo.
+    El nombre tambien se guarda aqui: si el usuario se elimina, user_id pasa a NULL y el nombre se conserva."""
+    __tablename__ = 'quote_status_logs'
+    id = db.Column(db.Integer, primary_key=True)
+    quote_id = db.Column(db.Integer, db.ForeignKey('quote_requests.id', ondelete='CASCADE'), nullable=False, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('admin_users.id', ondelete='SET NULL'), index=True)
+    user_name = db.Column(db.String(120))
+    from_status = db.Column(db.String(20))
+    to_status = db.Column(db.String(20), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    user = db.relationship('AdminUser')
+
+    @property
+    def author(self):
+        """Quien hizo el cambio: su nombre actual o, si ya no existe el usuario, el que tenia entonces."""
+        return self.user.display_name if self.user else (self.user_name or 'Usuario eliminado')
 
 
 class QuoteItem(db.Model):

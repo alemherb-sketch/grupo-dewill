@@ -3,17 +3,29 @@
 {% block page_title %}Solicitudes de Cotización{% endblock %}
 
 {% block admin_content %}
-<div class="admin-toolbar">
+<div class="admin-toolbar quotes-toolbar">
     <div class="filter-tabs">
-        <a href="{{ url_for('admin_quotes') }}" class="filter-tab {% if not current_status %}active{% endif %}">Todas</a>
-        <a href="{{ url_for('admin_quotes', status='pendiente') }}" class="filter-tab {% if current_status == 'pendiente' %}active{% endif %}">Pendientes</a>
-        <a href="{{ url_for('admin_quotes', status='en_proceso') }}" class="filter-tab {% if current_status == 'en_proceso' %}active{% endif %}">En Proceso</a>
-        <a href="{{ url_for('admin_quotes', status='respondida') }}" class="filter-tab {% if current_status == 'respondida' %}active{% endif %}">Respondidas</a>
+        <a href="{{ url_for('admin_quotes', atendido=attendant) }}" class="filter-tab {% if not current_status %}active{% endif %}">Todas</a>
+        <a href="{{ url_for('admin_quotes', status='pendiente', atendido=attendant) }}" class="filter-tab {% if current_status == 'pendiente' %}active{% endif %}">Pendientes</a>
+        <a href="{{ url_for('admin_quotes', status='en_proceso', atendido=attendant) }}" class="filter-tab {% if current_status == 'en_proceso' %}active{% endif %}">En Proceso</a>
+        <a href="{{ url_for('admin_quotes', status='respondida', atendido=attendant) }}" class="filter-tab {% if current_status == 'respondida' %}active{% endif %}">Respondidas</a>
     </div>
+    {% if attendants %}
+    {# Solicitudes en las que el usuario cambio el estado alguna vez (el registro de atencion) #}
+    <form method="get" class="attendant-filter">
+        {% if current_status %}<input type="hidden" name="status" value="{{ current_status }}">{% endif %}
+        <label for="attendantFilter"><i class="fas fa-user-check"></i> Atendido por</label>
+        <select id="attendantFilter" name="atendido" class="form-input" onchange="this.form.submit()">
+            <option value="">Todos</option>
+            {% for u in attendants %}<option value="{{ u.id }}"{% if u.id == attendant %} selected{% endif %}>{{ u.display_name }}</option>{% endfor %}
+        </select>
+        <noscript><button type="submit" class="btn btn-outline btn-sm">Filtrar</button></noscript>
+    </form>
+    {% endif %}
 </div>
 
 <div class="quotes-list-container">
-    <div class="quotes-list">
+    <div class="quotes-list quotes-list--attended">
         <!-- Header -->
         <div class="quotes-list-header">
             <div class="col-id">ID</div>
@@ -21,6 +33,7 @@
             <div class="col-contact">Contacto</div>
             <div class="col-products">Productos</div>
             <div class="col-status">Estado</div>
+            <div class="col-attended">Atendido por</div>
             <div class="col-date">Fecha / Hora</div>
             <div class="col-action"></div>
         </div>
@@ -47,10 +60,24 @@
             <div class="col-status">
                 <span class="status-badge status-{{ q.status }}"><i class="fas fa-circle" style="font-size: 0.5rem; margin-right: 4px;"></i> {{ q.status }}</span>
             </div>
+            <div class="col-attended">
+                {% set last = q.last_log %}
+                {% if q.status == 'pendiente' %}
+                <span class="attended-none">Sin atender</span>
+                {% elif last %}
+                {% set names = q.attendants|join(', ') %}
+                <div class="attended-info" title="{{ names }} · Último cambio: {{ last.to_status|quote_status }}">
+                    <strong><i class="fas fa-user-check"></i> <span class="attended-name">{{ names }}</span></strong>
+                    <span>{{ last.created_at|lima }}</span>
+                </div>
+                {% else %}
+                <span class="attended-none" title="Se atendió antes de que existiera el registro de atención">Sin registro</span>
+                {% endif %}
+            </div>
             <div class="col-date">
                 <div class="date-info">
-                    <strong>{{ q.created_at.strftime('%d/%m/%Y') }}</strong>
-                    <span>{{ q.created_at.strftime('%H:%M') }}</span>
+                    <strong>{{ q.created_at|lima('%d/%m/%Y') }}</strong>
+                    <span>{{ q.created_at|lima('%H:%M') }}</span>
                 </div>
             </div>
             <div class="col-action">
@@ -67,7 +94,7 @@
 
     {% if quotes.pages > 1 %}
     <div class="admin-pagination">
-        {% for p in quotes.iter_pages() %}{% if p %}<a href="?page={{ p }}&status={{ current_status }}" class="{% if p == quotes.page %}active{% endif %}">{{ p }}</a>{% else %}<span>...</span>{% endif %}{% endfor %}
+        {% for p in quotes.iter_pages() %}{% if p %}<a href="?page={{ p }}&status={{ current_status }}{% if attendant %}&atendido={{ attendant }}{% endif %}" class="{% if p == quotes.page %}active{% endif %}">{{ p }}</a>{% else %}<span>...</span>{% endif %}{% endfor %}
     </div>
     {% endif %}
 </div>

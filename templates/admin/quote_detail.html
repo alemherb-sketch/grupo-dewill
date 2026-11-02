@@ -20,7 +20,13 @@
     <div class="admin-panel">
         <div class="panel-header"><h3><i class="fas fa-user"></i> Datos del Cliente</h3></div>
         <div class="panel-body">
-            <p><strong>Fecha de solicitud:</strong> {{ quote.created_at.strftime('%d/%m/%Y %H:%M') }}</p>
+            <p><strong>Fecha de solicitud:</strong> {{ quote.created_at|lima }}</p>
+            {% set last = quote.last_log %}
+            <p><strong>Atendido por:</strong>
+                {% if quote.status == 'pendiente' %}<span class="attended-none">Sin atender</span>
+                {% elif last %}<span class="attended-by"><i class="fas fa-user-check"></i> {{ quote.attendants|join(', ') }}</span> <span class="attended-when">· {{ last.created_at|lima }}</span>
+                {% else %}<span class="attended-none">Sin registro</span>{% endif %}
+            </p>
             {% set document = quote.client_document or '' %}
             <p><strong>Nombre:</strong> {{ quote.client_name or 'No especificado' }}</p>
             <p><strong>{{ 'DNI' if document|length == 8 else ('RUC' if document else 'DNI / RUC') }}:</strong> {{ document or 'No especificado' }}</p>
@@ -56,6 +62,31 @@
                 </li>
                 {% endfor %}
             </ul>
+        </div>
+    </div>
+
+    {# Registro de atencion: cada cambio de estado con el usuario que lo hizo (el mas reciente primero) #}
+    <div class="admin-panel quote-history">
+        <div class="panel-header"><h3><i class="fas fa-history"></i> Historial de atención</h3></div>
+        <div class="panel-body">
+            {% if quote.logs %}
+            <ul class="quote-log">
+                {% for log in quote.logs|reverse %}
+                <li>
+                    <span class="quote-log-user"><i class="fas fa-user-check"></i> {{ log.author }}</span>
+                    <span class="quote-log-change">
+                        {% if log.from_status %}<span class="status-badge status-{{ log.from_status }}">{{ log.from_status|quote_status }}</span> <i class="fas fa-arrow-right"></i>{% endif %}
+                        <span class="status-badge status-{{ log.to_status }}">{{ log.to_status|quote_status }}</span>
+                    </span>
+                    <span class="quote-log-date">{{ log.created_at|lima }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% elif quote.status == 'pendiente' %}
+            <p class="quote-log-empty">Nadie ha atendido esta solicitud todavía. Cuando cambies su estado, quedará registrado tu nombre.</p>
+            {% else %}
+            <p class="quote-log-empty">Esta solicitud se atendió antes de que existiera el registro de atención.</p>
+            {% endif %}
         </div>
     </div>
 </div>
