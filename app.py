@@ -22,6 +22,7 @@ from models import QuoteRequest, QuoteItem, QuoteStatusLog, QUOTE_STATUSES, Bann
 from models import split_color_code, color_label, ProductVariantCode, find_variant_code
 from models import ProductYield, find_yield, format_m2, yield_label
 from import_template import IMPORT_REQUIRED, build_import_template, import_header
+from product_export import build_products_export
 import time
 import threading
 import resend
@@ -1277,14 +1278,11 @@ def admin_sync_colors():
     flash(f'Colores analizados: {added} nuevos, {updated} actualizados (Hex mejorado). Los vínculos de presentación se han preservado.', 'success')
     return redirect(url_for('admin_dashboard'))
 
-@app.route('/admin/productos')
-@module_required('productos')
-def admin_products():
-    q = request.args.get('q', '')
-    cat_id = request.args.get('cat', '')
-    page = request.args.get('page', 1, type=int)
+def _filtered_products(q, cat_id):
+    """Productos que muestra la lista del panel (y que baja Exportar Excel): la busqueda por nombre, SKU, codigo de
+    cualquier presentacion o color, marca o categoria, y la categoria elegida."""
     query = Product.query
-    if q: 
+    if q:
         query = query.filter(db.or_(
             Product.name.ilike(f'%{q}%'),
             Product.sku.ilike(f'%{q}%'),
@@ -1292,7 +1290,16 @@ def admin_products():
             Product.brand.has(Brand.name.ilike(f'%{q}%')),
             Product.category.has(Category.name.ilike(f'%{q}%'))
         ))
-    if cat_id: query = query.filter_by(category_id=int(cat_id))
+    if cat_id.isdigit(): query = query.filter_by(category_id=int(cat_id))
+    return query
+
+@app.route('/admin/productos')
+@module_required('productos')
+def admin_products():
+    q = request.args.get('q', '')
+    cat_id = request.args.get('cat', '')
+    page = request.args.get('page', 1, type=int)
+    query = _filtered_products(q, cat_id)
     products = query.order_by(Product.created_at.desc()).paginate(page=page, per_page=20, error_out=False)
     categories = Category.query.order_by(Category.order).all()
     # Contador sobre la tabla: total del catalogo y, de lo que se esta viendo (busqueda y categoria), activos,
@@ -1386,6 +1393,60 @@ def admin_product_import_template():
     build_import_template(_import_template_lists(), _import_template_examples() or None).save(buf)
     buf.seek(0)
     return send_file(buf, as_attachment=True, download_name='modelo_importacion_productos.xlsx',
+                     mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+
+def _export_variants(product):
+    """Filas de la hoja Productos de un producto: una por variante (presentacion + color + codigo), las mismas de la
+    tabla Variantes del formulario. Un producto sin variantes ni codigos sale en una fila con su SKU."""
+    rows = [{'code': r['code'], 'color': r['label'], 'presentation': r['pres']}
+            for r in _variant_rows(product) if r['code'] or r['label'] or r['pres']]
+    return rows or [{'code': product.sku or '', 'color': '', 'presentation': ''}]
+
+
+def _export_product_data(product):
+    """Lo que Exportar Excel escribe de un producto (ver product_export.build_products_export)."""
+    variants = _export_variants(product)
+    names = {pres.id: pres.name for pres in product.presentations}
+    # rendimiento por presentacion ('1GL: 21 m² a 2 manos; 4GL: 84 m² a 2 manos'); sin presentaciones, el de su unidad
+    yields = sorted(_product_yields(product).items(), key=lambda item: names.get(item[0], ''))
+    return {
+        'id': product.id, 'name': product.name, 'sku': product.sku or '',
+        'brand': product.brand.name if product.brand else '',
+        'category': product.category.name if product.category else '',
+        'subcategory': product.subcategory.name if product.subcategory else '',
+        'active': bool(product.is_active), 'featured': bool(product.is_featured),
+        'presentations': sorted(names.values()),
+        'colors': len({split_color_code(v['color'])[0].upper() for v in variants if v['color']}),
+        'variants': variants,
+        'yield': '; '.join((f'{names[pid]}: ' if pid in names else '') + yield_label(y.area_m2, y.coats) for pid, y in yields),
+        'description': product.description or '', 'technical_description': product.technical_description or '',
+    }
+
+
+def _export_order(product):
+    """Orden del Excel: categoria, subcategoria, marca y nombre del producto (sin distinguir mayusculas)."""
+    parts = (product.category.name if product.category else '', product.subcategory.name if product.subcategory else '',
+             product.brand.name if product.brand else '', product.name or '')
+    return tuple(part.lower() for part in parts) + (product.id,)
+
+
+@app.route('/admin/productos/exportar')
+@module_required('productos')
+def admin_product_export():
+    """Excel con el catalogo de la lista del panel (con su busqueda y categoria, o todo): la hoja Productos, en el formato
+    del importador, y la hoja Detalle con una fila por producto."""
+    products = (_filtered_products(request.args.get('q', ''), request.args.get('cat', ''))
+                .options(db.joinedload(Product.brand), db.joinedload(Product.category), db.joinedload(Product.subcategory),
+                         db.selectinload(Product.presentation_colors), db.selectinload(Product.variant_codes),
+                         db.selectinload(Product.specs), db.selectinload(Product.yields))
+                .all())
+    products.sort(key=_export_order)
+    buf = io.BytesIO()
+    build_products_export([_export_product_data(p) for p in products]).save(buf)
+    buf.seek(0)
+    today = (datetime.utcnow() + PERU_UTC_OFFSET).strftime('%Y-%m-%d')
+    return send_file(buf, as_attachment=True, download_name=f'productos-grupo-dewill-{today}.xlsx',
                      mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
 
@@ -1655,7 +1716,7 @@ def _variant_rows(product):
         if lk.presentation_id in names:
             add(lk.presentation_id, lk.color_name, lk.label, lk.hex_code)
     with_colors = {pid for pid, _ in seen}
-    for pid in names:
+    for pid in sorted(names, key=lambda pid: names[pid]):   # por nombre, como las filas con colores
         if pid not in with_colors:
             add(pid, '')
     if not names:

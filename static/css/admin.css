@@ -241,6 +241,8 @@ a { text-decoration: none; color: var(--admin-primary); }
 .template-download strong i { color: #16a34a; }
 /* Importar productos: las instrucciones fluyen en vertical (antes iban dentro del encabezado, que es una fila) */
 .import-instructions > p { margin: 0 0 0.75rem; line-height: 1.55; }
+.import-instructions > p.import-tip { margin-bottom: 1.25rem; font-size: 0.9rem; color: var(--admin-text-muted); }
+.import-tip i { color: #16a34a; }
 .import-instructions ul { margin: 0 0 1.25rem; padding-left: 1.25rem; line-height: 1.55; }
 .import-instructions li { margin-bottom: 0.4rem; }
 .import-instructions .alert { margin-bottom: 1rem; border-radius: 8px; line-height: 1.55; }
@@ -554,7 +556,7 @@ a { text-decoration: none; color: var(--admin-primary); }
 .quotes-list--attended .col-date { width: 9%; }
 .quotes-list--attended .col-action { width: 11%; }
 .attended-info { display: flex; flex-direction: column; min-width: 0; padding-right: 0.5rem; }
-.quotes-toolbar { flex-wrap: wrap; gap: 0.75rem 1.5rem; }
+.quotes-toolbar, .toolbar-wrap { flex-wrap: wrap; gap: 0.75rem 1.5rem; }
 .quotes-toolbar .filter-tab { white-space: nowrap; }
 .attended-info strong { display: flex; align-items: baseline; gap: 0.4rem; font-size: 0.85rem; color: var(--admin-text); }
 .attended-name { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }

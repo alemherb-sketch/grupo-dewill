@@ -37,7 +37,7 @@
     </div>
 </div>
 
-<div class="admin-toolbar">
+<div class="admin-toolbar toolbar-wrap">
     <form class="toolbar-search" method="GET">
         <input type="text" name="q" value="{{ q }}" placeholder="Buscar productos..." class="form-input">
         <select name="cat" class="form-input" style="width:auto;">
@@ -48,6 +48,7 @@
     </form>
     <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
         <a href="{{ url_for('admin_product_import_template') }}" class="btn btn-secondary" title="Modelo de Excel para importar productos"><i class="fas fa-download"></i> Descargar modelo</a>
+        <a href="{{ url_for('admin_product_export', q=q or None, cat=cat_id or None) }}" class="btn btn-secondary" title="{% if filtered %}Descarga en Excel los {{ products.total }} {{ plural(products.total, 'producto', 'productos') }} de esta búsqueda{% else %}Descarga en Excel todo el catálogo ({{ products.total }} {{ plural(products.total, 'producto', 'productos') }}){% endif %}"><i class="fas fa-file-export"></i> Exportar Excel</a>
         <a href="{{ url_for('admin_product_import') }}" class="btn btn-secondary"><i class="fas fa-file-excel"></i> Importar Excel</a>
         <a href="{{ url_for('admin_product_new') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Nuevo Producto</a>
         <form method="POST" action="{{ url_for('admin_products_bulk_delete') }}" style="margin: 0;" id="bulkDeleteForm" onsubmit="return confirmBulkDelete()">

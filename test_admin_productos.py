@@ -39,7 +39,7 @@ class ContadorProductosTest(unittest.TestCase):
     def lista(self, **params):
         """(texto del contador, texto de toda la pagina) de Admin > Productos."""
         html = self.client.get('/admin/productos', query_string=params).get_data(as_text=True)
-        m = re.search(r'<div class="gallery-summary">(.*?)<div class="admin-toolbar">', html, re.S)
+        m = re.search(r'<div class="gallery-summary">(.*?)<div class="admin-toolbar[ "]', html, re.S)
         self.assertIsNotNone(m, 'la lista debe mostrar el contador sobre la barra de busqueda')
         return text(m.group(1)), text(html)
 
