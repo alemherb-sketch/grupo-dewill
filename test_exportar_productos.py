@@ -121,6 +121,7 @@ class ExportarProductosTest(unittest.TestCase):
                     'sku': p.sku,
                     'presentaciones': sorted(x.name for x in p.presentations),
                     'colores': sorted((nombres[lk.presentation_id], lk.color_name, lk.color_code) for lk in p.presentation_colors),
+                    'tonos': sorted((nombres[lk.presentation_id], lk.color_name, lk.hex_code) for lk in p.presentation_colors),
                     'codigos': sorted((nombres.get(vc.presentation_id, ''), vc.color_name, vc.code) for vc in p.variant_codes),
                     'especificaciones': sorted((sp.key, sp.value) for sp in p.specs),
                 }
@@ -298,6 +299,17 @@ class ExportarProductosTest(unittest.TestCase):
         self.assertEqual(antes[self.pintura]['colores'], [('1GL', 'AZUL', '41'), ('1GL', 'ROJO', None),
                                                           ('4GL', 'AZUL', '41'), ('4GL', 'ROJO', None)])
 
+    def test_importar_lo_exportado_conserva_los_tonos_de_los_colores(self):
+        # el Excel no trae tonos: los colores se recrean con el que ya tenian (no el de la paleta, ni gris)
+        tonos = {('1GL', 'AZUL'): '#123456', ('4GL', 'AZUL'): '#abcdef', ('1GL', 'ROJO'): '#654321', ('4GL', 'ROJO'): '#fedcba'}
+        with app.app_context():
+            nombres = {x.id: x.name for x in Presentation.query.all()}
+            for lk in self.producto(self.pintura).presentation_colors:
+                lk.hex_code = tonos[(nombres[lk.presentation_id], lk.color_name)]
+            db.session.commit()
+        self.importar(None, buf=io.BytesIO(self.exportar().data))
+        self.assertEqual({(pres, color): hex_code for pres, color, hex_code in self.foto()[self.pintura]['tonos']}, tonos)
+
     def test_lo_que_se_corrige_en_el_excel_exportado_se_importa(self):
         s = self.s
         wb = self.libro(self.exportar())
@@ -338,6 +350,7 @@ class ExportarProductosTest(unittest.TestCase):
     def test_la_pagina_de_importar_explica_como_editar_lo_exportado(self):
         html = re.sub(r'\s+', ' ', self.client.get('/admin/productos/importar').get_data(as_text=True))
         self.assertIn('Exportar Excel', html)
+        self.assertIn('conservan su tono', html)
         self.assertIn('«Detalle» es solo de consulta', html)
 
 

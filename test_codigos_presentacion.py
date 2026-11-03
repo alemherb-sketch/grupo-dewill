@@ -536,6 +536,72 @@ class CodigosPorVarianteTest(unittest.TestCase):
         self.assertEqual(enlaces[('1GL', f'TURQUESA {s}')][1], '#00aaaa')   # el de la paleta
         self.assertEqual(enlaces[('1GL', f'INVENTADO {s}')][1], '#cccccc')
 
+    # ---------- el importador conserva los tonos ----------
+
+    def test_reimportar_conserva_el_tono_de_los_colores_que_el_producto_ya_tenia(self):
+        s = self.sufijo
+        azul, rojo = f'AZUL {s}', f'ROJO {s}'
+        filas = [self.fila(f'A1{s}', self.pintura, azul, '1GL'), self.fila(f'A4{s}', self.pintura, azul, '4GL'),
+                 self.fila(f'R1{s}', self.pintura, f'{rojo} #103', '1GL')]
+        self.importar(filas)
+        tonos = {('1GL', azul): '#123456', ('4GL', azul): '#abcdef', ('1GL', rojo): '#654321'}   # no son los de la paleta
+        with app.app_context():
+            nombres = {x.id: x.name for x in Presentation.query.all()}
+            for lk in self.producto(self.pintura).presentation_colors:
+                lk.hex_code = tonos[(nombres[lk.presentation_id], lk.color_name)]
+            db.session.add_all([PaintColor(name=azul, hex_code='#0000ff'), PaintColor(name=rojo, hex_code='#ff0000')])
+            db.session.commit()
+        self.importar(filas)   # el Excel no trae tonos: volver a subirlo no los cambia
+        enlaces = self.variantes(self.pintura)[0]
+        self.assertEqual({clave: hex_code for clave, (_, hex_code) in enlaces.items()}, tonos)
+        self.assertEqual(enlaces[('1GL', rojo)][0], '103')   # y el codigo de fabrica del color sigue ahi
+
+    def test_un_color_que_pasa_a_otra_presentacion_conserva_el_tono_que_tenia_en_el_producto(self):
+        s = self.sufijo
+        azul = f'AZUL {s}'
+        self.importar([self.fila(f'A1{s}', self.pintura, azul, '1GL')])
+        with app.app_context():
+            self.producto(self.pintura).presentation_colors[0].hex_code = '#123456'
+            db.session.add(PaintColor(name=azul, hex_code='#0000ff'))
+            db.session.commit()
+        self.importar([self.fila(f'A1{s}', self.pintura, azul, '1GL'), self.fila(f'A4{s}', self.pintura, azul, '4GL')])
+        enlaces = self.variantes(self.pintura)[0]
+        self.assertEqual({clave: hex_code for clave, (_, hex_code) in enlaces.items()},
+                         {('1GL', azul): '#123456', ('4GL', azul): '#123456'})
+
+    def test_reimportar_con_el_color_en_minusculas_conserva_el_tono(self):
+        s = self.sufijo
+        azul = f'AZUL {s}'
+        self.importar([self.fila(f'A1{s}', self.pintura, azul, '1GL')])
+        with app.app_context():
+            self.producto(self.pintura).presentation_colors[0].hex_code = '#123456'
+            db.session.commit()
+        self.importar([self.fila(f'A1{s}', self.pintura, azul.lower(), '1GL')])
+        self.assertEqual(self.variantes(self.pintura)[0], {('1GL', azul.lower()): (None, '#123456')})
+
+    def test_un_color_nuevo_toma_el_tono_de_la_paleta_y_gris_si_no_esta(self):
+        s = self.sufijo
+        azul, turquesa, inventado = f'AZUL {s}', f'TURQUESA {s}', f'INVENTADO {s}'
+        self.importar([self.fila(f'A1{s}', self.pintura, azul, '1GL')])
+        with app.app_context():
+            self.producto(self.pintura).presentation_colors[0].hex_code = '#123456'
+            db.session.add(PaintColor(name=f'Turquesa {s}', hex_code='#00aaaa'))   # se busca sin distinguir mayusculas
+            db.session.commit()
+        self.importar([self.fila(f'A1{s}', self.pintura, azul, '1GL'), self.fila(f'T1{s}', self.pintura, turquesa, '1GL'),
+                       self.fila(f'I1{s}', self.pintura, inventado, '1GL')])
+        enlaces = self.variantes(self.pintura)[0]
+        self.assertEqual({clave: hex_code for clave, (_, hex_code) in enlaces.items()},
+                         {('1GL', azul): '#123456', ('1GL', turquesa): '#00aaaa', ('1GL', inventado): '#cccccc'})
+
+    def test_un_producto_nuevo_toma_el_tono_de_la_paleta(self):
+        s = self.sufijo
+        verde = f'VERDE {s}'
+        with app.app_context():
+            db.session.add(PaintColor(name=verde, hex_code='#00ff00'))
+            db.session.commit()
+        self.importar([self.fila(f'V1{s}', self.pintura, verde, '1GL')])
+        self.assertEqual(self.variantes(self.pintura)[0], {('1GL', verde): (None, '#00ff00')})
+
     def test_la_tabla_sugiere_los_colores_conocidos(self):
         self.cargar_pintura()
         with app.app_context():

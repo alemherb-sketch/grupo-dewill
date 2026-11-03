@@ -1483,7 +1483,8 @@ def admin_product_import():
                 skipped = 0
                 codes_saved = 0
                 cleared_products = set()
-                
+                old_tones = {}   # producto -> tonos que tenian sus colores antes de recrearlos (el Excel no trae tonos)
+
                 for row in ws.iter_rows(min_row=2, values_only=True):
                     if all(v is None or not str(v).strip() for v in row):   # fila en blanco (p. ej. las preparadas del modelo)
                         continue
@@ -1528,6 +1529,7 @@ def admin_product_import():
                         product = Product.query.filter(Product.name.ilike(prod_name), Product.brand_id.is_(None)).first()
                     
                     if product and product.id not in cleared_products:
+                        old_tones[product.id] = _product_tones(product.id)
                         ProductPresentationColor.query.filter_by(product_id=product.id).delete()
                         if 'Codigo' in col_map:   # el Excel trae un codigo por fila: reemplaza los que tenia el producto
                             ProductVariantCode.query.filter_by(product_id=product.id).delete()
@@ -1604,14 +1606,19 @@ def admin_product_import():
 
                     # Link color to presentation
                     if pres and color_val:
-                        pc = PaintColor.query.filter(PaintColor.name.ilike(color_val)).first()
-                        hex_code = pc.hex_code if pc else '#cccccc'
                         exists_link = ProductPresentationColor.query.filter_by(
                             product_id=product.id,
                             presentation_id=pres.id,
                             color_name=color_val
                         ).first()
                         if not exists_link:
+                            # un color que el producto ya tenia conserva su tono; uno nuevo toma el de la paleta (gris si no esta)
+                            old_hex, old_hex_by_name = old_tones.get(product.id, ({}, {}))
+                            color_key = color_val.strip().upper()
+                            hex_code = old_hex.get((pres.id, color_key)) or old_hex_by_name.get(color_key)
+                            if not hex_code:
+                                pc = PaintColor.query.filter(PaintColor.name.ilike(color_val)).first()
+                                hex_code = pc.hex_code if pc else '#cccccc'
                             db.session.add(ProductPresentationColor(
                                 product_id=product.id,
                                 presentation_id=pres.id,
@@ -1759,6 +1766,16 @@ def _known_color_hex(name):
     return pc.hex_code if pc and pc.hex_code else '#cccccc'
 
 
+def _product_tones(product_id):
+    """Tonos que ya tienen los colores de un producto: ({(presentacion, COLOR): hex}, {COLOR: hex}). Se leen antes de borrar
+    sus colores para recrearlos con el mismo tono (el formulario de variantes y el importador de Excel no lo traen)."""
+    links = (db.session.query(ProductPresentationColor.presentation_id, ProductPresentationColor.color_name,
+                              ProductPresentationColor.hex_code)
+             .filter(ProductPresentationColor.product_id == product_id).order_by(ProductPresentationColor.id))
+    exact = {(pres_id, name.strip().upper()): hex_code for pres_id, name, hex_code in links}
+    return exact, {name: hex_code for (_, name), hex_code in exact.items()}
+
+
 def _variant_color(text):
     """'rojo  teja #103' -> ('ROJO TEJA', '103'): el nombre en mayusculas (como los del Excel) y su codigo de fabrica."""
     name, code = split_color_code(text)
@@ -1773,8 +1790,7 @@ def _save_variants(product):
         return []
     names = {pres.id: pres.name for pres in product.presentations}
     # tonos que ya tenia el producto: se conservan (se leen antes de borrar sus colores)
-    old_hex = {(lk.presentation_id, lk.color_name.strip().upper()): lk.hex_code for lk in product.presentation_colors}
-    old_hex_by_name = {name: hx for (_, name), hx in old_hex.items()}
+    old_hex, old_hex_by_name = _product_tones(product.id)
     rows, seen, repeated = [], set(), []
     for pres_raw, label, code in zip(request.form.getlist('vc_pres[]'), request.form.getlist('vc_color[]'),
                                      request.form.getlist('vc_code[]')):
