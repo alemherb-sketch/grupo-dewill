@@ -23,6 +23,7 @@ from models import split_color_code, color_label, ProductVariantCode, find_varia
 from models import ProductYield, find_yield, format_m2, yield_label
 from import_template import IMPORT_REQUIRED, build_import_template, import_header
 from product_export import build_products_export
+import panel_erpgest
 import time
 import threading
 import resend
@@ -164,6 +165,8 @@ with app.app_context():
 mail = Mail(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'admin_login'
+# Conector con el panel de ERPGEST (el proveedor): suspension, limite de usuarios y restablecer el acceso
+panel_erpgest.instalar(app)
 
 if app.config.get('RESEND_API_KEY'):
     resend.api_key = app.config['RESEND_API_KEY']
@@ -195,8 +198,9 @@ def send_async_email(app, msg_data):
 @login_manager.user_loader
 def load_user(user_id):
     user = db.session.get(AdminUser, int(user_id))
-    # Un usuario desactivado pierde la sesion de inmediato, sin esperar a que cierre sesion
-    return user if user and user.is_active else None
+    # Un usuario desactivado pierde la sesion de inmediato, sin esperar a que cierre sesion; tambien cae la sesion
+    # iniciada antes de que el panel de ERPGEST cerrara todas (restablecer el acceso)
+    return user if user and user.is_active and panel_erpgest.sesion_vigente() else None
 
 
 def _access_denied(message):
@@ -340,7 +344,8 @@ def inject_site_config():
 # ==================== MODO MANTENIMIENTO ====================
 # Se activa desde Admin > Configuración. Los visitantes ven la página de mantenimiento (503);
 # el panel /admin, los archivos estáticos y los administradores con sesión iniciada siguen funcionando.
-MAINTENANCE_OPEN_PREFIXES = ('/admin', '/static')
+# El conector del panel de ERPGEST tampoco se cierra: sus órdenes no traen sesión.
+MAINTENANCE_OPEN_PREFIXES = ('/admin', '/static', panel_erpgest.PREFIJO)
 MAINTENANCE_DEFAULT_MESSAGE = 'Estamos realizando mejoras en nuestro sitio web. Volveremos muy pronto.'
 
 @app.before_request
@@ -1035,6 +1040,11 @@ def _apply_user_form(user):
         error = _validate_password(password, f.get('password_confirm') or '')
         if error:
             errors.append(error)
+    # Usuarios activos que permite el plan (lo fija el panel de ERPGEST); cada administrador conserva su propio estado
+    if (is_new or user.id != current_user.id) and f.get('is_active') == '1':
+        error = panel_erpgest.error_de_limite(user.id, True)
+        if error:
+            errors.append(error)
     if errors:
         return errors
 
@@ -1091,8 +1101,11 @@ def admin_user_edit(uid):
 @admin_required
 def admin_user_toggle(uid):
     user = db.get_or_404(AdminUser, uid)
+    limit_error = '' if user.is_active else panel_erpgest.error_de_limite(user.id, True)
     if user.id == current_user.id:
         flash('No puedes desactivar tu propia cuenta.', 'error')
+    elif limit_error:
+        flash(limit_error, 'error')
     else:
         user.is_active = not user.is_active
         db.session.commit()

@@ -462,3 +462,16 @@ class SiteConfig(db.Model):
             config = SiteConfig(key=key, value=value)
             db.session.add(config)
         db.session.commit()
+
+
+class PanelEstado(db.Model):
+    """Lo que ordena el panel de ERPGEST (el proveedor) por su conector: una sola fila, id 1. Ver panel_erpgest.py.
+
+    Aparte de site_config a proposito: Admin > Configuracion no debe poder levantar una suspension ni el limite."""
+    __tablename__ = 'panel_erpgest_estado'
+    id = db.Column(db.Integer, primary_key=True)
+    suspendido = db.Column(db.Boolean, nullable=False, default=False)
+    mensaje = db.Column(db.String(300), nullable=False, default='')
+    limite_usuarios = db.Column(db.Integer, nullable=False, default=0)  # usuarios activos permitidos; 0 = sin limite
+    sesiones_desde = db.Column(db.DateTime)  # UTC: las sesiones iniciadas antes ya no valen
+    actualizado = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
